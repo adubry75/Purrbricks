@@ -2,7 +2,7 @@ using UnityEngine;
 
 public enum GameState
 {
-    Title,
+    Ready,
     Playing,
     Paused,
     GameOver,
@@ -19,10 +19,14 @@ public class GameManager : MonoBehaviour
     [Header("References")]
     [SerializeField] private BallController _ball;
 
+    [SerializeField] private HudController _hud;
+    [SerializeField] private int _score;
+
+
     private int _lives;
 
 
-    [SerializeField] private GameState _state = GameState.Title;
+    [SerializeField] private GameState _state = GameState.Ready;
 
     private void Awake()
     {
@@ -39,13 +43,16 @@ public class GameManager : MonoBehaviour
     private void Start()
     {
         _lives = _startingLives;
-        SetState(GameState.Title);
+        _hud?.SetLives(_lives);
+        _hud?.SetScore(_score);
+
+        SetState(GameState.Ready);
     }
 
     private void Update()
     {
         // Temporary: press Space to start playing
-        if (_state == GameState.Title && Input.GetKeyDown(KeyCode.Space))
+        if (_state == GameState.Ready && Input.GetKeyDown(KeyCode.Space))
         {
             SetState(GameState.Playing);
         }
@@ -67,29 +74,44 @@ public class GameManager : MonoBehaviour
 
         switch (_state)
         {
-            case GameState.Title:
+            case GameState.Ready:
                 SetCursorMenuMode();
                 Time.timeScale = 1f;
+                _hud?.SetState("Ready");
+                _hud?.ShowCenter("Press Space to Launch");
+
                 break;
 
             case GameState.Playing:
                 SetCursorPlayMode();
                 Time.timeScale = 1f;
+                _hud?.SetState("Playing");
+                _hud?.HideCenter();
+
                 break;
 
             case GameState.Paused:
                 SetCursorMenuMode();
                 Time.timeScale = 0f;
+                _hud?.SetState("Paused");
+                _hud?.ShowCenter("Paused");
+
                 break;
 
             case GameState.GameOver:
                 SetCursorMenuMode();
                 Time.timeScale = 1f;
+                _hud?.SetState("Game Over");
+                _hud?.ShowCenter("Game Over");
+
                 break;
 
             case GameState.Win:
                 SetCursorMenuMode();
                 Time.timeScale = 0f;
+                _hud?.SetState("Win");
+                _hud?.ShowCenter("You Win!");
+
                 break;
         }
 
@@ -113,6 +135,7 @@ public class GameManager : MonoBehaviour
         if (_state != GameState.Playing) return;
 
         _lives--;
+        _hud.SetLives(_lives);
         Debug.Log("Ball lost. Lives = " + _lives);
 
         if (_lives <= 0)
@@ -127,7 +150,7 @@ public class GameManager : MonoBehaviour
             _ball.ResetToPaddle();
         }
 
-        SetState(GameState.Title);
+        SetState(GameState.Ready);
     }
 
     public void OnLevelCleared()
