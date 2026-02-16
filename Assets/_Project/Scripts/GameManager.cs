@@ -20,7 +20,14 @@ public class GameManager : MonoBehaviour
     [SerializeField] private BallController _ball;
 
     [SerializeField] private HudController _hud;
+
+    [Header("Scoring")]
     [SerializeField] private int _score;
+    [SerializeField] private int _combo;
+    [SerializeField] private float _comboResetSeconds = 22.0f;
+
+    private float _comboTimer;
+
 
 
     private int _lives;
@@ -51,13 +58,12 @@ public class GameManager : MonoBehaviour
 
     private void Update()
     {
-        // Temporary: press Space to start playing
         if (_state == GameState.Ready && Input.GetKeyDown(KeyCode.Space))
         {
             SetState(GameState.Playing);
+            _ball?.Launch();
         }
 
-        // Temporary: press Escape to toggle pause
         if (_state == GameState.Playing && Input.GetKeyDown(KeyCode.Escape))
         {
             SetState(GameState.Paused);
@@ -66,57 +72,97 @@ public class GameManager : MonoBehaviour
         {
             SetState(GameState.Playing);
         }
+
+        if (_state == GameState.Playing && _comboTimer > 0f)
+        {
+            _comboTimer -= Time.unscaledDeltaTime;
+            if (_comboTimer <= 0f)
+            {
+                ResetCombo();
+                // optional: update HUD later if you show combo
+            }
+        }
+
+
+        if ((_state == GameState.GameOver || _state == GameState.Win) && Input.GetKeyDown(KeyCode.R))
+        {
+            RestartLevel();
+        }
     }
+
+
+    private void RestartLevel()
+    {
+        Time.timeScale = 1f;
+
+        _score = 0;
+        _combo = 0;
+        _comboTimer = 0f;
+        _hud?.SetScore(_score);
+
+        _lives = _startingLives;
+
+        _hud?.SetLives(_lives);
+
+        _ball?.ResetToPaddle();
+
+        // Respawn bricks
+        var spawner = FindFirstObjectByType<BrickGridSpawner>();
+        if (spawner != null)
+            spawner.Spawn();
+
+        SetState(GameState.Ready);
+    }
+
+
 
     public void SetState(GameState newState)
     {
         _state = newState;
+        Debug.Log("GameState = " + _state);
+
+        // Defaults
+        Time.timeScale = 1f;
 
         switch (_state)
         {
             case GameState.Ready:
-                SetCursorMenuMode();
-                Time.timeScale = 1f;
+                SetCursorPlayMode();
                 _hud?.SetState("Ready");
                 _hud?.ShowCenter("Press Space to Launch");
-
                 break;
 
             case GameState.Playing:
                 SetCursorPlayMode();
-                Time.timeScale = 1f;
                 _hud?.SetState("Playing");
                 _hud?.HideCenter();
-
                 break;
 
             case GameState.Paused:
                 SetCursorMenuMode();
                 Time.timeScale = 0f;
                 _hud?.SetState("Paused");
-                _hud?.ShowCenter("Paused");
-
+                _hud?.ShowCenter("Paused (Esc to resume)");
                 break;
 
             case GameState.GameOver:
                 SetCursorMenuMode();
-                Time.timeScale = 1f;
-                _hud?.SetState("Game Over");
-                _hud?.ShowCenter("Game Over");
+                Time.timeScale = 0f;
+                SfxPlayer.Instance?.PlayGameOver();
 
+                _hud?.SetState("Game Over");
+                _hud?.ShowCenter("Game Over (R to restart)");
                 break;
 
             case GameState.Win:
                 SetCursorMenuMode();
                 Time.timeScale = 0f;
                 _hud?.SetState("Win");
-                _hud?.ShowCenter("You Win!");
-
+                _hud?.ShowCenter("You Win! (R for next)");
                 break;
         }
-
-        Debug.Log("GameState = " + _state);
     }
+
 
     private void SetCursorPlayMode()
     {
@@ -134,6 +180,7 @@ public class GameManager : MonoBehaviour
     {
         if (_state != GameState.Playing) return;
 
+        SfxPlayer.Instance?.PlayLifeLost();
         _lives--;
         _hud.SetLives(_lives);
         Debug.Log("Ball lost. Lives = " + _lives);
@@ -150,6 +197,8 @@ public class GameManager : MonoBehaviour
             _ball.ResetToPaddle();
         }
 
+        ResetCombo();
+
         SetState(GameState.Ready);
     }
 
@@ -157,11 +206,42 @@ public class GameManager : MonoBehaviour
     {
         if (_state != GameState.Playing) return;
 
+        if (_ball != null)
+            _ball.ResetToPaddle();
+        
+        SfxPlayer.Instance?.PlayWin();
+
         Debug.Log("Level cleared!");
         SetState(GameState.Win);
 
-        if (_ball != null)
-            _ball.ResetToPaddle();
     }
+
+    public void AddScore(int basePoints)
+    {
+        // combo: 0 means x1, 1 means x2, etc (cap if you want later)
+        int multiplier = 1 + _combo;
+        int points = basePoints * multiplier;
+
+        _score += points;
+        _hud?.SetScore(_score);
+
+        // refresh combo timer
+        _comboTimer = _comboResetSeconds;
+    }
+
+    public void IncrementCombo()
+    {
+        _combo++;
+        _hud?.SetCombo(_combo);
+        _comboTimer = _comboResetSeconds;
+    }
+
+    public void ResetCombo()
+    {
+        _combo = 0;
+        _hud?.SetCombo(_combo);
+        _comboTimer = 0f;
+    }
+
 
 }

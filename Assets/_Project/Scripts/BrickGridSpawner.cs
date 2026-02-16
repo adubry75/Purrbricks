@@ -6,64 +6,56 @@ public class BrickGridSpawner : MonoBehaviour
     [SerializeField] private Brick _brickPrefab;
 
     [Header("Grid")]
-    [SerializeField] private int _rows = 6;
-    [SerializeField] private int _cols = 10;
+    [SerializeField] private int _rows = 5;
+    [SerializeField] private int _cols = 12;
 
-    [Header("Spacing")]
-    [SerializeField] private float _paddingX = 0.2f;
-    [SerializeField] private float _paddingY = 0.2f;
+    [Header("Brick Size + Gap (world units)")]
+    [SerializeField] private Vector2 _brickSize = new Vector2(1.35f, 0.45f);
+    [SerializeField] private Vector2 _gap = new Vector2(0.08f, 0.16f);
 
-    [SerializeField] private float _innerMarginX = 0.5f;
-    [SerializeField] private float _innerMarginY = 0.5f;
+    [Header("Margins inside BrickArea")]
+    [SerializeField] private Vector2 _innerMargin = new Vector2(0.25f, 0.25f);
+
 
     public void Spawn()
     {
-        if (_brickArea == null || _brickPrefab == null) return;
-
-        // Clear old bricks (simple approach for now)
+        // Clear old bricks (children)
         for (int i = transform.childCount - 1; i >= 0; i--)
             Destroy(transform.GetChild(i).gameObject);
 
         Bounds b = _brickArea.bounds;
 
-        float left = b.min.x + _innerMarginX;
-        float right = b.max.x - _innerMarginX;
-        float top = b.max.y - _innerMarginY;
-        float bottom = b.min.y + _innerMarginY;
+        float left = b.min.x + _innerMargin.x;
+        float top = b.max.y - _innerMargin.y;
 
-        float width = right - left;
-        float height = top - bottom;
-
-        float cellW = width / _cols;
-        float cellH = height / _rows;
-
-        // Use prefab collider size as baseline
-        var prefabCol = _brickPrefab.GetComponent<BoxCollider2D>();
-        float brickW = prefabCol != null ? prefabCol.bounds.size.x : cellW - _paddingX;
-        float brickH = prefabCol != null ? prefabCol.bounds.size.y : cellH - _paddingY;
-
-        // If prefab is too big for the grid, shrink by scaling on spawn
-        float targetW = cellW - _paddingX;
-        float targetH = cellH - _paddingY;
-
-        float scaleX = brickW > 0 ? targetW / brickW : 1f;
-        float scaleY = brickH > 0 ? targetH / brickH : 1f;
+        float stepX = _brickSize.x + _gap.x;
+        float stepY = _brickSize.y + _gap.y;
 
         for (int r = 0; r < _rows; r++)
         {
             for (int c = 0; c < _cols; c++)
             {
-                float x = left + (c + 0.5f) * cellW;
-                float y = top - (r + 0.5f) * cellH;
+                float x = left + c * stepX + _brickSize.x * 0.5f;
+                float y = top - r * stepY - _brickSize.y * 0.5f;
 
                 Brick brick = Instantiate(_brickPrefab, new Vector3(x, y, 0f), Quaternion.identity, transform);
-                brick.transform.localScale = new Vector3(scaleX, scaleY, 1f);
+
+                // Make the visual/collider match the chosen brick size
+                var box = brick.GetComponent<BoxCollider2D>();
+                if (box != null) box.size = _brickSize;
+
+                var sr = brick.GetComponent<SpriteRenderer>();
+                if (sr != null)
+                {
+                    sr.drawMode = SpriteDrawMode.Sliced; // or Tiled
+                    sr.size = _brickSize;
+                }
             }
         }
 
         LevelManager.Instance?.BeginLevel(_rows * _cols);
-
     }
+
 
     private void Start()
     {
@@ -85,5 +77,14 @@ public class BrickGridSpawner : MonoBehaviour
         _cols = 8;
         Spawn();
     }
+
+    [ContextMenu("Spawn Test Level (5x12)")]
+    private void SpawnTest_5x12()
+    {
+        _rows = 5;
+        _cols = 12;
+        Spawn();
+    }
+
 
 }

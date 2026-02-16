@@ -7,6 +7,7 @@ public class HudController : MonoBehaviour
     [SerializeField] private TMP_Text _livesText;
     [SerializeField] private TMP_Text _stateText;
     [SerializeField] private TMP_Text _centerMessage;
+    [SerializeField] private TMP_Text _comboText;
 
     public void SetScore(int score)
     {
@@ -34,5 +35,12 @@ public class HudController : MonoBehaviour
     {
         if (_centerMessage == null) return;
         _centerMessage.gameObject.SetActive(false);
+    }
+
+    public void SetCombo(int combo)
+    {
+        if (_comboText == null) return;
+        int multiplier = 1 + combo;
+        _comboText.text = "Combo: x" + multiplier;
     }
 }

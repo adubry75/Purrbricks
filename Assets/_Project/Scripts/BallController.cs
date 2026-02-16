@@ -99,9 +99,16 @@ public class BallController : MonoBehaviour
         // Paddle aim bounce
         if (collision.collider.gameObject.name == _paddleObjectName)
         {
+            SfxPlayer.Instance?.PlayPaddleHit();
             HandlePaddleBounce(collision);
             return;
         }
+
+        if (collision.collider.CompareTag("Wall"))
+        {
+            SfxPlayer.Instance?.PlayWallHit();
+        }
+
 
         // Brick hits
         var brick = collision.collider.GetComponent<Brick>();
