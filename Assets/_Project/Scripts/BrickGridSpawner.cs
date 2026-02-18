@@ -25,10 +25,23 @@ public class BrickGridSpawner : MonoBehaviour
         for (int i = transform.childCount - 1; i >= 0; i--)
             Destroy(transform.GetChild(i).gameObject);
 
+        if (_brickArea == null || _brickPrefab == null)
+        {
+            Debug.LogError("BrickGridSpawner missing _brickArea or _brickPrefab.");
+            return;
+        }
+
         Bounds b = _brickArea.bounds;
 
-        int rows = _level != null ? _level.rows : _rows;
-        int cols = _level != null ? _level.cols : _cols;
+        int rows = (_level != null) ? _level.rows : _rows;
+        int cols = (_level != null) ? _level.cols : _cols;
+
+        // Parse layout lines (optional)
+        string[] lines = null;
+        if (_level != null && !string.IsNullOrWhiteSpace(_level.layout))
+        {
+            lines = _level.layout.Replace("\r", "").Split('\n');
+        }
 
         float stepX = _brickSize.x + _gap.x;
         float stepY = _brickSize.y + _gap.y;
@@ -36,54 +49,34 @@ public class BrickGridSpawner : MonoBehaviour
         float gridW = (cols * _brickSize.x) + ((cols - 1) * _gap.x);
         float gridH = (rows * _brickSize.y) + ((rows - 1) * _gap.y);
 
-        // available area inside margins (not strictly needed unless you want to validate fit)
-        float availW = b.size.x - (_innerMargin.x * 2f);
-        float availH = b.size.y - (_innerMargin.y * 2f);
-
-        if (gridW > availW || gridH > availH)
-        {
-            Debug.LogWarning($"Brick grid ({gridW:F2}x{gridH:F2}) does not fit inside BrickArea ({availW:F2}x{availH:F2}). Reduce brick size/gap or increase BrickArea.");
-        }
-
-
-        // center horizontally, top-align vertically (within margin)
+        // Center horizontally within BrickArea; top-align vertically inside margin
         float left = b.center.x - (gridW * 0.5f);
         float top = b.max.y - _innerMargin.y;
 
-
-        string[] lines = null;
-        if (_level != null && !string.IsNullOrWhiteSpace(_level.layout))
-        {
-            lines = _level.layout.Replace("\r", "").Split('\n');
-        }
-
+        int spawned = 0;
 
         for (int r = 0; r < rows; r++)
         {
             for (int c = 0; c < cols; c++)
             {
+                // Default char is '1' (spawn a basic brick)
                 char ch = '1';
 
                 if (lines != null && r < lines.Length && c < lines[r].Length)
                     ch = lines[r][c];
 
+                // Empty cell symbols
                 if (ch == '.' || ch == '0' || ch == ' ')
                     continue;
 
-                int hp = 1;
-                if (ch >= '1' && ch <= '9') hp = ch - '0';
-
-                // Calculate brick position
+                // Compute position
                 float x = left + c * stepX + (_brickSize.x * 0.5f);
                 float y = top - r * stepY - (_brickSize.y * 0.5f);
 
-
-                // Spawn brick
                 Brick brick = Instantiate(_brickPrefab, new Vector3(x, y, 0f), Quaternion.identity, transform);
                 brick.transform.localScale = Vector3.one;
 
-                brick.SetHitPoints(hp);
-
+                // Collider + sprite sizing
                 var box = brick.GetComponent<BoxCollider2D>();
                 if (box != null) box.size = _brickSize;
 
@@ -94,13 +87,40 @@ public class BrickGridSpawner : MonoBehaviour
                     sr.size = _brickSize;
                 }
 
+                // ---- Apply BrickDefinition (symbol->type), with digit fallback ----
+                BrickDefinition def = BrickRegistry.Instance != null ? BrickRegistry.Instance.Get(ch) : null;
+
+                int hp = 1;
+                int points = 100;
+                Color tint = Color.white;
+
+                if (def != null)
+                {
+                    hp = Mathf.Clamp(def.hitPoints, 1, 9);
+                    points = Mathf.Max(0, def.points);
+                    tint = def.tint;
+                }
+                else
+                {
+                    // Fallback: if it's a digit, digit = hitpoints
+                    if (ch >= '1' && ch <= '9')
+                        hp = ch - '0';
+                }
+
+                brick.SetHitPoints(hp);
+
+                // These require Brick.cs to have these methods.
+                brick.SetPoints(points);
+                brick.SetTint(tint);
+
+                spawned++;
             }
         }
 
-        LevelManager.Instance?.BeginLevel(GetComponentsInChildren<Brick>().Length);
-
-
+        // Count bricks accurately (not using transform.childCount if non-brick children exist)
+        LevelManager.Instance?.BeginLevel(spawned);
     }
+
 
 
     private void Start()

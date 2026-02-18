@@ -1,0 +1,20 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: cce5d9fe36ac2af4abae5961baa73977, type: 3}
+  m_Name: BrickDef_1HP_Blue
+  m_EditorClassIdentifier: Assembly-CSharp::BrickDefinition
+  symbol: 66
+  hitPoints: 1
+  points: 200
+  tint: {r: 0.17097814, g: 0.31120914, b: 0.836478, a: 1}
+  dropsPowerup: 0
+  powerupId: 
