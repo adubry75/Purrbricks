@@ -228,11 +228,12 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::BrickGridSpawner
   _brickArea: {fileID: 987072746}
   _brickPrefab: {fileID: -6038208573387489717, guid: c6a8b90e754dff8449b23da66dfcca3c, type: 3}
-  _rows: 5
-  _cols: 12
+  _rows: 1
+  _cols: 5
   _brickSize: {x: 1.4, y: 0.5}
   _gap: {x: 0.08, y: 0.12}
   _innerMargin: {x: 0.2, y: 0.2}
+  _level: {fileID: 0}
 --- !u!4 &75748549
 Transform:
   m_ObjectHideFlags: 0
@@ -1436,6 +1437,9 @@ MonoBehaviour:
   _playfieldBounds: {fileID: 13817132}
   _yLocked: -7
   _smoothTime: 0.01
+  _leftWall: {fileID: 532142127}
+  _rightWall: {fileID: 1993502631}
+  _wallPadding: 0.02
 --- !u!61 &842519042
 BoxCollider2D:
   m_ObjectHideFlags: 0
@@ -1550,7 +1554,7 @@ Transform:
   m_GameObject: {fileID: 842519040}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: -7, z: 0}
+  m_LocalPosition: {x: -2.5, y: -7, z: 0}
   m_LocalScale: {x: 2.5, y: 0.35, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -2254,7 +2258,7 @@ Transform:
   m_GameObject: {fileID: 1374096743}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: -6.5, z: 0}
+  m_LocalPosition: {x: -2.5, y: -6.5, z: 0}
   m_LocalScale: {x: 0.35, y: 0.35, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -2316,6 +2320,11 @@ MonoBehaviour:
   _score: 0
   _combo: 0
   _comboResetSeconds: 2
+  _levels:
+  - {fileID: 11400000, guid: efce25aa74fbb0441bb541dd91395015, type: 2}
+  - {fileID: 11400000, guid: 3031e9c1f764f8b4fa903a358cd99101, type: 2}
+  _currentLevelIndex: 0
+  _spawner: {fileID: 75748548}
   _state: 0
 --- !u!4 &1682921468
 Transform:
@@ -3035,7 +3044,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 0, y: 0}
+  m_AnchoredPosition: {x: -100, y: 0}
   m_SizeDelta: {x: 500, y: 50}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!1 &2110144401

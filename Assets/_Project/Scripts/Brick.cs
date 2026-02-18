@@ -22,4 +22,10 @@ public class Brick : MonoBehaviour
             Destroy(gameObject);
         }
     }
+
+    public void SetHitPoints(int hp)
+    {
+        _hitPoints = Mathf.Max(1, hp);
+    }
+
 }

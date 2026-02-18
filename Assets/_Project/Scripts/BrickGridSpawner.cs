@@ -16,6 +16,8 @@ public class BrickGridSpawner : MonoBehaviour
     [Header("Margins inside BrickArea")]
     [SerializeField] private Vector2 _innerMargin = new Vector2(0.25f, 0.25f);
 
+    [SerializeField] private LevelDefinition _level;
+    public void SetLevel(LevelDefinition level) => _level = level;
 
     public void Spawn()
     {
@@ -25,22 +27,63 @@ public class BrickGridSpawner : MonoBehaviour
 
         Bounds b = _brickArea.bounds;
 
-        float left = b.min.x + _innerMargin.x;
-        float top = b.max.y - _innerMargin.y;
+        int rows = _level != null ? _level.rows : _rows;
+        int cols = _level != null ? _level.cols : _cols;
 
         float stepX = _brickSize.x + _gap.x;
         float stepY = _brickSize.y + _gap.y;
 
-        for (int r = 0; r < _rows; r++)
+        float gridW = (cols * _brickSize.x) + ((cols - 1) * _gap.x);
+        float gridH = (rows * _brickSize.y) + ((rows - 1) * _gap.y);
+
+        // available area inside margins (not strictly needed unless you want to validate fit)
+        float availW = b.size.x - (_innerMargin.x * 2f);
+        float availH = b.size.y - (_innerMargin.y * 2f);
+
+        if (gridW > availW || gridH > availH)
         {
-            for (int c = 0; c < _cols; c++)
+            Debug.LogWarning($"Brick grid ({gridW:F2}x{gridH:F2}) does not fit inside BrickArea ({availW:F2}x{availH:F2}). Reduce brick size/gap or increase BrickArea.");
+        }
+
+
+        // center horizontally, top-align vertically (within margin)
+        float left = b.center.x - (gridW * 0.5f);
+        float top = b.max.y - _innerMargin.y;
+
+
+        string[] lines = null;
+        if (_level != null && !string.IsNullOrWhiteSpace(_level.layout))
+        {
+            lines = _level.layout.Replace("\r", "").Split('\n');
+        }
+
+
+        for (int r = 0; r < rows; r++)
+        {
+            for (int c = 0; c < cols; c++)
             {
-                float x = left + c * stepX + _brickSize.x * 0.5f;
-                float y = top - r * stepY - _brickSize.y * 0.5f;
+                char ch = '1';
 
+                if (lines != null && r < lines.Length && c < lines[r].Length)
+                    ch = lines[r][c];
+
+                if (ch == '.' || ch == '0' || ch == ' ')
+                    continue;
+
+                int hp = 1;
+                if (ch >= '1' && ch <= '9') hp = ch - '0';
+
+                // Calculate brick position
+                float x = left + c * stepX + (_brickSize.x * 0.5f);
+                float y = top - r * stepY - (_brickSize.y * 0.5f);
+
+
+                // Spawn brick
                 Brick brick = Instantiate(_brickPrefab, new Vector3(x, y, 0f), Quaternion.identity, transform);
+                brick.transform.localScale = Vector3.one;
 
-                // Make the visual/collider match the chosen brick size
+                brick.SetHitPoints(hp);
+
                 var box = brick.GetComponent<BoxCollider2D>();
                 if (box != null) box.size = _brickSize;
 
@@ -50,16 +93,19 @@ public class BrickGridSpawner : MonoBehaviour
                     sr.drawMode = SpriteDrawMode.Sliced; // or Tiled
                     sr.size = _brickSize;
                 }
+
             }
         }
 
-        LevelManager.Instance?.BeginLevel(_rows * _cols);
+        LevelManager.Instance?.BeginLevel(GetComponentsInChildren<Brick>().Length);
+
+
     }
 
 
     private void Start()
     {
-        Spawn();
+        //Spawn();
     }
 
     [ContextMenu("Spawn Test Level (1x5)")]

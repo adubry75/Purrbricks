@@ -26,6 +26,11 @@ public class GameManager : MonoBehaviour
     [SerializeField] private int _combo;
     [SerializeField] private float _comboResetSeconds = 22.0f;
 
+    [SerializeField] private LevelDefinition[] _levels;
+    [SerializeField] private int _currentLevelIndex = 0;
+    [SerializeField] private BrickGridSpawner _spawner;
+
+
     private float _comboTimer;
 
 
@@ -52,6 +57,8 @@ public class GameManager : MonoBehaviour
         _lives = _startingLives;
         _hud?.SetLives(_lives);
         _hud?.SetScore(_score);
+
+        LoadLevel(_currentLevelIndex);
 
         SetState(GameState.Ready);
     }
@@ -83,6 +90,14 @@ public class GameManager : MonoBehaviour
             }
         }
 
+        if (_state == GameState.Win && Input.GetKeyDown(KeyCode.R))
+        {
+            int next = _currentLevelIndex + 1;
+            if (next >= _levels.Length) next = 0;
+            LoadLevel(next);
+        }
+
+
 
         if ((_state == GameState.GameOver || _state == GameState.Win) && Input.GetKeyDown(KeyCode.R))
         {
@@ -111,6 +126,28 @@ public class GameManager : MonoBehaviour
         if (spawner != null)
             spawner.Spawn();
 
+        LoadLevel(_currentLevelIndex);
+
+        SetState(GameState.Ready);
+    }
+
+    private void LoadLevel(int index)
+    {
+        index = Mathf.Clamp(index, 0, _levels.Length - 1);
+        _currentLevelIndex = index;
+
+        _hud?.SetState("Ready");
+        _hud?.ShowCenter("Press Space to Launch");
+        _hud?.SetLives(_lives);
+        _hud?.SetScore(_score);
+
+        if (_spawner != null && _levels.Length > 0)
+        {
+            _spawner.SetLevel(_levels[_currentLevelIndex]);
+            _spawner.Spawn();
+        }
+
+        _ball?.ResetToPaddle();
         SetState(GameState.Ready);
     }
 
