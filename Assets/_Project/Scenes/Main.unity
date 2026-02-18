@@ -1016,8 +1016,9 @@ MonoBehaviour:
   _paddleHit: {fileID: 8300000, guid: e487a4cab634edd4bab4a381d5076c8a, type: 3}
   _wallHit: {fileID: 8300000, guid: e487a4cab634edd4bab4a381d5076c8a, type: 3}
   _brickBreak: {fileID: 8300000, guid: e487a4cab634edd4bab4a381d5076c8a, type: 3}
+  _brickHit: {fileID: 8300000, guid: 186470a7822f2394fb4d6661f07bc05e, type: 3}
   _lifeLost: {fileID: 8300000, guid: e487a4cab634edd4bab4a381d5076c8a, type: 3}
-  _win: {fileID: 8300000, guid: e487a4cab634edd4bab4a381d5076c8a, type: 3}
+  _win: {fileID: 8300000, guid: ba7731ec97455874dbfb8230360a761d, type: 3}
   _gameOver: {fileID: 8300000, guid: e487a4cab634edd4bab4a381d5076c8a, type: 3}
   _volume: 0.7
   _pitchMin: 0.97

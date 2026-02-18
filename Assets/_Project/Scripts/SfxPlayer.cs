@@ -8,6 +8,7 @@ public class SfxPlayer : MonoBehaviour
     [SerializeField] private AudioClip _paddleHit;
     [SerializeField] private AudioClip _wallHit;
     [SerializeField] private AudioClip _brickBreak;
+    [SerializeField] private AudioClip _brickHit;
     [SerializeField] private AudioClip _lifeLost;
     [SerializeField] private AudioClip _win;
     [SerializeField] private AudioClip _gameOver;
@@ -34,6 +35,7 @@ public class SfxPlayer : MonoBehaviour
     public void PlayPaddleHit() => PlayOne(_paddleHit);
     public void PlayWallHit() => PlayOne(_wallHit);
     public void PlayBrickBreak() => PlayOne(_brickBreak);
+    public void PlayBrickHit() => PlayOne(_brickHit);
     public void PlayLifeLost() => PlayOne(_lifeLost);
     public void PlayWin() => PlayOne(_win);
     public void PlayGameOver() => PlayOne(_gameOver);
