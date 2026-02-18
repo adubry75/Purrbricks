@@ -43,4 +43,18 @@ public class HudController : MonoBehaviour
         int multiplier = 1 + combo;
         _comboText.text = "Combo: x" + multiplier;
     }
+
+    public void SetStatus(string status)
+    {
+        // Reuse your existing "state" line
+        SetState(status);
+    }
+
+    public void SetLevel(int levelNumber)
+    {
+        // If you already have a TMP_Text for Level, we can wire it later.
+        // For now, just show it in the state line so nothing breaks.
+        SetState($"Level: {levelNumber}");
+    }
+
 }

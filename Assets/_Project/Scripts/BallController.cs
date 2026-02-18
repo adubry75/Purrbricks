@@ -18,7 +18,7 @@ public class BallController : MonoBehaviour
     [SerializeField] private float _minHorizontal = 0.10f; // prevents endless near-vertical loops
 
     [Header("Paddle Aim Bounce")]
-    [SerializeField] private float _maxBounceAngleDegrees = 65f;
+    [SerializeField] private float _maxBounceAngleDegrees = 75f;
     [SerializeField] private string _paddleObjectName = "Paddle";
 
     private bool _launched;
@@ -80,19 +80,15 @@ public class BallController : MonoBehaviour
         if (_launched) return;
 
         _launched = true;
+
+        // enable physics first in Unity 6
+        _rb.simulated = true;
+
         _rb.linearVelocity = _launchDirection * _speed;
     }
 
-    public void ResetToPaddle()
-    {
-        _launched = false;
-        _rb.linearVelocity = Vector2.zero;
 
-        if (_paddle != null)
-        {
-            transform.position = (Vector2)_paddle.position + _paddleOffset;
-        }
-    }
+
 
     private void OnCollisionEnter2D(Collision2D collision)
     {
@@ -139,6 +135,29 @@ public class BallController : MonoBehaviour
         Vector2 dir = new Vector2(Mathf.Sin(rad), Mathf.Cos(rad)).normalized;
 
         _rb.linearVelocity = dir * _speed;
+    }
+
+    public void ResetToPaddle()
+    {
+        _launched = false;
+
+        if (_rb != null)
+        {
+            _rb.linearVelocity = Vector2.zero;
+            _rb.angularVelocity = 0f;
+            _rb.simulated = false; // physics off while "stuck" to paddle
+        }
+
+        // Ensure we have a paddle reference (prefer the serialized one)
+        if (_paddle == null)
+        {
+            var paddleCtrl = FindFirstObjectByType<PaddleController>();
+            if (paddleCtrl != null) _paddle = paddleCtrl.transform;
+        }
+
+        // Snap immediately (Update will keep it attached)
+        if (_paddle != null)
+            transform.position = (Vector2)_paddle.position + _paddleOffset;
     }
 
 

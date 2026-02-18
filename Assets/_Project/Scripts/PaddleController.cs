@@ -51,6 +51,11 @@ public class PaddleController : MonoBehaviour
         transform.position = new Vector3(newX, _yLocked, transform.position.z);
     }
 
+    public void ResetPosition()
+    {
+        transform.position = new Vector3(0f, transform.position.y, transform.position.z);
+    }
+
 
     private float GetHalfWidthWorld()
     {

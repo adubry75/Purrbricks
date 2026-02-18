@@ -1,9 +1,12 @@
+using System.Collections;
 using UnityEngine;
 
 public enum GameState
 {
+    Title,
     Ready,
     Playing,
+    Cleared,
     Paused,
     GameOver,
     Win
@@ -16,19 +19,26 @@ public class GameManager : MonoBehaviour
     [Header("Round Settings")]
     [SerializeField] private int _startingLives = 3;
 
-    [Header("References")]
-    [SerializeField] private BallController _ball;
-
-    [SerializeField] private HudController _hud;
-
     [Header("Scoring")]
     [SerializeField] private int _score;
     [SerializeField] private int _combo;
     [SerializeField] private float _comboResetSeconds = 22.0f;
 
+    [Header("Levels")]
     [SerializeField] private LevelDefinition[] _levels;
-    [SerializeField] private int _currentLevelIndex = 0;
+    [SerializeField] private float _levelClearDelay = 3.0f;
+
+    [Header("Refs")]
     [SerializeField] private BrickGridSpawner _spawner;
+    [SerializeField] private BallController _ball;
+    [SerializeField] private PaddleController _paddle;
+    [SerializeField] private HudController _hud;
+
+    private int _currentLevelIndex = 0;
+    private Coroutine _advanceRoutine;
+    private bool _isAdvancingLevel;
+
+
 
 
     private float _comboTimer;
@@ -65,11 +75,6 @@ public class GameManager : MonoBehaviour
 
     private void Update()
     {
-        if (_state == GameState.Ready && Input.GetKeyDown(KeyCode.Space))
-        {
-            SetState(GameState.Playing);
-            _ball?.Launch();
-        }
 
         if (_state == GameState.Playing && Input.GetKeyDown(KeyCode.Escape))
         {
@@ -95,6 +100,13 @@ public class GameManager : MonoBehaviour
             int next = _currentLevelIndex + 1;
             if (next >= _levels.Length) next = 0;
             LoadLevel(next);
+        }
+
+        if (_state == GameState.Ready && Input.GetKeyDown(KeyCode.Space))
+        {
+            _ball.Launch();
+            if (_hud != null) _hud.SetStatus("");
+            SetState(GameState.Playing);
         }
 
 
@@ -131,25 +143,36 @@ public class GameManager : MonoBehaviour
         SetState(GameState.Ready);
     }
 
-    private void LoadLevel(int index)
+    public void LoadLevel(int levelIndex)
     {
-        index = Mathf.Clamp(index, 0, _levels.Length - 1);
-        _currentLevelIndex = index;
+        _isAdvancingLevel = false;
 
-        _hud?.SetState("Ready");
-        _hud?.ShowCenter("Press Space to Launch");
-        _hud?.SetLives(_lives);
-        _hud?.SetScore(_score);
-
-        if (_spawner != null && _levels.Length > 0)
+        if (_levels == null || _levels.Length == 0)
         {
-            _spawner.SetLevel(_levels[_currentLevelIndex]);
-            _spawner.Spawn();
+            Debug.LogError("No levels assigned in GameManager.");
+            return;
         }
 
-        _ball?.ResetToPaddle();
+        _currentLevelIndex = Mathf.Clamp(levelIndex, 0, _levels.Length - 1);
+
+        // Spawn bricks for this level
+        _spawner.SetLevel(_levels[_currentLevelIndex]);
+        _spawner.Spawn();
+
+        // Reset ball + paddle to ready position
+        _ball.ResetToPaddle();
+        _paddle.ResetPosition();
+
+        // Update HUD
+        if (_hud != null)
+        {
+            _hud.SetLevel(_currentLevelIndex + 1);
+            _hud.SetStatus("Ready");
+        }
+
         SetState(GameState.Ready);
     }
+
 
 
 
@@ -190,6 +213,19 @@ public class GameManager : MonoBehaviour
                 _hud?.SetState("Game Over");
                 _hud?.ShowCenter("Game Over (R to restart)");
                 break;
+
+            case GameState.Cleared:
+                SetCursorMenuMode();
+                // Freeze gameplay during the transition
+                Time.timeScale = 0f;
+
+                _hud?.SetState("Cleared");
+                _hud?.ShowCenter("Level Cleared!");
+
+                // Make sure ball is not moving during the pause
+                _ball?.ResetToPaddle();
+                break;
+
 
             case GameState.Win:
                 SetCursorMenuMode();
@@ -241,17 +277,62 @@ public class GameManager : MonoBehaviour
 
     public void OnLevelCleared()
     {
-        if (_state != GameState.Playing) return;
+        if (_isAdvancingLevel) return;
+        if (_state == GameState.Cleared || _state == GameState.Win || _state == GameState.GameOver) return;
 
-        if (_ball != null)
-            _ball.ResetToPaddle();
-        
-        SfxPlayer.Instance?.PlayWin();
+        _isAdvancingLevel = true;
 
         Debug.Log("Level cleared!");
-        SetState(GameState.Win);
-
+        if (_advanceRoutine != null) StopCoroutine(_advanceRoutine);
+        _advanceRoutine = StartCoroutine(AdvanceLevelRoutine());
     }
+
+
+    private IEnumerator AdvanceLevelRoutine()
+    {
+        Debug.Log($"AdvanceLevelRoutine START, delay={_levelClearDelay}");
+
+        // Freeze + show cleared message
+        SetState(GameState.Cleared);
+
+        // Optional audio cue
+        SfxPlayer.Instance?.PlayWin(); // If you don't have PlayWin(), comment this line out.
+
+        // Wait while frozen (unscaled time)
+        yield return new WaitForSecondsRealtime(_levelClearDelay);
+
+        int next = _currentLevelIndex + 1;
+
+        // If no more levels -> win screen
+        if (next >= _levels.Length)
+        {
+            Time.timeScale = 1f;
+            SetState(GameState.Win);
+            Debug.Log("AdvanceLevelRoutine END -> WIN");
+            yield break;
+        }
+
+        // Unfreeze before changing the world
+        Time.timeScale = 1f;
+
+        // Load next level (spawns bricks, resets ball/paddle, sets Ready)
+        LoadLevel(next);
+
+        // Short "Level X" splash before player launches
+        Time.timeScale = 0f;
+        _hud?.ShowCenter($"LEVEL {next + 1}");
+
+        yield return new WaitForSecondsRealtime(0.75f);
+
+        Time.timeScale = 1f;
+
+        // Back to Ready (shows "Press Space to Launch")
+        SetState(GameState.Ready);
+
+        Debug.Log("AdvanceLevelRoutine END -> NEXT LEVEL READY");
+    }
+
+
 
     public void AddScore(int basePoints)
     {

@@ -27,6 +27,7 @@ public class LevelManager : MonoBehaviour
         {
             Debug.Log("Bricks hit zero. Calling OnLevelCleared().");
             GameManager.Instance?.OnLevelCleared();
+
         }
     }
 }

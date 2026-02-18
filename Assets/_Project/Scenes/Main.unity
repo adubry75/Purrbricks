@@ -2283,7 +2283,7 @@ MonoBehaviour:
   _paddleOffset: {x: 0, y: 0.45}
   _minVertical: 0.25
   _minHorizontal: 0.1
-  _maxBounceAngleDegrees: 65
+  _maxBounceAngleDegrees: 75
   _paddleObjectName: Paddle
 --- !u!1 &1682921466
 GameObject:
@@ -2315,16 +2315,18 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::GameManager
   _startingLives: 3
-  _ball: {fileID: 1374096748}
-  _hud: {fileID: 1313978739}
   _score: 0
   _combo: 0
   _comboResetSeconds: 2
   _levels:
-  - {fileID: 11400000, guid: efce25aa74fbb0441bb541dd91395015, type: 2}
+  - {fileID: 11400000, guid: ea4720bee7e771f49856633789264538, type: 2}
+  - {fileID: 11400000, guid: 627d94624e9c656478024ef48338fb88, type: 2}
   - {fileID: 11400000, guid: 3031e9c1f764f8b4fa903a358cd99101, type: 2}
-  _currentLevelIndex: 0
+  _levelClearDelay: 3
   _spawner: {fileID: 75748548}
+  _ball: {fileID: 1374096748}
+  _paddle: {fileID: 842519041}
+  _hud: {fileID: 1313978739}
   _state: 0
 --- !u!4 &1682921468
 Transform:
@@ -2375,8 +2377,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 400, y: 0}
-  m_SizeDelta: {x: 200, y: 50}
+  m_AnchoredPosition: {x: 350, y: 0}
+  m_SizeDelta: {x: 300, y: 50}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1722306025
 MonoBehaviour:
