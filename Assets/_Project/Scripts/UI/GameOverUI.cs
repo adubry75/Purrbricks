@@ -9,6 +9,7 @@ public class GameOverUI : MonoBehaviour
     private Canvas _canvas;
     private InputField _nameInput;
     private GameObject _namePanel;
+    private Text _titleText;
     private int _finalScore;
 
     private void Awake()
@@ -43,8 +44,27 @@ public class GameOverUI : MonoBehaviour
         // Shift left by 1/12th of screen width (half of 1/6th reserved area)
         panelRt.anchoredPosition = new Vector2(-160f, 0f);
 
-        // "GAME OVER" title
-        CreateText(panel, "GAME OVER", new Vector2(0f, 200f), 100, new Color(1f, 0.2f, 0.2f));
+        // "GAME OVER" title (will be changed to "VICTORY!" if game complete)
+        var titleGO = new GameObject("Title");
+        titleGO.transform.SetParent(panel.transform, false);
+
+        _titleText = titleGO.AddComponent<Text>();
+        _titleText.text = "GAME OVER";
+        _titleText.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
+        _titleText.fontSize = 100;
+        _titleText.fontStyle = FontStyle.Bold;
+        _titleText.alignment = TextAnchor.MiddleCenter;
+        _titleText.color = new Color(1f, 0.2f, 0.2f);
+
+        var titleRt = _titleText.GetComponent<RectTransform>();
+        titleRt.anchorMin = new Vector2(0.5f, 0.5f);
+        titleRt.anchorMax = new Vector2(0.5f, 0.5f);
+        titleRt.sizeDelta = new Vector2(800f, 120f);
+        titleRt.anchoredPosition = new Vector2(0f, 200f);
+
+        var outline = titleGO.AddComponent<Outline>();
+        outline.effectColor = Color.black;
+        outline.effectDistance = new Vector2(3f, -3f);
 
         // Score display (will be set dynamically)
         CreateText(panel, "Score: 0", new Vector2(0f, 80f), 60, Color.white, "ScoreText");
@@ -182,12 +202,41 @@ public class GameOverUI : MonoBehaviour
         _finalScore = finalScore;
         gameObject.SetActive(true);
 
+        // Set title to "GAME OVER"
+        if (_titleText != null)
+        {
+            _titleText.text = "GAME OVER";
+            _titleText.color = new Color(1f, 0.2f, 0.2f); // red
+        }
+
         // Update score text
         var scoreText = transform.Find("Panel/ScoreText")?.GetComponent<Text>();
         if (scoreText != null)
             scoreText.text = $"Final Score: {finalScore:N0}";
 
         // Show name input if high score
+        bool isHighScore = HighScoreManager.Instance?.IsHighScore(finalScore) ?? false;
+        _namePanel.SetActive(isHighScore);
+    }
+
+    public void ShowGameComplete(int finalScore)
+    {
+        _finalScore = finalScore;
+        gameObject.SetActive(true);
+
+        // Set title to "VICTORY!"
+        if (_titleText != null)
+        {
+            _titleText.text = "VICTORY!";
+            _titleText.color = new Color(0.2f, 1f, 0.4f); // green
+        }
+
+        // Update score text
+        var scoreText = transform.Find("Panel/ScoreText")?.GetComponent<Text>();
+        if (scoreText != null)
+            scoreText.text = $"Final Score: {finalScore:N0}";
+
+        // Always show name input for game completion
         bool isHighScore = HighScoreManager.Instance?.IsHighScore(finalScore) ?? false;
         _namePanel.SetActive(isHighScore);
     }

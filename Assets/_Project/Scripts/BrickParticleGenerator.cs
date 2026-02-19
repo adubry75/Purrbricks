@@ -65,7 +65,7 @@ public static class BrickParticleGenerator
         renderer.sortingLayerName = "Default";
         renderer.sortingOrder = 10; // Above bricks
 
-        // Auto-destroy after particles finish
-        Object.Destroy(go, main.duration + main.startLifetime.constantMax);
+        // Auto-destroy after particles finish (max lifetime is 1.2s)
+        Object.Destroy(go, 1.5f);
     }
 }

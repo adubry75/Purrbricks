@@ -2050,7 +2050,7 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1050643305}
   m_CullTransparentMesh: 1
---- !u!1 &1151831269
+--- !u!1 &1133823278
 GameObject:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -2058,8 +2058,8 @@ GameObject:
   m_PrefabAsset: {fileID: 0}
   serializedVersion: 6
   m_Component:
-  - component: {fileID: 1151831271}
-  - component: {fileID: 1151831270}
+  - component: {fileID: 1133823280}
+  - component: {fileID: 1133823279}
   m_Layer: 0
   m_Name: GameOverUI
   m_TagString: Untagged
@@ -2067,25 +2067,25 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!114 &1151831270
+--- !u!114 &1133823279
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1151831269}
+  m_GameObject: {fileID: 1133823278}
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 5dc138d3c3f4cc84db89975f2d987cb1, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::GameOverUI
---- !u!4 &1151831271
+--- !u!4 &1133823280
 Transform:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1151831269}
+  m_GameObject: {fileID: 1133823278}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
@@ -3815,6 +3815,6 @@ SceneRoots:
   - {fileID: 895541938}
   - {fileID: 1748113608}
   - {fileID: 1606839530}
-  - {fileID: 1151831271}
   - {fileID: 1601206119}
   - {fileID: 874544252}
+  - {fileID: 1133823280}

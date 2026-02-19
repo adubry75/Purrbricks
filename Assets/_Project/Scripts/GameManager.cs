@@ -95,15 +95,15 @@ public class GameManager : MonoBehaviour
         else if (_state == GameState.Paused && Input.GetKeyDown(KeyCode.Escape))
             SetState(GameState.Playing);
 
-        // Combo timer
-        if (_state == GameState.Playing && _comboTimer > 0f)
+        // Combo timer (runs in Playing mode and demo mode)
+        if (_comboTimer > 0f && (_state == GameState.Playing || _isDemoMode))
         {
             _comboTimer -= Time.unscaledDeltaTime;
             if (_comboTimer <= 0f)
                 ResetCombo();
         }
 
-        // Demo mode: auto-launch ball, reset combo periodically
+        // Demo mode: auto-launch ball
         if ((_state == GameState.MainMenu || _state == GameState.HighScores) && _isDemoMode)
         {
             if (_ball != null && !_ball.IsLaunched())
@@ -111,10 +111,6 @@ public class GameManager : MonoBehaviour
                 // Auto-launch after 1 second
                 _ball.Launch();
             }
-
-            // Reset combo every 30 seconds in demo to prevent infinite growth
-            if (_combo > 30)
-                _combo = 0;
         }
 
         if (_state == GameState.Ready && Input.GetKeyDown(KeyCode.Space))
@@ -131,6 +127,10 @@ public class GameManager : MonoBehaviour
     {
         _isDemoMode = false;
         _paddle?.SetDemoMode(false);
+
+        // Clear all lingering particle effects from demo mode
+        ClearAllParticles();
+
         _score = 0;
         _combo = 0;
         _comboTimer = 0f;
@@ -197,8 +197,9 @@ public class GameManager : MonoBehaviour
 
         if (next >= _levelIds.Length)
         {
-            // All levels complete - back to main menu
-            ShowMainMenu();
+            // All levels complete - show final victory with high score entry
+            SetState(GameState.GameOver);
+            _gameOverUI?.ShowGameComplete(_score);
             return;
         }
 
@@ -234,8 +235,8 @@ public class GameManager : MonoBehaviour
         _ball.ResetToPaddle();
         _paddle.ResetPosition();
 
-        _hud?.SetLevel(_currentLevelIndex + 1);
-        _hud?.SetStatus("Ready");
+        // Show level number in status
+        _hud?.SetStatus($"Level {_currentLevelIndex + 1} - Ready");
     }
 
     private void LoadDemoLevel()
@@ -372,13 +373,11 @@ public class GameManager : MonoBehaviour
 
     private IEnumerator AdvanceLevelRoutine()
     {
-        SetState(GameState.Cleared);
+        // Skip "Cleared" state, go straight to Victory
         SfxPlayer.Instance?.PlayWin();
-
-        yield return new WaitForSecondsRealtime(_levelClearDelay);
-
         Time.timeScale = 1f;
         SetState(GameState.Victory);
+        yield break;
     }
 
     // ── Scoring ─────────────────────────────────────────────────────────────
@@ -434,6 +433,16 @@ public class GameManager : MonoBehaviour
                 LevelManager.Instance?.OnBrickDestroyed();
                 Destroy(bricks[i].gameObject);
             }
+        }
+    }
+
+    private void ClearAllParticles()
+    {
+        var particles = Object.FindObjectsByType<ParticleSystem>(FindObjectsSortMode.None);
+        foreach (var ps in particles)
+        {
+            if (ps != null)
+                Destroy(ps.gameObject);
         }
     }
 }

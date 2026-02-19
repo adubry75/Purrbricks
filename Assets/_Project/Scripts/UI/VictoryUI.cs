@@ -80,6 +80,8 @@ public class VictoryUI : MonoBehaviour
         btnGO.transform.SetParent(parent.transform, false);
 
         var btnImg = btnGO.AddComponent<Image>();
+        btnImg.color = Color.white; // Base color for button color tinting
+
         var button = btnGO.AddComponent<Button>();
         button.targetGraphic = btnImg;
 
@@ -129,11 +131,11 @@ public class VictoryUI : MonoBehaviour
 
     private void SpawnConfetti()
     {
-        // Rainbow confetti particles shooting upward from bottom of screen
+        // Rainbow confetti particles shooting upward from center of playfield
         for (int i = 0; i < 3; i++)
         {
             float xPos = -3f + i * 3f;
-            SpawnConfettiEmitter(new Vector3(xPos, -8f, 0f));
+            SpawnConfettiEmitter(new Vector3(xPos, -2f, 0f));
         }
     }
 
@@ -150,6 +152,7 @@ public class VictoryUI : MonoBehaviour
         main.startColor = new ParticleSystem.MinMaxGradient(Color.white);
         main.gravityModifier = 0.5f;
         main.loop = false;
+        main.useUnscaledTime = true; // Animate even when Time.timeScale = 0
 
         var emission = ps.emission;
         emission.SetBursts(new ParticleSystem.Burst[] { new ParticleSystem.Burst(0f, 80) });
