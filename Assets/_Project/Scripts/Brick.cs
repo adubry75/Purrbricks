@@ -82,12 +82,26 @@ public class Brick : MonoBehaviour
 
         if (_hitPoints > 0)
         {
+            CameraShake.Instance?.Shake(0.06f, 0.12f);
+
             _visual?.UpdateDamageState(_hitPoints, _maxHitPoints);
             SfxPlayer.Instance?.PlayBrickHit();
             return;
         }
 
-        // Destroyed
+        // ── Brick destroyed ──────────────────────────────────────────────────
+
+        // Bigger shake for destruction of a tough brick.
+        if (_maxHitPoints > 1)
+        {
+            CameraShake.Instance?.Shake(0.18f, 0.25f);
+        }
+
+        // Particle burst (more particles for tougher bricks)
+        int particleCount = _maxHitPoints > 1 ? 35 : 22;
+        bool isSpecial = _maxHitPoints > 2;
+        BrickParticleGenerator.SpawnBurst(transform.position, popupColor, particleCount, isSpecial);
+
         _visual?.PlayBreakEffect();
         SfxPlayer.Instance?.PlayBrickBreak();
 

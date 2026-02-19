@@ -76,6 +76,17 @@ public static class PurrbricksSetup
             Debug.Log("Added BrickVisualController to Brick prefab.");
         }
 
+        // ── 6b. Add BallTrail to Ball (find in scene) ────────────────────────
+        var ball = Object.FindFirstObjectByType<BallController>();
+        if (ball != null)
+        {
+            if (ball.GetComponent<TrailRenderer>() == null)
+                ball.gameObject.AddComponent<TrailRenderer>();
+            if (ball.GetComponent<BallTrail>() == null)
+                ball.gameObject.AddComponent<BallTrail>();
+            Debug.Log("Added BallTrail to Ball.");
+        }
+
         // ── 7. GameManager ───────────────────────────────────────────────────
         var gm = Object.FindFirstObjectByType<GameManager>();
         if (gm != null)
@@ -94,7 +105,23 @@ public static class PurrbricksSetup
             gmSo.ApplyModifiedProperties();
         }
 
-        // ── 8. Mark scene dirty ──────────────────────────────────────────────
+        // ── 8. CameraShake on Main Camera ────────────────────────────────────
+        var mainCam = Camera.main;
+        if (mainCam != null && mainCam.GetComponent<CameraShake>() == null)
+        {
+            mainCam.gameObject.AddComponent<CameraShake>();
+            Debug.Log("Added CameraShake to Main Camera.");
+        }
+
+        // ── 9. ParallaxBackground ────────────────────────────────────────────
+        var bgGO = EnsureGO("ParallaxBackground");
+        if (bgGO.GetComponent<ParallaxBackground>() == null)
+        {
+            bgGO.AddComponent<ParallaxBackground>();
+            Debug.Log("Added ParallaxBackground.");
+        }
+
+        // ── 10. Mark scene dirty ─────────────────────────────────────────────
         UnityEditor.SceneManagement.EditorSceneManager.MarkSceneDirty(
             UnityEngine.SceneManagement.SceneManager.GetActiveScene());
 
