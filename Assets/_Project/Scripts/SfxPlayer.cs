@@ -19,6 +19,7 @@ public class SfxPlayer : MonoBehaviour
     [SerializeField] private float _pitchMax = 1.03f;
 
     private AudioSource _src;
+    private bool _isMuted;
 
     private void Awake()
     {
@@ -40,9 +41,14 @@ public class SfxPlayer : MonoBehaviour
     public void PlayWin() => PlayOne(_win);
     public void PlayGameOver() => PlayOne(_gameOver);
 
+    public void MuteAll(bool mute)
+    {
+        _isMuted = mute;
+    }
+
     private void PlayOne(AudioClip clip)
     {
-        if (clip == null || _src == null) return;
+        if (clip == null || _src == null || _isMuted) return;
 
         _src.pitch = UnityEngine.Random.Range(_pitchMin, _pitchMax);
         _src.PlayOneShot(clip, _volume);

@@ -24,7 +24,6 @@ public static class BrickParticleGenerator
         main.startColor = color;
         main.gravityModifier = 1.8f;
         main.simulationSpace = ParticleSystemSimulationSpace.World;
-        main.duration = 1.5f;
         main.loop = false;
 
         // Emission: single burst

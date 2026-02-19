@@ -87,6 +87,11 @@ public class BallController : MonoBehaviour
         _rb.linearVelocity = _launchDirection * _speed;
     }
 
+    public bool IsLaunched()
+    {
+        return _launched;
+    }
+
 
 
 

@@ -121,7 +121,44 @@ public static class PurrbricksSetup
             Debug.Log("Added ParallaxBackground.");
         }
 
-        // ── 10. Mark scene dirty ─────────────────────────────────────────────
+        // ── 10. HighScoreManager ─────────────────────────────────────────────
+        var scoresMgr = EnsureGO("HighScoreManager");
+        if (scoresMgr.GetComponent<HighScoreManager>() == null)
+        {
+            scoresMgr.AddComponent<HighScoreManager>();
+            Debug.Log("Added HighScoreManager.");
+        }
+
+        // ── 11. UI Screens ───────────────────────────────────────────────────
+        var mainMenuGO = EnsureGO("MainMenuUI");
+        if (mainMenuGO.GetComponent<MainMenuUI>() == null)
+        {
+            mainMenuGO.AddComponent<MainMenuUI>();
+            Debug.Log("Added MainMenuUI.");
+        }
+
+        var gameOverGO = EnsureGO("GameOverUI");
+        if (gameOverGO.GetComponent<GameOverUI>() == null)
+        {
+            gameOverGO.AddComponent<GameOverUI>();
+            Debug.Log("Added GameOverUI.");
+        }
+
+        var victoryGO = EnsureGO("VictoryUI");
+        if (victoryGO.GetComponent<VictoryUI>() == null)
+        {
+            victoryGO.AddComponent<VictoryUI>();
+            Debug.Log("Added VictoryUI.");
+        }
+
+        var highScoresGO = EnsureGO("HighScoresUI");
+        if (highScoresGO.GetComponent<HighScoresUI>() == null)
+        {
+            highScoresGO.AddComponent<HighScoresUI>();
+            Debug.Log("Added HighScoresUI.");
+        }
+
+        // ── 12. Mark scene dirty ─────────────────────────────────────────────
         UnityEditor.SceneManagement.EditorSceneManager.MarkSceneDirty(
             UnityEngine.SceneManagement.SceneManager.GetActiveScene());
 

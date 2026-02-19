@@ -3,13 +3,14 @@ using UnityEngine;
 
 public enum GameState
 {
-    Title,
+    MainMenu,
+    HighScores,
     Ready,
     Playing,
     Cleared,
     Paused,
     GameOver,
-    Win
+    Victory
 }
 
 public class GameManager : MonoBehaviour
@@ -26,7 +27,7 @@ public class GameManager : MonoBehaviour
 
     [Header("Levels")]
     [SerializeField] private string[] _levelIds;
-    [SerializeField] private float _levelClearDelay = 3.0f;
+    [SerializeField] private float _levelClearDelay = 2.5f;
 
     [Header("Refs")]
     [SerializeField] private LevelLoader _levelLoader;
@@ -34,14 +35,20 @@ public class GameManager : MonoBehaviour
     [SerializeField] private PaddleController _paddle;
     [SerializeField] private HudController _hud;
 
+    [Header("UI Screens")]
+    private MainMenuUI _mainMenuUI;
+    private GameOverUI _gameOverUI;
+    private VictoryUI _victoryUI;
+    private HighScoresUI _highScoresUI;
+
     private int _currentLevelIndex = 0;
     private Coroutine _advanceRoutine;
     private bool _isAdvancingLevel;
-
     private float _comboTimer;
     private int _lives;
+    private bool _isDemoMode;
 
-    [SerializeField] private GameState _state = GameState.Ready;
+    [SerializeField] private GameState _state = GameState.MainMenu;
 
     private void Awake()
     {
@@ -53,76 +60,153 @@ public class GameManager : MonoBehaviour
 
         Instance = this;
         DontDestroyOnLoad(gameObject);
+
+        FindOrCreateUIScreens();
+    }
+
+    private void FindOrCreateUIScreens()
+    {
+        // Include inactive objects since UI screens hide themselves in Awake()
+        _mainMenuUI = FindFirstObjectByType<MainMenuUI>(FindObjectsInactive.Include);
+        _gameOverUI = FindFirstObjectByType<GameOverUI>(FindObjectsInactive.Include);
+        _victoryUI = FindFirstObjectByType<VictoryUI>(FindObjectsInactive.Include);
+        _highScoresUI = FindFirstObjectByType<HighScoresUI>(FindObjectsInactive.Include);
+
+        if (_mainMenuUI == null) Debug.LogError("MainMenuUI not found! Run Purrbricks > Setup Scene.");
+        if (_gameOverUI == null) Debug.LogError("GameOverUI not found! Run Purrbricks > Setup Scene.");
+        if (_victoryUI == null) Debug.LogError("VictoryUI not found! Run Purrbricks > Setup Scene.");
+        if (_highScoresUI == null) Debug.LogError("HighScoresUI not found! Run Purrbricks > Setup Scene.");
     }
 
     private void Start()
     {
         _lives = _startingLives;
-        _hud?.SetLives(_lives);
-        _hud?.SetScore(_score);
-
-        LoadLevel(_currentLevelIndex);
-
-        SetState(GameState.Ready);
+        ShowMainMenu();
     }
 
     private void Update()
     {
-        // Debug hotkey: clear all but 1 brick (for fast level-clear testing)
-        if (Input.GetKeyDown(KeyCode.K))
-        {
+        // Debug hotkey: clear all but 1 brick
+        if (Input.GetKeyDown(KeyCode.K) && _state == GameState.Playing)
             ClearAllButOneBrick();
-        }
 
         if (_state == GameState.Playing && Input.GetKeyDown(KeyCode.Escape))
-        {
             SetState(GameState.Paused);
-        }
         else if (_state == GameState.Paused && Input.GetKeyDown(KeyCode.Escape))
-        {
             SetState(GameState.Playing);
-        }
 
+        // Combo timer
         if (_state == GameState.Playing && _comboTimer > 0f)
         {
             _comboTimer -= Time.unscaledDeltaTime;
             if (_comboTimer <= 0f)
-            {
                 ResetCombo();
-            }
         }
 
-        if ((_state == GameState.GameOver || _state == GameState.Win) && Input.GetKeyDown(KeyCode.R))
+        // Demo mode: auto-launch ball, reset combo periodically
+        if ((_state == GameState.MainMenu || _state == GameState.HighScores) && _isDemoMode)
         {
-            RestartLevel();
+            if (_ball != null && !_ball.IsLaunched())
+            {
+                // Auto-launch after 1 second
+                _ball.Launch();
+            }
+
+            // Reset combo every 30 seconds in demo to prevent infinite growth
+            if (_combo > 30)
+                _combo = 0;
         }
 
         if (_state == GameState.Ready && Input.GetKeyDown(KeyCode.Space))
         {
             _ball.Launch();
-            if (_hud != null) _hud.SetStatus("");
+            _hud?.SetStatus("");
             SetState(GameState.Playing);
         }
     }
 
-    private void RestartLevel()
-    {
-        Time.timeScale = 1f;
+    // ── Public API (called by UI buttons) ───────────────────────────────────
 
+    public void StartGame()
+    {
+        _isDemoMode = false;
+        _paddle?.SetDemoMode(false);
         _score = 0;
         _combo = 0;
         _comboTimer = 0f;
-        _hud?.SetScore(_score);
-
         _lives = _startingLives;
-        _hud?.SetLives(_lives);
+        _currentLevelIndex = 0;
 
-        _ball?.ResetToPaddle();
+        _hud?.SetScore(_score);
+        _hud?.SetLives(_lives);
+        _hud?.SetCombo(_combo);
 
         LoadLevel(_currentLevelIndex);
+        SetState(GameState.Ready);
 
+        _mainMenuUI?.Hide();
+        _highScoresUI?.Hide();
+    }
+
+    public void ShowMainMenu()
+    {
+        _isDemoMode = true;
+        _paddle?.SetDemoMode(true);
+        _gameOverUI?.Hide();
+        _victoryUI?.Hide();
+        _highScoresUI?.Hide();
+        _mainMenuUI?.Show();
+
+        LoadDemoLevel();
+        SetState(GameState.MainMenu);
+    }
+
+    public void ShowHighScores()
+    {
+        _isDemoMode = true;
+        _paddle?.SetDemoMode(true);
+        _mainMenuUI?.Hide();
+        _highScoresUI?.Show();
+
+        LoadDemoLevel();
+        SetState(GameState.HighScores);
+    }
+
+    public void RestartGame()
+    {
+        _score = 0;
+        _combo = 0;
+        _comboTimer = 0f;
+        _lives = _startingLives;
+        _currentLevelIndex = 0;
+
+        _hud?.SetScore(_score);
+        _hud?.SetLives(_lives);
+        _hud?.SetCombo(_combo);
+
+        _gameOverUI?.Hide();
+
+        LoadLevel(_currentLevelIndex);
         SetState(GameState.Ready);
     }
+
+    public void LoadNextLevel()
+    {
+        _victoryUI?.Hide();
+        int next = _currentLevelIndex + 1;
+
+        if (next >= _levelIds.Length)
+        {
+            // All levels complete - back to main menu
+            ShowMainMenu();
+            return;
+        }
+
+        LoadLevel(next);
+        SetState(GameState.Ready);
+    }
+
+    // ── Level Loading ───────────────────────────────────────────────────────
 
     public void LoadLevel(int levelIndex)
     {
@@ -136,29 +220,34 @@ public class GameManager : MonoBehaviour
 
         _currentLevelIndex = Mathf.Clamp(levelIndex, 0, _levelIds.Length - 1);
 
-        // Fallback: if the inspector slot wasn't filled, find it in the scene
+        // Fallback if LevelLoader not wired
         if (_levelLoader == null)
             _levelLoader = FindFirstObjectByType<LevelLoader>();
 
         if (_levelLoader == null)
         {
-            Debug.LogError("GameManager: No LevelLoader found in the scene!");
+            Debug.LogError("GameManager: No LevelLoader found!");
             return;
         }
 
         _levelLoader.LoadLevel(_levelIds[_currentLevelIndex]);
-
         _ball.ResetToPaddle();
         _paddle.ResetPosition();
 
-        if (_hud != null)
-        {
-            _hud.SetLevel(_currentLevelIndex + 1);
-            _hud.SetStatus("Ready");
-        }
-
-        SetState(GameState.Ready);
+        _hud?.SetLevel(_currentLevelIndex + 1);
+        _hud?.SetStatus("Ready");
     }
+
+    private void LoadDemoLevel()
+    {
+        if (_levelIds == null || _levelIds.Length == 0) return;
+
+        _levelLoader?.LoadLevel(_levelIds[0]); // always load first level for demo
+        _ball?.ResetToPaddle();
+        _paddle?.ResetPosition();
+    }
+
+    // ── State Management ────────────────────────────────────────────────────
 
     public void SetState(GameState newState)
     {
@@ -169,10 +258,24 @@ public class GameManager : MonoBehaviour
 
         switch (_state)
         {
+            case GameState.MainMenu:
+                SetCursorMenuMode();
+                _hud?.gameObject.SetActive(false);
+                SfxPlayer.Instance?.MuteAll(true);
+                break;
+
+            case GameState.HighScores:
+                SetCursorMenuMode();
+                _hud?.gameObject.SetActive(false);
+                SfxPlayer.Instance?.MuteAll(true);
+                break;
+
             case GameState.Ready:
                 SetCursorPlayMode();
+                _hud?.gameObject.SetActive(true);
                 _hud?.SetState("Ready");
                 _hud?.ShowCenter("Press Space to Launch");
+                SfxPlayer.Instance?.MuteAll(false);
                 break;
 
             case GameState.Playing:
@@ -192,8 +295,7 @@ public class GameManager : MonoBehaviour
                 SetCursorMenuMode();
                 Time.timeScale = 0f;
                 SfxPlayer.Instance?.PlayGameOver();
-                _hud?.SetState("Game Over");
-                _hud?.ShowCenter("Game Over (R to restart)");
+                _gameOverUI?.ShowGameOver(_score);
                 break;
 
             case GameState.Cleared:
@@ -204,11 +306,10 @@ public class GameManager : MonoBehaviour
                 _ball?.ResetToPaddle();
                 break;
 
-            case GameState.Win:
+            case GameState.Victory:
                 SetCursorMenuMode();
                 Time.timeScale = 0f;
-                _hud?.SetState("Win");
-                _hud?.ShowCenter("You Win! (R for next)");
+                _victoryUI?.ShowVictory(_score);
                 break;
         }
     }
@@ -225,14 +326,22 @@ public class GameManager : MonoBehaviour
         Cursor.lockState = CursorLockMode.None;
     }
 
+    // ── Game Events ─────────────────────────────────────────────────────────
+
     public void OnBallLost()
     {
-        if (_state != GameState.Playing) return;
+        if (_state != GameState.Playing && !_isDemoMode) return;
+        if (_isDemoMode)
+        {
+            // Demo mode: silently restart and relaunch
+            _ball?.ResetToPaddle();
+            _ball?.Launch();
+            return;
+        }
 
         SfxPlayer.Instance?.PlayLifeLost();
         _lives--;
         _hud.SetLives(_lives);
-        Debug.Log("Ball lost. Lives = " + _lives);
 
         if (_lives <= 0)
         {
@@ -240,9 +349,7 @@ public class GameManager : MonoBehaviour
             return;
         }
 
-        if (_ball != null)
-            _ball.ResetToPaddle();
-
+        _ball?.ResetToPaddle();
         ResetCombo();
         SetState(GameState.Ready);
     }
@@ -250,48 +357,31 @@ public class GameManager : MonoBehaviour
     public void OnLevelCleared()
     {
         if (_isAdvancingLevel) return;
-        if (_state == GameState.Cleared || _state == GameState.Win || _state == GameState.GameOver) return;
+        if (_state == GameState.Cleared || _state == GameState.Victory || _state == GameState.GameOver) return;
+        if (_isDemoMode)
+        {
+            // Demo mode: silently restart level
+            LoadDemoLevel();
+            return;
+        }
 
         _isAdvancingLevel = true;
-
-        Debug.Log("Level cleared!");
         if (_advanceRoutine != null) StopCoroutine(_advanceRoutine);
         _advanceRoutine = StartCoroutine(AdvanceLevelRoutine());
     }
 
     private IEnumerator AdvanceLevelRoutine()
     {
-        Debug.Log($"AdvanceLevelRoutine START, delay={_levelClearDelay}");
-
         SetState(GameState.Cleared);
         SfxPlayer.Instance?.PlayWin();
 
         yield return new WaitForSecondsRealtime(_levelClearDelay);
 
-        int next = _currentLevelIndex + 1;
-
-        if (next >= _levelIds.Length)
-        {
-            Time.timeScale = 1f;
-            SetState(GameState.Win);
-            Debug.Log("AdvanceLevelRoutine END -> WIN");
-            yield break;
-        }
-
         Time.timeScale = 1f;
-
-        LoadLevel(next);
-
-        Time.timeScale = 0f;
-        _hud?.ShowCenter($"LEVEL {next + 1}");
-
-        yield return new WaitForSecondsRealtime(0.75f);
-
-        Time.timeScale = 1f;
-        SetState(GameState.Ready);
-
-        Debug.Log("AdvanceLevelRoutine END -> NEXT LEVEL READY");
+        SetState(GameState.Victory);
     }
+
+    // ── Scoring ─────────────────────────────────────────────────────────────
 
     public int AddScore(int basePoints)
     {
@@ -300,7 +390,6 @@ public class GameManager : MonoBehaviour
 
         _score += points;
         _hud?.SetScore(_score);
-
         _comboTimer = _comboResetSeconds;
 
         return points;
@@ -311,6 +400,10 @@ public class GameManager : MonoBehaviour
         _combo++;
         _hud?.SetCombo(_combo);
         _comboTimer = _comboResetSeconds;
+
+        // Show combo feedback at milestones
+        if (_combo == 2 || _combo % 5 == 0)
+            ComboFeedback.Show(_combo);
     }
 
     public void ResetCombo()
@@ -320,12 +413,8 @@ public class GameManager : MonoBehaviour
         _comboTimer = 0f;
     }
 
-    // ── Debug Helpers ────────────────────────────────────────────────────────
+    // ── Debug Helpers ───────────────────────────────────────────────────────
 
-    /// <summary>
-    /// Testing helper: destroys all bricks except one.
-    /// Hotkey: Ctrl+K
-    /// </summary>
     private void ClearAllButOneBrick()
     {
         var bricks = Object.FindObjectsByType<Brick>(FindObjectsSortMode.None);
@@ -338,7 +427,6 @@ public class GameManager : MonoBehaviour
 
         Debug.Log($"Clearing {bricks.Length - 1} bricks, leaving 1 for testing...");
 
-        // Destroy all but the first one found
         for (int i = 1; i < bricks.Length; i++)
         {
             if (bricks[i] != null)
