@@ -206,7 +206,6 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 75748549}
-  - component: {fileID: 75748548}
   m_Layer: 0
   m_Name: Bricks
   m_TagString: Untagged
@@ -214,26 +213,6 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!114 &75748548
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 75748547}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 6b9de1d63463b8145993ebbfb034399e, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::BrickGridSpawner
-  _brickArea: {fileID: 987072746}
-  _brickPrefab: {fileID: -6038208573387489717, guid: c6a8b90e754dff8449b23da66dfcca3c, type: 3}
-  _rows: 1
-  _cols: 5
-  _brickSize: {x: 1.4, y: 0.5}
-  _gap: {x: 0.08, y: 0.12}
-  _innerMargin: {x: 0.2, y: 0.2}
-  _level: {fileID: 0}
 --- !u!4 &75748549
 Transform:
   m_ObjectHideFlags: 0
@@ -1266,6 +1245,56 @@ Transform:
   - {fileID: 1044462586}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &776083531
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 776083533}
+  - component: {fileID: 776083532}
+  m_Layer: 0
+  m_Name: BrickTemplateRegistry
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &776083532
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 776083531}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 081e53a6942f109408368bbfb98bb7eb, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::BrickTemplateRegistry
+  _templates:
+  - {fileID: 11400000, guid: a2e3323c1f09c934a85cc896d80811b8, type: 2}
+  - {fileID: 11400000, guid: 2b881c597fa59e441b2cc336656282d4, type: 2}
+  - {fileID: 11400000, guid: 75ca2e8c2846ee345994a3499146cf91, type: 2}
+  - {fileID: 11400000, guid: 859f343f28115a74db45783f280e449c, type: 2}
+  - {fileID: 11400000, guid: 072dd162825af43428e90b6e589da83b, type: 2}
+--- !u!4 &776083533
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 776083531}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: -0.86226, y: -0.6157, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &814134067
 GameObject:
   m_ObjectHideFlags: 0
@@ -1916,6 +1945,98 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1050643305}
   m_CullTransparentMesh: 1
+--- !u!1 &1184986101
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1184986103}
+  - component: {fileID: 1184986102}
+  m_Layer: 0
+  m_Name: LevelLoader
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &1184986102
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1184986101}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4a8531b9345e3624286db10c715cbdd0, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::LevelLoader
+  _brickArea: {fileID: 987072746}
+  _brickPrefab: {fileID: -6038208573387489717, guid: c6a8b90e754dff8449b23da66dfcca3c, type: 3}
+  _powerupPickupPrefab: {fileID: 0}
+--- !u!4 &1184986103
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1184986101}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &1202018261
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1202018263}
+  - component: {fileID: 1202018262}
+  m_Layer: 0
+  m_Name: BrickSkinRegistry
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &1202018262
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1202018261}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7fb9772280737654091937aa19782c7f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::BrickSkinRegistry
+  _skins: []
+--- !u!4 &1202018263
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1202018261}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: -0.86226, y: -0.6157, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1278232228
 GameObject:
   m_ObjectHideFlags: 0
@@ -2286,6 +2407,51 @@ MonoBehaviour:
   _minHorizontal: 0.1
   _maxBounceAngleDegrees: 75
   _paddleObjectName: Paddle
+--- !u!1 &1659735786
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1659735788}
+  - component: {fileID: 1659735787}
+  m_Layer: 0
+  m_Name: PowerupRegistry
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &1659735787
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1659735786}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bca67e8aee6452c4ab606c538580d558, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PowerupRegistry
+  _powerups: []
+--- !u!4 &1659735788
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1659735786}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: -0.86226, y: -0.6157, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1682921466
 GameObject:
   m_ObjectHideFlags: 0
@@ -2319,12 +2485,12 @@ MonoBehaviour:
   _score: 0
   _combo: 0
   _comboResetSeconds: 2
-  _levels:
-  - {fileID: 11400000, guid: ea4720bee7e771f49856633789264538, type: 2}
-  - {fileID: 11400000, guid: 627d94624e9c656478024ef48338fb88, type: 2}
-  - {fileID: 11400000, guid: 3031e9c1f764f8b4fa903a358cd99101, type: 2}
+  _levelIds:
+  - level_00
+  - level_01
+  - level_02
   _levelClearDelay: 3
-  _spawner: {fileID: 75748548}
+  _levelLoader: {fileID: 1184986102}
   _ball: {fileID: 1374096748}
   _paddle: {fileID: 842519041}
   _hud: {fileID: 1313978739}
@@ -3059,7 +3225,6 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 2107879659}
-  - component: {fileID: 2107879658}
   m_Layer: 0
   m_Name: BrickRegistry
   m_TagString: Untagged
@@ -3067,23 +3232,6 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!114 &2107879658
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2107879657}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 91f545f34b19b7f459f59adc9e028d56, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::BrickRegistry
-  _definitions:
-  - {fileID: 11400000, guid: df627c667bafe504eb6ff9f4b68ca014, type: 2}
-  - {fileID: 11400000, guid: 303c24ccfbf2aba4794eabc69a974190, type: 2}
-  - {fileID: 11400000, guid: c8cb6af5654e61c499c01646acebe167, type: 2}
-  - {fileID: 11400000, guid: e5f018d03b8ba6247ac1fba903ce1111, type: 2}
 --- !u!4 &2107879659
 Transform:
   m_ObjectHideFlags: 0
@@ -3255,3 +3403,7 @@ SceneRoots:
   - {fileID: 408894300}
   - {fileID: 542253552}
   - {fileID: 2107879659}
+  - {fileID: 776083533}
+  - {fileID: 1202018263}
+  - {fileID: 1659735788}
+  - {fileID: 1184986103}
