@@ -73,8 +73,12 @@ public class Brick : MonoBehaviour
 
         _hitPoints--;
 
-        GameManager.Instance?.AddScore(_points);
+        int totalPoints = GameManager.Instance?.AddScore(_points) ?? 0;
         GameManager.Instance?.IncrementCombo();
+
+        // Spawn score popup showing points gained (use brick's current color)
+        Color popupColor = _sr != null ? _sr.color : Color.white;
+        ScorePopup.Spawn(transform.position, totalPoints, popupColor);
 
         if (_hitPoints > 0)
         {

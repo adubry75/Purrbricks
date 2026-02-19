@@ -68,6 +68,12 @@ public class GameManager : MonoBehaviour
 
     private void Update()
     {
+        // Debug hotkey: clear all but 1 brick (for fast level-clear testing)
+        if (Input.GetKeyDown(KeyCode.K))
+        {
+            ClearAllButOneBrick();
+        }
+
         if (_state == GameState.Playing && Input.GetKeyDown(KeyCode.Escape))
         {
             SetState(GameState.Paused);
@@ -287,7 +293,7 @@ public class GameManager : MonoBehaviour
         Debug.Log("AdvanceLevelRoutine END -> NEXT LEVEL READY");
     }
 
-    public void AddScore(int basePoints)
+    public int AddScore(int basePoints)
     {
         int multiplier = 1 + _combo;
         int points = basePoints * multiplier;
@@ -296,6 +302,8 @@ public class GameManager : MonoBehaviour
         _hud?.SetScore(_score);
 
         _comboTimer = _comboResetSeconds;
+
+        return points;
     }
 
     public void IncrementCombo()
@@ -310,5 +318,34 @@ public class GameManager : MonoBehaviour
         _combo = 0;
         _hud?.SetCombo(_combo);
         _comboTimer = 0f;
+    }
+
+    // ── Debug Helpers ────────────────────────────────────────────────────────
+
+    /// <summary>
+    /// Testing helper: destroys all bricks except one.
+    /// Hotkey: Ctrl+K
+    /// </summary>
+    private void ClearAllButOneBrick()
+    {
+        var bricks = Object.FindObjectsByType<Brick>(FindObjectsSortMode.None);
+
+        if (bricks.Length <= 1)
+        {
+            Debug.Log("ClearAllButOneBrick: Only 1 or 0 bricks remaining.");
+            return;
+        }
+
+        Debug.Log($"Clearing {bricks.Length - 1} bricks, leaving 1 for testing...");
+
+        // Destroy all but the first one found
+        for (int i = 1; i < bricks.Length; i++)
+        {
+            if (bricks[i] != null)
+            {
+                LevelManager.Instance?.OnBrickDestroyed();
+                Destroy(bricks[i].gameObject);
+            }
+        }
     }
 }
