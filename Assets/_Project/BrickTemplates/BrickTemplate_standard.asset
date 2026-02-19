@@ -13,8 +13,9 @@ MonoBehaviour:
   m_Name: BrickTemplate_standard
   m_EditorClassIdentifier: Assembly-CSharp::BrickTemplate
   id: standard
-  displayName: 
+  displayName: Standard
   defaultHp: 1
   defaultPoints: 100
   defaultSkinId: 
+  defaultTint: {r: 0.85, g: 0.85, b: 0.95, a: 1}
   isIndestructible: 0

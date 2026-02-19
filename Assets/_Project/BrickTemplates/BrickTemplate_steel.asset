@@ -13,8 +13,9 @@ MonoBehaviour:
   m_Name: BrickTemplate_steel
   m_EditorClassIdentifier: Assembly-CSharp::BrickTemplate
   id: steel
-  displayName: 
+  displayName: Steel
   defaultHp: 4
   defaultPoints: 1000
   defaultSkinId: 
+  defaultTint: {r: 0.72, g: 0.82, b: 0.95, a: 1}
   isIndestructible: 0

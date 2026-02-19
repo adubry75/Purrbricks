@@ -13,8 +13,9 @@ MonoBehaviour:
   m_Name: BrickTemplate_gem
   m_EditorClassIdentifier: Assembly-CSharp::BrickTemplate
   id: gem
-  displayName: 
+  displayName: Gem
   defaultHp: 1
   defaultPoints: 10000
   defaultSkinId: 
+  defaultTint: {r: 1, g: 0.25, b: 0.75, a: 1}
   isIndestructible: 0
