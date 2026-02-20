@@ -13,15 +13,15 @@
   "bricks": [
     { "col":  0, "row": 0, "templateId": "standard", "tint": "#CC44FF", "points": 400 },
     { "col":  2, "row": 0, "templateId": "standard", "tint": "#CC44FF", "points": 400 },
-    { "col":  4, "row": 0, "templateId": "standard", "tint": "#CC44FF", "points": 400 },
-    { "col":  6, "row": 0, "templateId": "standard", "tint": "#CC44FF", "points": 400 },
+    { "col":  4, "row": 0, "templateId": "standard", "tint": "#CC44FF", "points": 400, "powerupId": "WidePaddle" },
+    { "col":  6, "row": 0, "templateId": "standard", "tint": "#CC44FF", "points": 400, "powerupId": "Laser" },
     { "col":  8, "row": 0, "templateId": "standard", "tint": "#CC44FF", "points": 400 },
     { "col": 10, "row": 0, "templateId": "standard", "tint": "#CC44FF", "points": 400 },
 
     { "col":  1, "row": 0, "templateId": "standard", "tint": "#00FFDD", "points": 400 },
     { "col":  3, "row": 0, "templateId": "standard", "tint": "#00FFDD", "points": 400 },
-    { "col":  5, "row": 0, "templateId": "standard", "tint": "#00FFDD", "points": 400 },
-    { "col":  7, "row": 0, "templateId": "standard", "tint": "#00FFDD", "points": 400 },
+    { "col":  5, "row": 0, "templateId": "standard", "tint": "#00FFDD", "points": 400, "powerupId": "MultiBall" },
+    { "col":  7, "row": 0, "templateId": "standard", "tint": "#00FFDD", "points": 400, "powerupId": "ExtraLife" },
     { "col":  9, "row": 0, "templateId": "standard", "tint": "#00FFDD", "points": 400 },
     { "col": 11, "row": 0, "templateId": "standard", "tint": "#00FFDD", "points": 400 },
 

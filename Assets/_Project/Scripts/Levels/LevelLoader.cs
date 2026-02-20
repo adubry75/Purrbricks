@@ -130,9 +130,6 @@ public class LevelLoader : MonoBehaviour
             brick.SetPoints(pts);
             brick.SetIndestructible(indestructible);
 
-            if (!string.IsNullOrEmpty(entry.powerup))
-                brick.SetPowerupId(entry.powerup);
-
             // Resolve skin and tint — priority: JSON tint > skin > template > white
             string skinId = entry.skinId ?? template?.defaultSkinId;
             BrickSkin skin = null;
@@ -157,6 +154,10 @@ public class LevelLoader : MonoBehaviour
             if (visual != null && hp > 1)
                 visual.SetShimmer(speed: 3.5f, amount: 0.14f);
 
+            // SetPowerupId AFTER SetTemplate so the visual knows the base tint
+            if (!string.IsNullOrEmpty(entry.powerupId))
+                brick.SetPowerupId(entry.powerupId);
+
             _spawnedBricks.Add(brick.gameObject);
 
             if (!indestructible) spawned++;
@@ -165,12 +166,6 @@ public class LevelLoader : MonoBehaviour
         LevelManager.Instance?.BeginLevel(spawned);
     }
 
-    // Spawns a powerup pickup at a given world position
-    public void SpawnPowerupPickup(string powerupId, Vector3 worldPos)
-    {
-        if (_powerupPickupPrefab == null || string.IsNullOrEmpty(powerupId)) return;
-
-        var pickup = Instantiate(_powerupPickupPrefab, worldPos, Quaternion.identity);
-        pickup.Init(powerupId);
-    }
+    // Kept for backward compatibility — Brick.cs now spawns pickups directly
+    public void SpawnPowerupPickup(string powerupId, Vector3 worldPos) { }
 }

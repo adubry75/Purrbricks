@@ -129,6 +129,22 @@ public static class PurrbricksSetup
             Debug.Log("Added HighScoreManager.");
         }
 
+        // ── 11a. PowerupManager ──────────────────────────────────────────────
+        var puMgrGO = EnsureGO("PowerupManager");
+        if (puMgrGO.GetComponent<PowerupManager>() == null)
+        {
+            puMgrGO.AddComponent<PowerupManager>();
+            Debug.Log("Added PowerupManager.");
+        }
+
+        // ── 11b. PowerupHUD ──────────────────────────────────────────────────
+        var puHudGO = EnsureGO("PowerupHUD");
+        if (puHudGO.GetComponent<PowerupHUD>() == null)
+        {
+            puHudGO.AddComponent<PowerupHUD>();
+            Debug.Log("Added PowerupHUD.");
+        }
+
         // ── 11. UI Screens ───────────────────────────────────────────────────
         var mainMenuGO = EnsureGO("MainMenuUI");
         if (mainMenuGO.GetComponent<MainMenuUI>() == null)

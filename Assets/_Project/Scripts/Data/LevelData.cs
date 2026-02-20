@@ -29,7 +29,7 @@ public class BrickEntryData
     public int row;
     public string templateId;
     public string skinId;
-    public string powerup;
+    public string powerupId;
     public string tint;
     public int? hp;
     public int? points;

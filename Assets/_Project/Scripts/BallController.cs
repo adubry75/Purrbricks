@@ -14,14 +14,20 @@ public class BallController : MonoBehaviour
     [SerializeField] private Vector2 _paddleOffset = new Vector2(0f, 0.45f);
 
     [Header("Anti-Boring")]
-    [SerializeField] private float _minVertical = 0.25f; // prevents super-flat trajectories
-    [SerializeField] private float _minHorizontal = 0.10f; // prevents endless near-vertical loops
+    [SerializeField] private float _minVertical = 0.25f;
+    [SerializeField] private float _minHorizontal = 0.10f;
 
     [Header("Paddle Aim Bounce")]
     [SerializeField] private float _maxBounceAngleDegrees = 75f;
     [SerializeField] private string _paddleObjectName = "Paddle";
 
     private bool _launched;
+    private bool _isSticky;
+    private bool _isStickyHeld;     // caught by paddle, waiting for space
+    private bool _isSpeedBoost;
+    private Vector2 _stickyHoldOffset; // offset from paddle center when caught
+
+    private const float SPEED_MULTIPLIER = 2f;
 
     private void Reset()
     {
@@ -39,39 +45,49 @@ public class BallController : MonoBehaviour
         if (!_launched)
         {
             if (_paddle != null)
-            {
                 transform.position = (Vector2)_paddle.position + _paddleOffset;
-            }
 
             if (Input.GetKeyDown(KeyCode.Space))
-            {
                 Launch();
-            }
+
+            return;
+        }
+
+        // Sticky hold: waiting for Space to release
+        if (_isStickyHeld)
+        {
+            // Maintain exact catch position relative to paddle (not forced to center)
+            if (_paddle != null)
+                transform.position = (Vector2)_paddle.position + _stickyHoldOffset;
+
+            if (Input.GetKeyDown(KeyCode.Space))
+                ReleaseStickyHold();
         }
     }
 
     private void FixedUpdate()
     {
-        if (!_launched) return;
+        if (!_launched || _isStickyHeld) return;
+
+        float currentSpeed = _isSpeedBoost ? _speed * SPEED_MULTIPLIER : _speed;
 
         // Keep speed constant
-        _rb.linearVelocity = _rb.linearVelocity.normalized * _speed;
+        _rb.linearVelocity = _rb.linearVelocity.normalized * currentSpeed;
 
-        // Nudge away from "boring" near-straight lines
         Vector2 v = _rb.linearVelocity.normalized;
 
         if (Mathf.Abs(v.x) < _minHorizontal)
         {
             v.x = Mathf.Sign(v.x == 0 ? Random.Range(-1f, 1f) : v.x) * _minHorizontal;
             v = v.normalized;
-            _rb.linearVelocity = v * _speed;
+            _rb.linearVelocity = v * currentSpeed;
         }
 
         if (Mathf.Abs(v.y) < _minVertical)
         {
             v.y = Mathf.Sign(v.y == 0 ? 1f : v.y) * _minVertical;
             v = v.normalized;
-            _rb.linearVelocity = v * _speed;
+            _rb.linearVelocity = v * currentSpeed;
         }
     }
 
@@ -80,24 +96,110 @@ public class BallController : MonoBehaviour
         if (_launched) return;
 
         _launched = true;
+        _isStickyHeld = false;
+        _rb.simulated = true;
+        _rb.linearVelocity = _launchDirection * (_isSpeedBoost ? _speed * SPEED_MULTIPLIER : _speed);
+    }
 
-        // enable physics first in Unity 6
+    public bool IsLaunched() => _launched;
+
+    // ── Powerup API ───────────────────────────────────────────────────────────
+
+    public void SetSticky(bool on)
+    {
+        _isSticky = on;
+        // If turning off while held, release
+        if (!on && _isStickyHeld)
+            ReleaseStickyHold();
+    }
+
+    public void SetSpeedBoost(bool on)
+    {
+        _isSpeedBoost = on;
+        // Immediately adjust velocity if already launched
+        if (_launched && !_isStickyHeld && _rb != null)
+        {
+            float newSpeed = on ? _speed * SPEED_MULTIPLIER : _speed;
+            _rb.linearVelocity = _rb.linearVelocity.normalized * newSpeed;
+        }
+    }
+
+    /// <summary>
+    /// Spawns a clone of this ball rotated by angleOffset degrees.
+    /// Called by PowerupManager for Multi-Ball.
+    /// </summary>
+    public void SpawnClone(float angleOffset)
+    {
+        if (!_launched) return;
+
+        var clone = Instantiate(gameObject, transform.position, Quaternion.identity);
+        var cloneBall = clone.GetComponent<BallController>();
+        if (cloneBall == null) return;
+
+        // Rotate current velocity by the offset angle
+        Vector2 currentDir = _rb.linearVelocity.normalized;
+        float rad = angleOffset * Mathf.Deg2Rad;
+        Vector2 newDir = new Vector2(
+            currentDir.x * Mathf.Cos(rad) - currentDir.y * Mathf.Sin(rad),
+            currentDir.x * Mathf.Sin(rad) + currentDir.y * Mathf.Cos(rad)
+        ).normalized;
+
+        cloneBall._launched = true;
+        cloneBall._isSpeedBoost = _isSpeedBoost;
+        cloneBall._isSticky = _isSticky;
+
+        var cloneRb = cloneBall.GetComponent<Rigidbody2D>();
+        if (cloneRb != null)
+        {
+            cloneRb.simulated = true;
+            float spd = _isSpeedBoost ? _speed * SPEED_MULTIPLIER : _speed;
+            cloneRb.linearVelocity = newDir * spd;
+        }
+
+        // Tell GameManager a clone is now live so it can track count accurately
+        GameManager.Instance?.RegisterClone();
+    }
+
+    private void ReleaseStickyHold()
+    {
+        _isStickyHeld = false;
         _rb.simulated = true;
 
-        _rb.linearVelocity = _launchDirection * _speed;
+        // Launch upward from current position
+        if (_paddle != null)
+        {
+            float paddleCenterX = _paddle.position.x;
+            float hitX = transform.position.x;
+            var col = _paddle.GetComponent<Collider2D>();
+            float paddleWidth = col != null ? col.bounds.size.x : 1f;
+
+            float t = Mathf.Clamp((hitX - paddleCenterX) / (paddleWidth * 0.5f), -1f, 1f);
+            float angle = t * _maxBounceAngleDegrees;
+            float rad = angle * Mathf.Deg2Rad;
+            Vector2 dir = new Vector2(Mathf.Sin(rad), Mathf.Cos(rad)).normalized;
+            float spd = _isSpeedBoost ? _speed * SPEED_MULTIPLIER : _speed;
+            _rb.linearVelocity = dir * spd;
+        }
     }
-
-    public bool IsLaunched()
-    {
-        return _launched;
-    }
-
-
-
 
     private void OnCollisionEnter2D(Collision2D collision)
     {
-        // Paddle aim bounce
+        // Sticky catch
+        if (_isSticky && collision.collider.gameObject.name == _paddleObjectName && !_isStickyHeld)
+        {
+            _isStickyHeld = true;
+            _rb.linearVelocity = Vector2.zero;
+            _rb.simulated = false;
+            // Record where on the paddle we landed (X offset from center, Y from paddleOffset)
+            _stickyHoldOffset = new Vector2(
+                transform.position.x - _paddle.position.x,
+                _paddleOffset.y
+            );
+            SfxPlayer.Instance?.PlayPaddleHit();
+            return;
+        }
+
+        // Normal paddle bounce
         if (collision.collider.gameObject.name == _paddleObjectName)
         {
             SfxPlayer.Instance?.PlayPaddleHit();
@@ -106,64 +208,51 @@ public class BallController : MonoBehaviour
         }
 
         if (collision.collider.CompareTag("Wall"))
-        {
             SfxPlayer.Instance?.PlayWallHit();
-        }
 
-
-        // Brick hits
         var brick = collision.collider.GetComponent<Brick>();
         if (brick != null)
-        {
             brick.Hit();
-        }
     }
 
     private void HandlePaddleBounce(Collision2D collision)
     {
-        // Find paddle width in world units
         float paddleWidth = collision.collider.bounds.size.x;
         float paddleCenterX = collision.collider.bounds.center.x;
-
-        // Contact point where ball hit the paddle
         float hitX = collision.GetContact(0).point.x;
 
-        // Normalize hit position to -1..+1 across the paddle
         float t = (hitX - paddleCenterX) / (paddleWidth * 0.5f);
         t = Mathf.Clamp(t, -1f, 1f);
 
-        // Convert to angle: left = +angle to left, right = +angle to right
         float angle = t * _maxBounceAngleDegrees;
-
-        // Build direction from angle (0 degrees = straight up)
         float rad = angle * Mathf.Deg2Rad;
         Vector2 dir = new Vector2(Mathf.Sin(rad), Mathf.Cos(rad)).normalized;
 
-        _rb.linearVelocity = dir * _speed;
+        float spd = _isSpeedBoost ? _speed * SPEED_MULTIPLIER : _speed;
+        _rb.linearVelocity = dir * spd;
     }
 
     public void ResetToPaddle()
     {
         _launched = false;
+        _isStickyHeld = false;
+        _isSticky = false;
+        _isSpeedBoost = false;
 
         if (_rb != null)
         {
             _rb.linearVelocity = Vector2.zero;
             _rb.angularVelocity = 0f;
-            _rb.simulated = false; // physics off while "stuck" to paddle
+            _rb.simulated = false;
         }
 
-        // Ensure we have a paddle reference (prefer the serialized one)
         if (_paddle == null)
         {
             var paddleCtrl = FindFirstObjectByType<PaddleController>();
             if (paddleCtrl != null) _paddle = paddleCtrl.transform;
         }
 
-        // Snap immediately (Update will keep it attached)
         if (_paddle != null)
             transform.position = (Vector2)_paddle.position + _paddleOffset;
     }
-
-
 }

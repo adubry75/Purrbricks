@@ -13,6 +13,7 @@ public class Brick : MonoBehaviour
 
     private BrickVisualController _visual;
     private string _powerupId;
+    private bool _isDead; // guard against multiple hits in the same frame
 
     private void Reset()
     {
@@ -47,6 +48,8 @@ public class Brick : MonoBehaviour
     public void SetPowerupId(string id)
     {
         _powerupId = id;
+        if (!string.IsNullOrEmpty(id))
+            _visual?.SetPowerupBrick(id);
     }
 
     public void SetTemplate(BrickTemplate template, BrickSkin skin, Color tint)
@@ -70,6 +73,7 @@ public class Brick : MonoBehaviour
     public void Hit()
     {
         if (_isIndestructible) return;
+        if (_isDead) return; // already destroyed this frame — ignore extra hits
 
         _hitPoints--;
 
@@ -90,6 +94,7 @@ public class Brick : MonoBehaviour
         }
 
         // ── Brick destroyed ──────────────────────────────────────────────────
+        _isDead = true; // prevent any further hits this frame
 
         // Bigger shake for destruction of a tough brick.
         if (_maxHitPoints > 1)
@@ -106,7 +111,13 @@ public class Brick : MonoBehaviour
         SfxPlayer.Instance?.PlayBrickBreak();
 
         if (!string.IsNullOrEmpty(_powerupId))
-            LevelLoader.Instance?.SpawnPowerupPickup(_powerupId, transform.position);
+        {
+            // Spawn the powerup orb at this brick's location
+            var go = new GameObject("PowerupPickup");
+            go.transform.position = transform.position;
+            var pickup = go.AddComponent<PowerupPickup>();
+            pickup.Init(_powerupId);
+        }
 
         LevelManager.Instance?.OnBrickDestroyed();
         Destroy(gameObject);

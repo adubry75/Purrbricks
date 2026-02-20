@@ -47,6 +47,8 @@ public class GameManager : MonoBehaviour
     private float _comboTimer;
     private int _lives;
     private bool _isDemoMode;
+    private bool _primaryBallOnHold; // true while primary fell but clones still active
+    private int _activeClonesCount;  // explicit count — avoids deferred-Destroy false positives
 
     [SerializeField] private GameState _state = GameState.MainMenu;
 
@@ -86,6 +88,17 @@ public class GameManager : MonoBehaviour
 
     private void Update()
     {
+        // Numpad debug: activate powerups (1-6)
+        if (_state == GameState.Playing)
+        {
+            if (Input.GetKeyDown(KeyCode.Keypad1)) PowerupManager.Instance?.Apply(PowerupType.WidePaddle);
+            if (Input.GetKeyDown(KeyCode.Keypad2)) PowerupManager.Instance?.Apply(PowerupType.MultiBall);
+            if (Input.GetKeyDown(KeyCode.Keypad3)) PowerupManager.Instance?.Apply(PowerupType.StickyBall);
+            if (Input.GetKeyDown(KeyCode.Keypad4)) PowerupManager.Instance?.Apply(PowerupType.SpeedBall);
+            if (Input.GetKeyDown(KeyCode.Keypad5)) PowerupManager.Instance?.Apply(PowerupType.ExtraLife);
+            if (Input.GetKeyDown(KeyCode.Keypad6)) PowerupManager.Instance?.Apply(PowerupType.Laser);
+        }
+
         // Debug hotkey: clear all but 1 brick
         if (Input.GetKeyDown(KeyCode.K) && _state == GameState.Playing)
             ClearAllButOneBrick();
@@ -123,12 +136,24 @@ public class GameManager : MonoBehaviour
 
     // ── Public API (called by UI buttons) ───────────────────────────────────
 
+    public void AddLife()
+    {
+        _lives++;
+        _hud?.SetLives(_lives);
+    }
+
+    public bool IsPrimaryBall(BallController ball) => ball == _ball;
+
+    /// <summary>Called by BallController.SpawnClone after it creates a clone.</summary>
+    public void RegisterClone() => _activeClonesCount++;
+
     public void StartGame()
     {
         _isDemoMode = false;
         _paddle?.SetDemoMode(false);
 
-        // Clear all lingering particle effects from demo mode
+        // Clear powerups and particles from demo mode
+        PowerupManager.Instance?.ResetAll();
         ClearAllParticles();
 
         _score = 0;
@@ -232,6 +257,18 @@ public class GameManager : MonoBehaviour
         }
 
         _levelLoader.LoadLevel(_levelIds[_currentLevelIndex]);
+
+        // Reset powerups between levels
+        PowerupManager.Instance?.ResetAll();
+
+        // Destroy any extra balls from Multi-Ball and restore primary
+        _primaryBallOnHold = false;
+        _activeClonesCount = 0;
+        if (_ball != null) _ball.gameObject.SetActive(true);
+        var allBalls = Object.FindObjectsByType<BallController>(FindObjectsSortMode.None);
+        foreach (var b in allBalls)
+            if (b != _ball) Destroy(b.gameObject);
+
         _ball.ResetToPaddle();
         _paddle.ResetPosition();
 
@@ -329,20 +366,64 @@ public class GameManager : MonoBehaviour
 
     // ── Game Events ─────────────────────────────────────────────────────────
 
-    public void OnBallLost()
+    // Called when the PRIMARY ball hits the death zone
+    public void OnPrimaryBallLost()
     {
         if (_state != GameState.Playing && !_isDemoMode) return;
+
         if (_isDemoMode)
         {
-            // Demo mode: silently restart and relaunch
             _ball?.ResetToPaddle();
             _ball?.Launch();
             return;
         }
 
+        // Are any clone balls still in play? Use explicit counter to avoid
+        // deferred-Destroy false positives from FindObjectsByType.
+        if (_activeClonesCount > 0)
+        {
+            _primaryBallOnHold = true;
+            if (_ball != null)
+                _ball.gameObject.SetActive(false);
+            return;
+        }
+
+        // No clones — standard life loss
+        _primaryBallOnHold = false;
+        LoseLife();
+    }
+
+    // Called when a CLONE ball hits the death zone (already destroyed by DeathZone)
+    public void OnCloneBallLost()
+    {
+        if (_state != GameState.Playing && !_isDemoMode) return;
+        if (_isDemoMode) return;
+
+        // Decrement first — Destroy() for this clone is deferred but we count it gone now
+        if (_activeClonesCount > 0)
+            _activeClonesCount--;
+
+        // If primary is not on hold, nothing extra to do
+        if (!_primaryBallOnHold) return;
+
+        // Still clones alive — wait for them
+        if (_activeClonesCount > 0) return;
+
+        // Last clone just died — re-enable primary and lose a life
+        _primaryBallOnHold = false;
+        if (_ball != null)
+            _ball.gameObject.SetActive(true);
+        LoseLife();
+    }
+
+    // Keep old name as alias so nothing else breaks
+    public void OnBallLost() => OnPrimaryBallLost();
+
+    private void LoseLife()
+    {
         SfxPlayer.Instance?.PlayLifeLost();
         _lives--;
-        _hud.SetLives(_lives);
+        _hud?.SetLives(_lives);
 
         if (_lives <= 0)
         {

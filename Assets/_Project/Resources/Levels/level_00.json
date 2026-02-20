@@ -29,8 +29,8 @@
     { "col":  2, "row": 1, "templateId": "red",                          "points": 350 },
     { "col":  3, "row": 1, "templateId": "standard", "tint": "#FF7700", "points": 350 },
     { "col":  4, "row": 1, "templateId": "standard", "tint": "#FF7700", "points": 350 },
-    { "col":  5, "row": 1, "templateId": "standard", "tint": "#FF7700", "points": 350 },
-    { "col":  6, "row": 1, "templateId": "standard", "tint": "#FF7700", "points": 350 },
+    { "col":  5, "row": 1, "templateId": "standard", "tint": "#00FF00", "points": 350 },
+    { "col":  6, "row": 1, "templateId": "standard", "tint": "#00FF00", "points": 350},
     { "col":  7, "row": 1, "templateId": "standard", "tint": "#FF7700", "points": 350 },
     { "col":  8, "row": 1, "templateId": "blue",                         "points": 350 },
     { "col":  9, "row": 1, "templateId": "standard", "tint": "#FF7700", "points": 350 },
@@ -42,7 +42,7 @@
     { "col":  2, "row": 2, "templateId": "standard", "tint": "#FFD700", "points": 250 },
     { "col":  3, "row": 2, "templateId": "standard", "tint": "#FFD700", "points": 250 },
     { "col":  4, "row": 2, "templateId": "gem"                                         },
-    { "col":  5, "row": 2, "templateId": "standard", "tint": "#FFD700", "points": 250 },
+    { "col":  5, "row": 2, "templateId": "standard", "tint": "#00FF00", "points": 250 },
     { "col":  6, "row": 2, "templateId": "standard", "tint": "#FFD700", "points": 250 },
     { "col":  7, "row": 2, "templateId": "standard", "tint": "#FFD700", "points": 250 },
     { "col":  8, "row": 2, "templateId": "standard", "tint": "#FFD700", "points": 250 },
@@ -69,11 +69,11 @@
     { "col":  3, "row": 4, "templateId": "standard", "tint": "#4488FF", "points": 75  },
     { "col":  4, "row": 4, "templateId": "standard", "tint": "#4488FF", "points": 75  },
     { "col":  5, "row": 4, "templateId": "standard", "tint": "#4488FF", "points": 75  },
-    { "col":  6, "row": 4, "templateId": "standard", "tint": "#4488FF", "points": 75  },
-    { "col":  7, "row": 4, "templateId": "standard", "tint": "#4488FF", "points": 75  },
-    { "col":  8, "row": 4, "templateId": "standard", "tint": "#4488FF", "points": 75  },
-    { "col":  9, "row": 4, "templateId": "standard", "tint": "#4488FF", "points": 75  },
-    { "col": 10, "row": 4, "templateId": "standard", "tint": "#4488FF", "points": 75  },
-    { "col": 11, "row": 4, "templateId": "standard", "tint": "#4488FF", "points": 75  }
+    { "col":  6, "row": 4, "templateId": "standard", "tint": "#4488FF", "points": 75 , "powerupId": "MultiBall" },
+    { "col":  7, "row": 4, "templateId": "standard", "tint": "#4488FF", "points": 75 , "powerupId": "SpeedBall" },
+    { "col":  8, "row": 4, "templateId": "standard", "tint": "#4488FF", "points": 75 , "powerupId": "StickyBall" },
+    { "col":  9, "row": 4, "templateId": "standard", "tint": "#4488FF", "points": 75 , "powerupId": "ExtraLife"  },
+    { "col": 10, "row": 4, "templateId": "standard", "tint": "#4488FF", "points": 75 , "powerupId": "Laser" },
+    { "col": 11, "row": 4, "templateId": "standard", "tint": "#4488FF", "points": 75 , "powerupId": "WidePaddle" }
   ]
 }

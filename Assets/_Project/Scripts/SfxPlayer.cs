@@ -12,6 +12,8 @@ public class SfxPlayer : MonoBehaviour
     [SerializeField] private AudioClip _lifeLost;
     [SerializeField] private AudioClip _win;
     [SerializeField] private AudioClip _gameOver;
+    [SerializeField] private AudioClip _laser;
+    [SerializeField] private AudioClip _powerupPickup;
 
     [Header("Tuning")]
     [SerializeField] private float _volume = 0.7f;
@@ -40,6 +42,8 @@ public class SfxPlayer : MonoBehaviour
     public void PlayLifeLost() => PlayOne(_lifeLost);
     public void PlayWin() => PlayOne(_win);
     public void PlayGameOver() => PlayOne(_gameOver);
+    public void PlayLaser() => PlayOne(_laser);
+    public void PlayPowerupPickup() => PlayOne(_powerupPickup);
 
     public void MuteAll(bool mute)
     {

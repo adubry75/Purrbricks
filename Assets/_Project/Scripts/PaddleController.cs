@@ -13,24 +13,35 @@ public class PaddleController : MonoBehaviour
     [Header("Demo Mode AI")]
     [SerializeField] private float _demoSmoothTime = 0.15f;
 
+    [Header("Wide Paddle")]
+    [SerializeField] private float _widthMultiplier = 1.5f;
+
+    [Header("Laser")]
+    [SerializeField] private GameObject _laserPrefab; // assigned at runtime if null
+    [SerializeField] private float _laserFireRate = 0.35f;
+
     [SerializeField] private BoxCollider2D _leftWall;
     [SerializeField] private BoxCollider2D _rightWall;
-    [SerializeField] private float _wallPadding = 0.02f; // tiny safety margin
-    private float _halfWidth;
+    [SerializeField] private float _wallPadding = 0.02f;
 
     private float _velocityX;
     private bool _isDemoMode;
 
-    private void Reset()
-    {
-        _camera = Camera.main;
-    }
+    // Powerup state
+    private bool _isWide;
+    private bool _isLaser;
+    private float _laserCooldown;
+
+    private Vector3 _normalScale;
+    private BoxCollider2D _col;
+
+    private void Reset() { _camera = Camera.main; }
 
     private void Awake()
     {
         if (_camera == null) _camera = Camera.main;
-
-        _halfWidth = GetComponent<BoxCollider2D>().bounds.extents.x;
+        _col = GetComponent<BoxCollider2D>();
+        _normalScale = transform.localScale;
     }
 
     private void Update()
@@ -42,37 +53,50 @@ public class PaddleController : MonoBehaviour
 
         if (_isDemoMode)
         {
-            // Demo AI: track the ball's X position
             var ball = FindFirstObjectByType<BallController>();
-            if (ball != null)
-                targetX = ball.transform.position.x;
-            else
-                targetX = 0f; // center if no ball
+            targetX = ball != null ? ball.transform.position.x : 0f;
         }
         else
         {
-            // Player control: follow mouse
             targetX = _camera.ScreenToWorldPoint(Input.mousePosition).x;
         }
 
-        // Compute limits based on wall colliders and paddle width
         float halfWidth = GetHalfWidthWorld();
-
-        float leftLimit = _leftWall.bounds.max.x + halfWidth + _wallPadding;
+        float leftLimit  = _leftWall.bounds.max.x  + halfWidth + _wallPadding;
         float rightLimit = _rightWall.bounds.min.x - halfWidth - _wallPadding;
 
         targetX = Mathf.Clamp(targetX, leftLimit, rightLimit);
 
-        // Smooth toward clamped target (slower in demo mode for more natural AI feel)
         float smoothTime = _isDemoMode ? _demoSmoothTime : _smoothTime;
         float newX = Mathf.SmoothDamp(transform.position.x, targetX, ref _velocityX, smoothTime);
 
         transform.position = new Vector3(newX, _yLocked, transform.position.z);
+
+        // Laser: fire on left mouse button click (with cooldown to prevent spam)
+        if (_isLaser && !_isDemoMode)
+        {
+            _laserCooldown -= Time.deltaTime;
+            if (_laserCooldown <= 0f && Input.GetMouseButtonDown(0))
+            {
+                FireLasers();
+                _laserCooldown = _laserFireRate;
+            }
+        }
     }
 
-    public void ResetPosition()
+    // ── Powerup API ───────────────────────────────────────────────────────────
+
+    public void SetWide(bool on)
     {
-        transform.position = new Vector3(0f, transform.position.y, transform.position.z);
+        _isWide = on;
+        float xScale = on ? _normalScale.x * _widthMultiplier : _normalScale.x;
+        transform.localScale = new Vector3(xScale, _normalScale.y, _normalScale.z);
+    }
+
+    public void SetLaser(bool on)
+    {
+        _isLaser = on;
+        _laserCooldown = 0f; // fire immediately when activated
     }
 
     public void SetDemoMode(bool isDemoMode)
@@ -80,17 +104,47 @@ public class PaddleController : MonoBehaviour
         _isDemoMode = isDemoMode;
     }
 
+    public void ResetPosition()
+    {
+        transform.position = new Vector3(0f, _yLocked, transform.position.z);
+    }
+
+    // ── Laser firing ──────────────────────────────────────────────────────────
+
+    private void FireLasers()
+    {
+        if (_isWide)
+        {
+            // Double lasers - one from each side of the paddle
+            float hw = GetHalfWidthWorld() * 0.6f;
+            SpawnLaser(transform.position + Vector3.left  * hw);
+            SpawnLaser(transform.position + Vector3.right * hw);
+        }
+        else
+        {
+            // Single laser from center
+            SpawnLaser(transform.position);
+        }
+
+        SfxPlayer.Instance?.PlayLaser();
+    }
+
+    private void SpawnLaser(Vector3 position)
+    {
+        var go = new GameObject("Laser");
+        // Spawn well above the paddle and ball to avoid instant self-collision
+        go.transform.position = position + Vector3.up * 0.7f;
+        go.AddComponent<LaserProjectile>();
+    }
+
+    // ── Helpers ───────────────────────────────────────────────────────────────
 
     private float GetHalfWidthWorld()
     {
-        // Prefer collider if present
         var col = GetComponent<BoxCollider2D>();
         if (col != null) return col.bounds.extents.x;
-
-        // Fallback: use renderer
         var r = GetComponent<Renderer>();
         if (r != null) return r.bounds.extents.x;
-
         return 0.5f;
     }
 }
