@@ -12,31 +12,38 @@ public class PowerupPickup : MonoBehaviour
     private SpriteRenderer _sr;
     private float _bobTimer;
 
-    // Color scheme per powerup
+    // Is this a harmful powerup? (index >= 8 in enum)
+    private static bool IsBad(PowerupType t) => (int)t >= 8;
+
+    // Color per powerup type — index matches enum value
     private static readonly Color[] TypeColors = new Color[]
     {
-        new Color(0.3f, 0.6f, 1.0f),   // WidePaddle  — blue
-        new Color(1.0f, 0.4f, 0.0f),   // MultiBall   — orange
-        new Color(0.6f, 0.0f, 1.0f),   // StickyBall  — purple
-        new Color(1.0f, 0.85f, 0.0f),  // SpeedBall   — gold
-        new Color(0.1f, 1.0f, 0.3f),   // ExtraLife   — green
-        new Color(1.0f, 0.1f, 0.3f),   // Laser       — red
+        // ── Good ──────────────────────────────────────────────────────
+        new Color(0.30f, 0.60f, 1.00f),   // 0  WidePaddle   sky-blue
+        new Color(1.00f, 0.40f, 0.00f),   // 1  MultiBall    orange
+        new Color(0.60f, 0.00f, 1.00f),   // 2  StickyBall   purple
+        new Color(1.00f, 0.85f, 0.00f),   // 3  SpeedBall    gold
+        new Color(0.10f, 1.00f, 0.30f),   // 4  ExtraLife    green
+        new Color(1.00f, 0.10f, 0.30f),   // 5  Laser        crimson
+        new Color(1.00f, 0.45f, 0.00f),   // 6  Fireball     fire-orange
+        new Color(0.90f, 0.20f, 0.90f),   // 7  BombBrick    magenta
+        // ── Bad ───────────────────────────────────────────────────────
+        new Color(0.55f, 0.05f, 0.05f),   // 8  ShrinkPaddle dark-red
+        new Color(0.20f, 0.65f, 0.05f),   // 9  ZipBall      sickly-green
+        new Color(0.40f, 0.00f, 0.50f),   // 10 FlipControls dark-purple
+        new Color(0.10f, 0.35f, 0.10f),   // 11 CursedBall   murky-green
     };
 
-    // Short icon drawn in the center (unicode shapes that look like icons)
     private static readonly string[] TypeIcons = new string[]
     {
-        "↔",  // WidePaddle
-        "⊛",  // MultiBall
-        "⊕",  // StickyBall
-        "⚡",  // SpeedBall
-        "♥",  // ExtraLife
-        "|",  // Laser (vertical bolt)
+        "↔", "⊛", "⊕", "⚡", "♥", "|", "F!", "B!",
+        "↕", "!!", "↩", "☠",
     };
 
     private static readonly string[] TypeNames = new string[]
     {
-        "Wide", "Multi", "Sticky", "Fast", "+Life", "Laser"
+        "Wide", "Multi", "Sticky", "Fast", "+Life", "Laser", "Fire", "Bomb",
+        "SHRINK", "ZIP!", "FLIP!", "CURSE",
     };
 
     public void Init(PowerupType type)
@@ -61,20 +68,22 @@ public class PowerupPickup : MonoBehaviour
     {
         var rb = GetComponent<Rigidbody2D>();
         rb.gravityScale = 0.55f;
-        rb.constraints = RigidbodyConstraints2D.FreezeRotation;
+        rb.constraints  = RigidbodyConstraints2D.FreezeRotation;
 
         var col = GetComponent<CircleCollider2D>();
-        col.radius = 0.38f;
+        col.radius    = 0.38f;
         col.isTrigger = true;
     }
 
     private void Update()
     {
-        // Gentle bob animation while falling
-        _bobTimer += Time.deltaTime * 3f;
+        bool bad  = IsBad(_type);
+        float speed = bad ? 6f : 3f;
+        float amp   = bad ? 0.20f : 0.15f;
+        _bobTimer += Time.deltaTime * speed;
         if (_sr != null)
         {
-            float pulse = 0.85f + 0.15f * Mathf.Sin(_bobTimer);
+            float pulse = (1f - amp) + amp * Mathf.Sin(_bobTimer);
             _sr.transform.localScale = Vector3.one * pulse;
         }
     }
@@ -95,39 +104,39 @@ public class PowerupPickup : MonoBehaviour
 
     private void BuildVisuals()
     {
-        int idx = (int)_type;
+        int   idx   = Mathf.Clamp((int)_type, 0, TypeColors.Length - 1);
         Color color = TypeColors[idx];
-        string icon = TypeIcons[idx];
-        string label = TypeNames[idx];
+        bool  bad   = IsBad(_type);
 
         // ── Outer glow ring ────────────────────────────────────────────────────
         var glowGO = new GameObject("Glow");
         glowGO.transform.SetParent(transform, false);
         var glowSr = glowGO.AddComponent<SpriteRenderer>();
-        glowSr.sprite = CreateCircleSprite(32, true);
-        glowSr.color  = new Color(color.r, color.g, color.b, 0.35f);
+        glowSr.sprite       = CreateCircleSprite(32, true);
+        glowSr.color        = new Color(color.r, color.g, color.b, bad ? 0.55f : 0.35f);
         glowSr.sortingOrder = 8;
-        glowGO.transform.localScale = Vector3.one * 1.6f;
+        glowGO.transform.localScale = Vector3.one * (bad ? 1.9f : 1.6f);
 
         // ── Filled orb ─────────────────────────────────────────────────────────
         var orbGO = new GameObject("Orb");
         orbGO.transform.SetParent(transform, false);
-        _sr = orbGO.AddComponent<SpriteRenderer>();
-        _sr.sprite = CreateOrbSprite(color);
-        _sr.sortingOrder = 9;
+        _sr               = orbGO.AddComponent<SpriteRenderer>();
+        _sr.sprite        = CreateOrbSprite(color, bad);
+        _sr.sortingOrder  = 9;
 
-        // ── Icon label (TextMesh) ──────────────────────────────────────────────
+        // ── Label ──────────────────────────────────────────────────────────────
         var labelGO = new GameObject("Label");
         labelGO.transform.SetParent(transform, false);
         labelGO.transform.localPosition = new Vector3(0f, 0f, -0.1f);
 
+        string label = idx < TypeNames.Length ? TypeNames[idx] : "?";
         var tm = labelGO.AddComponent<TextMesh>();
-        tm.text = label;
-        tm.fontSize = 9;
-        tm.fontStyle = FontStyle.Bold;
-        tm.color = Color.white;
-        tm.alignment = TextAlignment.Center;
-        tm.anchor = TextAnchor.MiddleCenter;
+        tm.text          = label;
+        tm.fontSize      = 9;
+        tm.fontStyle     = FontStyle.Bold;
+        tm.color         = bad ? new Color(1f, 0.6f, 0.6f) : Color.white;
+        tm.alignment     = TextAlignment.Center;
+        tm.anchor        = TextAnchor.MiddleCenter;
         tm.characterSize = 0.1f;
 
         var mr = labelGO.GetComponent<MeshRenderer>();
@@ -136,7 +145,7 @@ public class PowerupPickup : MonoBehaviour
 
     private void SpawnCollectEffect()
     {
-        int idx = (int)_type;
+        int   idx   = Mathf.Clamp((int)_type, 0, TypeColors.Length - 1);
         Color color = TypeColors[idx];
         BrickParticleGenerator.SpawnBurst(transform.position, color, 18, true);
         SfxPlayer.Instance?.PlayPowerupPickup();
@@ -152,59 +161,55 @@ public class PowerupPickup : MonoBehaviour
 
     private static Sprite CreateCircleSprite(int resolution, bool softEdge)
     {
-        var tex = new Texture2D(resolution, resolution, TextureFormat.RGBA32, false);
+        var tex    = new Texture2D(resolution, resolution, TextureFormat.RGBA32, false);
         tex.filterMode = FilterMode.Bilinear;
         float center = resolution * 0.5f;
         float radius = center - 1f;
 
         for (int y = 0; y < resolution; y++)
+        for (int x = 0; x < resolution; x++)
         {
-            for (int x = 0; x < resolution; x++)
-            {
-                float dist = Vector2.Distance(new Vector2(x + 0.5f, y + 0.5f), new Vector2(center, center));
-                float alpha = softEdge
-                    ? Mathf.Clamp01(1f - dist / radius)
-                    : (dist < radius ? 1f : 0f);
-                tex.SetPixel(x, y, new Color(1f, 1f, 1f, alpha));
-            }
+            float dist  = Vector2.Distance(new Vector2(x + 0.5f, y + 0.5f), new Vector2(center, center));
+            float alpha = softEdge
+                ? Mathf.Clamp01(1f - dist / radius)
+                : (dist < radius ? 1f : 0f);
+            tex.SetPixel(x, y, new Color(1f, 1f, 1f, alpha));
         }
 
         tex.Apply();
         return Sprite.Create(tex, new Rect(0, 0, resolution, resolution), new Vector2(0.5f, 0.5f), resolution);
     }
 
-    private static Sprite CreateOrbSprite(Color baseColor)
+    private static Sprite CreateOrbSprite(Color baseColor, bool bad)
     {
-        int res = 32;
-        var tex = new Texture2D(res, res, TextureFormat.RGBA32, false);
+        int res    = 32;
+        var tex    = new Texture2D(res, res, TextureFormat.RGBA32, false);
         tex.filterMode = FilterMode.Bilinear;
         float center = res * 0.5f;
         float radius = center - 1f;
 
         for (int y = 0; y < res; y++)
+        for (int x = 0; x < res; x++)
         {
-            for (int x = 0; x < res; x++)
-            {
-                float dist = Vector2.Distance(new Vector2(x + 0.5f, y + 0.5f), new Vector2(center, center));
-                if (dist >= radius) { tex.SetPixel(x, y, Color.clear); continue; }
+            float dist = Vector2.Distance(new Vector2(x + 0.5f, y + 0.5f), new Vector2(center, center));
+            if (dist >= radius) { tex.SetPixel(x, y, Color.clear); continue; }
 
-                float t = dist / radius; // 0=center, 1=edge
+            float t = dist / radius;
 
-                // Base gradient: bright center, darker edge
-                Color c = Color.Lerp(Color.white, baseColor, t * 0.7f);
+            // Good: bright center → color at edge. Bad: dark murky center.
+            Color c = bad
+                ? Color.Lerp(new Color(baseColor.r * 0.4f, baseColor.g * 0.4f, baseColor.b * 0.4f), baseColor, t * 0.8f)
+                : Color.Lerp(Color.white, baseColor, t * 0.7f);
 
-                // Specular highlight in upper-left
-                float hx = (x + 0.5f - center * 0.65f) / radius;
-                float hy = (y + 0.5f - center * 1.35f) / radius;
-                float specDist = Mathf.Sqrt(hx * hx + hy * hy);
-                float spec = Mathf.Clamp01(1f - specDist * 2.5f);
-                c = Color.Lerp(c, Color.white, spec * 0.55f);
+            // Specular highlight
+            float hx      = (x + 0.5f - center * 0.65f) / radius;
+            float hy      = (y + 0.5f - center * 1.35f) / radius;
+            float specDist = Mathf.Sqrt(hx * hx + hy * hy);
+            float spec    = Mathf.Clamp01(1f - specDist * 2.5f);
+            c = Color.Lerp(c, Color.white, spec * (bad ? 0.25f : 0.55f));
 
-                // Edge fade
-                float alpha = Mathf.Clamp01((radius - dist) / 2f);
-                c.a = alpha;
-                tex.SetPixel(x, y, c);
-            }
+            c.a = Mathf.Clamp01((radius - dist) / 2f);
+            tex.SetPixel(x, y, c);
         }
 
         tex.Apply();

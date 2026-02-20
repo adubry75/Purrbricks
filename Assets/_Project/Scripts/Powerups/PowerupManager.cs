@@ -118,18 +118,16 @@ public class PowerupManager : MonoBehaviour
 
         switch (type)
         {
-            case PowerupType.WidePaddle:
-                _paddle?.SetWide(true);
-                break;
-            case PowerupType.StickyBall:
-                foreach (var b in _balls) b.SetSticky(true);
-                break;
-            case PowerupType.SpeedBall:
-                foreach (var b in _balls) b.SetSpeedBoost(true);
-                break;
-            case PowerupType.Laser:
-                _paddle?.SetLaser(true);
-                break;
+            case PowerupType.WidePaddle:    _paddle?.SetWide(true);                             break;
+            case PowerupType.StickyBall:    foreach (var b in _balls) b.SetSticky(true);        break;
+            case PowerupType.SpeedBall:     foreach (var b in _balls) b.SetSpeedBoost(true);    break;
+            case PowerupType.Laser:         _paddle?.SetLaser(true);                            break;
+            case PowerupType.Fireball:      foreach (var b in _balls) b.SetFireball(true);      break;
+            case PowerupType.BombBrick:     foreach (var b in _balls) b.SetBomb(true);          break;
+            case PowerupType.ShrinkPaddle:  _paddle?.SetShrink(true);                          break;
+            case PowerupType.ZipBall:       foreach (var b in _balls) b.SetZipBall(true);      break;
+            case PowerupType.FlipControls:  _paddle?.SetFlipped(true);                         break;
+            case PowerupType.CursedBall:    foreach (var b in _balls) b.SetCursed(true);       break;
         }
     }
 
@@ -140,18 +138,16 @@ public class PowerupManager : MonoBehaviour
 
         switch (type)
         {
-            case PowerupType.WidePaddle:
-                _paddle?.SetWide(false);
-                break;
-            case PowerupType.StickyBall:
-                foreach (var b in _balls) b.SetSticky(false);
-                break;
-            case PowerupType.SpeedBall:
-                foreach (var b in _balls) b.SetSpeedBoost(false);
-                break;
-            case PowerupType.Laser:
-                _paddle?.SetLaser(false);
-                break;
+            case PowerupType.WidePaddle:    _paddle?.SetWide(false);                            break;
+            case PowerupType.StickyBall:    foreach (var b in _balls) b.SetSticky(false);       break;
+            case PowerupType.SpeedBall:     foreach (var b in _balls) b.SetSpeedBoost(false);   break;
+            case PowerupType.Laser:         _paddle?.SetLaser(false);                           break;
+            case PowerupType.Fireball:      foreach (var b in _balls) b.SetFireball(false);     break;
+            case PowerupType.BombBrick:     foreach (var b in _balls) b.SetBomb(false);         break;
+            case PowerupType.ShrinkPaddle:  _paddle?.SetShrink(false);                         break;
+            case PowerupType.ZipBall:       foreach (var b in _balls) b.SetZipBall(false);     break;
+            case PowerupType.FlipControls:  _paddle?.SetFlipped(false);                        break;
+            case PowerupType.CursedBall:    foreach (var b in _balls) b.SetCursed(false);      break;
         }
     }
 

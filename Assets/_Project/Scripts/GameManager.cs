@@ -97,6 +97,8 @@ public class GameManager : MonoBehaviour
             if (Input.GetKeyDown(KeyCode.Keypad4)) PowerupManager.Instance?.Apply(PowerupType.SpeedBall);
             if (Input.GetKeyDown(KeyCode.Keypad5)) PowerupManager.Instance?.Apply(PowerupType.ExtraLife);
             if (Input.GetKeyDown(KeyCode.Keypad6)) PowerupManager.Instance?.Apply(PowerupType.Laser);
+            if (Input.GetKeyDown(KeyCode.Keypad7)) PowerupManager.Instance?.Apply(PowerupType.Fireball);
+            if (Input.GetKeyDown(KeyCode.Keypad8)) PowerupManager.Instance?.Apply(PowerupType.BombBrick);
         }
 
         // Debug hotkey: clear all but 1 brick

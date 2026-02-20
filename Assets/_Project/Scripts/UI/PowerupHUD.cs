@@ -13,23 +13,41 @@ public class PowerupHUD : MonoBehaviour
 
     private static readonly Color[] TypeColors = new Color[]
     {
-        new Color(0.3f, 0.6f, 1.0f),   // WidePaddle
-        new Color(1.0f, 0.4f, 0.0f),   // MultiBall (never shown, instant)
-        new Color(0.6f, 0.0f, 1.0f),   // StickyBall
-        new Color(1.0f, 0.85f, 0.0f),  // SpeedBall
-        new Color(0.1f, 1.0f, 0.3f),   // ExtraLife  (never shown, instant)
-        new Color(1.0f, 0.1f, 0.3f),   // Laser
+        // ── Good ──
+        new Color(0.30f, 0.60f, 1.00f),  // WidePaddle
+        new Color(1.00f, 0.40f, 0.00f),  // MultiBall  (instant — rarely shown)
+        new Color(0.60f, 0.00f, 1.00f),  // StickyBall
+        new Color(1.00f, 0.85f, 0.00f),  // SpeedBall
+        new Color(0.10f, 1.00f, 0.30f),  // ExtraLife  (instant — rarely shown)
+        new Color(1.00f, 0.10f, 0.30f),  // Laser
+        new Color(1.00f, 0.45f, 0.00f),  // Fireball
+        new Color(0.90f, 0.20f, 0.90f),  // BombBrick
+        // ── Bad ──
+        new Color(0.90f, 0.20f, 0.20f),  // ShrinkPaddle
+        new Color(0.40f, 0.90f, 0.10f),  // ZipBall
+        new Color(0.65f, 0.10f, 0.80f),  // FlipControls
+        new Color(0.20f, 0.75f, 0.35f),  // CursedBall
     };
 
     private static readonly string[] TypeLabels = new string[]
     {
+        // ── Good ──
         "WIDE PADDLE",
         "MULTI-BALL",
         "STICKY BALL",
         "SPEED BALL",
         "+ LIFE",
         "LASER",
+        "FIREBALL",
+        "BOMB BRICK",
+        // ── Bad ──
+        "⚠ SHRINK",
+        "⚠ ZIP BALL",
+        "⚠ FLIP CTRL",
+        "⚠ CURSED",
     };
+
+    private static bool IsBadPowerup(int idx) => idx >= 8;
 
     // Slot UI references for each active powerup
     private class Slot
@@ -109,9 +127,10 @@ public class PowerupHUD : MonoBehaviour
 
     private void AddSlot(PowerupType type)
     {
-        int idx = (int)type;
+        int idx = Mathf.Clamp((int)type, 0, TypeColors.Length - 1);
         Color color = TypeColors[idx];
-        string label = TypeLabels[idx];
+        string label = idx < TypeLabels.Length ? TypeLabels[idx] : type.ToString().ToUpper();
+        bool bad = IsBadPowerup(idx);
 
         var slotGO = new GameObject($"Slot_{type}");
         slotGO.transform.SetParent(_listRoot, false);
@@ -119,9 +138,9 @@ public class PowerupHUD : MonoBehaviour
         var slotRt = slotGO.AddComponent<RectTransform>();
         slotRt.sizeDelta = new Vector2(200f, 56f);
 
-        // Background
+        // Background — red tint for bad powerups
         var bg = slotGO.AddComponent<Image>();
-        bg.color = new Color(0f, 0f, 0f, 0.65f);
+        bg.color = bad ? new Color(0.25f, 0f, 0f, 0.75f) : new Color(0f, 0f, 0f, 0.65f);
 
         // Left color accent strip
         var strip = new GameObject("Strip");

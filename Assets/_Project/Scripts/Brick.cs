@@ -52,6 +52,9 @@ public class Brick : MonoBehaviour
             _visual?.SetPowerupBrick(id);
     }
 
+    public int  CurrentHitPoints  => _hitPoints;
+    public bool IsIndestructible  => _isIndestructible;
+
     public void SetTemplate(BrickTemplate template, BrickSkin skin, Color tint)
     {
         _visual?.SetSkin(skin, tint);

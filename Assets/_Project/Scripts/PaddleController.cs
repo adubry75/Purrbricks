@@ -30,6 +30,8 @@ public class PaddleController : MonoBehaviour
     // Powerup state
     private bool _isWide;
     private bool _isLaser;
+    private bool _isShrunk;
+    private bool _isFlipped;
     private float _laserCooldown;
 
     private Vector3 _normalScale;
@@ -58,7 +60,8 @@ public class PaddleController : MonoBehaviour
         }
         else
         {
-            targetX = _camera.ScreenToWorldPoint(Input.mousePosition).x;
+            float mouseX = _camera.ScreenToWorldPoint(Input.mousePosition).x;
+            targetX = _isFlipped ? -mouseX : mouseX;
         }
 
         float halfWidth = GetHalfWidthWorld();
@@ -86,17 +89,35 @@ public class PaddleController : MonoBehaviour
 
     // ── Powerup API ───────────────────────────────────────────────────────────
 
+    private void ApplyPaddleScale()
+    {
+        float xScale = _normalScale.x;
+        if (_isWide)   xScale *= _widthMultiplier;
+        if (_isShrunk) xScale *= 0.5f;
+        transform.localScale = new Vector3(xScale, _normalScale.y, _normalScale.z);
+    }
+
     public void SetWide(bool on)
     {
         _isWide = on;
-        float xScale = on ? _normalScale.x * _widthMultiplier : _normalScale.x;
-        transform.localScale = new Vector3(xScale, _normalScale.y, _normalScale.z);
+        ApplyPaddleScale();
+    }
+
+    public void SetShrink(bool on)
+    {
+        _isShrunk = on;
+        ApplyPaddleScale();
+    }
+
+    public void SetFlipped(bool on)
+    {
+        _isFlipped = on;
     }
 
     public void SetLaser(bool on)
     {
         _isLaser = on;
-        _laserCooldown = 0f; // fire immediately when activated
+        _laserCooldown = 0f;
     }
 
     public void SetDemoMode(bool isDemoMode)

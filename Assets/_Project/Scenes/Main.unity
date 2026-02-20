@@ -2943,6 +2943,13 @@ MonoBehaviour:
   - level_00
   - level_01
   - level_02
+  - level_03
+  - level_04
+  - level_05
+  - level_06
+  - level_07
+  - level_08
+  - level_09
   _levelClearDelay: 3
   _levelLoader: {fileID: 1184986102}
   _ball: {fileID: 1374096748}
