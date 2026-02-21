@@ -21,74 +21,71 @@ public class GameOverUI : MonoBehaviour
     private void BuildUI()
     {
         _canvas = gameObject.AddComponent<Canvas>();
-        _canvas.renderMode = RenderMode.ScreenSpaceOverlay;
+        _canvas.renderMode   = RenderMode.ScreenSpaceOverlay;
         _canvas.sortingOrder = 200;
 
         var scaler = gameObject.AddComponent<CanvasScaler>();
-        scaler.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
+        scaler.uiScaleMode         = CanvasScaler.ScaleMode.ScaleWithScreenSize;
         scaler.referenceResolution = new Vector2(1920, 1080);
 
         gameObject.AddComponent<GraphicRaycaster>();
 
-        // Background panel - offset left to center on playfield
         var panel = new GameObject("Panel");
         panel.transform.SetParent(transform, false);
 
         var panelImg = panel.AddComponent<Image>();
-        panelImg.color = new Color(0f, 0f, 0f, 0.85f);
+        panelImg.color = new Color(0f, 0f, 0f, 0.88f);
 
         var panelRt = panel.GetComponent<RectTransform>();
-        panelRt.anchorMin = Vector2.zero;
-        panelRt.anchorMax = Vector2.one;
-        panelRt.sizeDelta = Vector2.zero;
-        // Shift left by 1/12th of screen width (half of 1/6th reserved area)
+        panelRt.anchorMin       = Vector2.zero;
+        panelRt.anchorMax       = Vector2.one;
+        panelRt.sizeDelta       = Vector2.zero;
         panelRt.anchoredPosition = new Vector2(-160f, 0f);
 
-        // "GAME OVER" title (will be changed to "VICTORY!" if game complete)
+        // Title
         var titleGO = new GameObject("Title");
         titleGO.transform.SetParent(panel.transform, false);
 
-        _titleText = titleGO.AddComponent<Text>();
-        _titleText.text = "GAME OVER";
-        _titleText.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
-        _titleText.fontSize = 100;
+        _titleText           = titleGO.AddComponent<Text>();
+        _titleText.text      = "GAME OVER";
+        _titleText.font      = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
+        _titleText.fontSize  = 100;
         _titleText.fontStyle = FontStyle.Bold;
         _titleText.alignment = TextAnchor.MiddleCenter;
-        _titleText.color = new Color(1f, 0.2f, 0.2f);
+        _titleText.color     = UIStyle.AccentRed;
 
         var titleRt = _titleText.GetComponent<RectTransform>();
-        titleRt.anchorMin = new Vector2(0.5f, 0.5f);
-        titleRt.anchorMax = new Vector2(0.5f, 0.5f);
-        titleRt.sizeDelta = new Vector2(800f, 120f);
-        titleRt.anchoredPosition = new Vector2(0f, 200f);
+        titleRt.anchorMin       = new Vector2(0.5f, 0.5f);
+        titleRt.anchorMax       = new Vector2(0.5f, 0.5f);
+        titleRt.sizeDelta       = new Vector2(800f, 120f);
+        titleRt.anchoredPosition = new Vector2(0f, 210f);
 
-        var outline = titleGO.AddComponent<Outline>();
-        outline.effectColor = Color.black;
-        outline.effectDistance = new Vector2(3f, -3f);
+        var titleOl = titleGO.AddComponent<Outline>();
+        titleOl.effectColor    = Color.black;
+        titleOl.effectDistance = new Vector2(4f, -4f);
 
-        // Score display (will be set dynamically)
-        CreateText(panel, "Score: 0", new Vector2(0f, 80f), 60, Color.white, "ScoreText");
+        // Score
+        CreateText(panel, "Score: 0", new Vector2(0f, 90f), 60, Color.white, "ScoreText");
 
-        // Name entry panel (shown only if high score)
+        // High score name entry
         _namePanel = new GameObject("NamePanel");
         _namePanel.transform.SetParent(panel.transform, false);
 
-        var namePanelRt = _namePanel.AddComponent<RectTransform>();
-        namePanelRt.anchorMin = new Vector2(0.5f, 0.5f);
-        namePanelRt.anchorMax = new Vector2(0.5f, 0.5f);
-        namePanelRt.sizeDelta = new Vector2(600f, 200f);
-        namePanelRt.anchoredPosition = new Vector2(0f, -50f);
+        var npRt = _namePanel.AddComponent<RectTransform>();
+        npRt.anchorMin       = new Vector2(0.5f, 0.5f);
+        npRt.anchorMax       = new Vector2(0.5f, 0.5f);
+        npRt.sizeDelta       = new Vector2(620f, 200f);
+        npRt.anchoredPosition = new Vector2(0f, -40f);
 
-        CreateText(_namePanel, "NEW HIGH SCORE!", new Vector2(0f, 60f), 40, Color.yellow);
-        CreateText(_namePanel, "Enter your name:", new Vector2(0f, 10f), 30, Color.white);
-
+        CreateText(_namePanel, "NEW HIGH SCORE!", new Vector2(0f, 68f), 40, UIStyle.AccentGold);
+        CreateText(_namePanel, "Enter your name:", new Vector2(0f, 18f), 30, Color.white);
         CreateNameInput(_namePanel);
 
         _namePanel.SetActive(false);
 
         // Buttons
-        CreateButton(panel, "Play Again", new Vector2(-150f, -200f), OnPlayAgain);
-        CreateButton(panel, "Main Menu", new Vector2(150f, -200f), OnMainMenu);
+        UIStyle.CreateButton(panel.transform, "Play Again", new Vector2(-160f, -215f), new Vector2(280f, 75f), OnPlayAgain, UIStyle.AccentBlue);
+        UIStyle.CreateButton(panel.transform, "Main Menu",  new Vector2( 160f, -215f), new Vector2(280f, 75f), OnMainMenu,  UIStyle.AccentGold);
     }
 
     private void CreateText(GameObject parent, string text, Vector2 pos, int fontSize, Color color, string objName = null)
@@ -97,22 +94,22 @@ public class GameOverUI : MonoBehaviour
         go.transform.SetParent(parent.transform, false);
 
         var txt = go.AddComponent<Text>();
-        txt.text = text;
-        txt.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
-        txt.fontSize = fontSize;
+        txt.text      = text;
+        txt.font      = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
+        txt.fontSize  = fontSize;
         txt.fontStyle = FontStyle.Bold;
         txt.alignment = TextAnchor.MiddleCenter;
-        txt.color = color;
+        txt.color     = color;
 
         var rt = txt.GetComponent<RectTransform>();
-        rt.anchorMin = new Vector2(0.5f, 0.5f);
-        rt.anchorMax = new Vector2(0.5f, 0.5f);
-        rt.sizeDelta = new Vector2(800f, fontSize + 20f);
+        rt.anchorMin       = new Vector2(0.5f, 0.5f);
+        rt.anchorMax       = new Vector2(0.5f, 0.5f);
+        rt.sizeDelta       = new Vector2(800f, fontSize + 20f);
         rt.anchoredPosition = pos;
 
-        var outline = go.AddComponent<Outline>();
-        outline.effectColor = Color.black;
-        outline.effectDistance = new Vector2(3f, -3f);
+        var ol = go.AddComponent<Outline>();
+        ol.effectColor    = Color.black;
+        ol.effectDistance = new Vector2(3f, -3f);
     }
 
     private void CreateNameInput(GameObject parent)
@@ -121,18 +118,22 @@ public class GameOverUI : MonoBehaviour
         inputGO.transform.SetParent(parent.transform, false);
 
         var inputImg = inputGO.AddComponent<Image>();
-        inputImg.color = new Color(0.2f, 0.2f, 0.2f);
+        inputImg.color = new Color(0.07f, 0.12f, 0.22f, 0.95f);
+
+        var inputOl = inputGO.AddComponent<Outline>();
+        inputOl.effectColor    = new Color(0.35f, 0.70f, 1f, 0.6f);
+        inputOl.effectDistance = new Vector2(1f, -1f);
 
         _nameInput = inputGO.AddComponent<InputField>();
-        _nameInput.textComponent = CreateInputText(inputGO);
-        _nameInput.text = "PLAYER";
+        _nameInput.textComponent  = CreateInputText(inputGO);
+        _nameInput.text           = "PLAYER";
         _nameInput.characterLimit = 12;
 
         var inputRt = inputGO.GetComponent<RectTransform>();
-        inputRt.anchorMin = new Vector2(0.5f, 0.5f);
-        inputRt.anchorMax = new Vector2(0.5f, 0.5f);
-        inputRt.sizeDelta = new Vector2(400f, 50f);
-        inputRt.anchoredPosition = new Vector2(0f, -40f);
+        inputRt.anchorMin       = new Vector2(0.5f, 0.5f);
+        inputRt.anchorMax       = new Vector2(0.5f, 0.5f);
+        inputRt.sizeDelta       = new Vector2(420f, 55f);
+        inputRt.anchoredPosition = new Vector2(0f, -38f);
     }
 
     private Text CreateInputText(GameObject parent)
@@ -141,10 +142,10 @@ public class GameOverUI : MonoBehaviour
         textGO.transform.SetParent(parent.transform, false);
 
         var txt = textGO.AddComponent<Text>();
-        txt.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
-        txt.fontSize = 32;
+        txt.font      = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
+        txt.fontSize  = 32;
         txt.alignment = TextAnchor.MiddleCenter;
-        txt.color = Color.white;
+        txt.color     = Color.white;
 
         var rt = txt.GetComponent<RectTransform>();
         rt.anchorMin = Vector2.zero;
@@ -155,90 +156,40 @@ public class GameOverUI : MonoBehaviour
         return txt;
     }
 
-    private void CreateButton(GameObject parent, string label, Vector2 pos, System.Action onClick)
-    {
-        var btnGO = new GameObject(label + "Button");
-        btnGO.transform.SetParent(parent.transform, false);
-
-        var btnImg = btnGO.AddComponent<Image>();
-        btnImg.color = new Color(0.2f, 0.6f, 1f);
-
-        var button = btnGO.AddComponent<Button>();
-        button.targetGraphic = btnImg;
-
-        var colors = button.colors;
-        colors.normalColor = new Color(0.2f, 0.6f, 1f);
-        colors.highlightedColor = new Color(0.3f, 0.8f, 1f);
-        colors.pressedColor = new Color(0.1f, 0.4f, 0.8f);
-        button.colors = colors;
-
-        button.onClick.AddListener(() => onClick?.Invoke());
-
-        var btnRt = btnGO.GetComponent<RectTransform>();
-        btnRt.anchorMin = new Vector2(0.5f, 0.5f);
-        btnRt.anchorMax = new Vector2(0.5f, 0.5f);
-        btnRt.sizeDelta = new Vector2(250f, 70f);
-        btnRt.anchoredPosition = pos;
-
-        var textGO = new GameObject("Text");
-        textGO.transform.SetParent(btnGO.transform, false);
-
-        var btnText = textGO.AddComponent<Text>();
-        btnText.text = label;
-        btnText.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
-        btnText.fontSize = 32;
-        btnText.fontStyle = FontStyle.Bold;
-        btnText.alignment = TextAnchor.MiddleCenter;
-        btnText.color = Color.white;
-
-        var textRt = btnText.GetComponent<RectTransform>();
-        textRt.anchorMin = Vector2.zero;
-        textRt.anchorMax = Vector2.one;
-        textRt.sizeDelta = Vector2.zero;
-    }
-
     public void ShowGameOver(int finalScore)
     {
-        _finalScore = finalScore;
+        _finalScore      = finalScore;
         gameObject.SetActive(true);
 
-        // Set title to "GAME OVER"
         if (_titleText != null)
         {
-            _titleText.text = "GAME OVER";
-            _titleText.color = new Color(1f, 0.2f, 0.2f); // red
+            _titleText.text  = "GAME OVER";
+            _titleText.color = UIStyle.AccentRed;
         }
 
-        // Update score text
-        var scoreText = transform.Find("Panel/ScoreText")?.GetComponent<Text>();
-        if (scoreText != null)
-            scoreText.text = $"Final Score: {finalScore:N0}";
+        var st = transform.Find("Panel/ScoreText")?.GetComponent<Text>();
+        if (st != null) st.text = $"Final Score: {finalScore:N0}";
 
-        // Show name input if high score
-        bool isHighScore = HighScoreManager.Instance?.IsHighScore(finalScore) ?? false;
-        _namePanel.SetActive(isHighScore);
+        bool isHigh = HighScoreManager.Instance?.IsHighScore(finalScore) ?? false;
+        _namePanel.SetActive(isHigh);
     }
 
     public void ShowGameComplete(int finalScore)
     {
-        _finalScore = finalScore;
+        _finalScore      = finalScore;
         gameObject.SetActive(true);
 
-        // Set title to "VICTORY!"
         if (_titleText != null)
         {
-            _titleText.text = "VICTORY!";
-            _titleText.color = new Color(0.2f, 1f, 0.4f); // green
+            _titleText.text  = "VICTORY!";
+            _titleText.color = UIStyle.AccentGreen;
         }
 
-        // Update score text
-        var scoreText = transform.Find("Panel/ScoreText")?.GetComponent<Text>();
-        if (scoreText != null)
-            scoreText.text = $"Final Score: {finalScore:N0}";
+        var st = transform.Find("Panel/ScoreText")?.GetComponent<Text>();
+        if (st != null) st.text = $"Final Score: {finalScore:N0}";
 
-        // Always show name input for game completion
-        bool isHighScore = HighScoreManager.Instance?.IsHighScore(finalScore) ?? false;
-        _namePanel.SetActive(isHighScore);
+        bool isHigh = HighScoreManager.Instance?.IsHighScore(finalScore) ?? false;
+        _namePanel.SetActive(isHigh);
     }
 
     private void OnPlayAgain()
@@ -257,8 +208,8 @@ public class GameOverUI : MonoBehaviour
     {
         if (_namePanel.activeSelf && HighScoreManager.Instance != null)
         {
-            string playerName = string.IsNullOrWhiteSpace(_nameInput.text) ? "PLAYER" : _nameInput.text;
-            HighScoreManager.Instance.AddScore(playerName, _finalScore);
+            string name = string.IsNullOrWhiteSpace(_nameInput.text) ? "PLAYER" : _nameInput.text;
+            HighScoreManager.Instance.AddScore(name, _finalScore);
         }
     }
 

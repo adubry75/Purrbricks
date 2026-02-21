@@ -1,0 +1,60 @@
+{
+  "id": "level_19",
+  "displayName": "Mountain Range",
+  "ballSpeed": 11.5,
+  "grid": { "cols": 14, "rows": 8, "brickWidth": 1.35, "brickHeight": 0.45, "gapX": 0.06, "gapY": 0.14 },
+  "bricks": [
+    { "col":  0, "row": 0, "templateId": "gem", "powerupId": "SpeedBall"  },
+    { "col":  1, "row": 0, "templateId": "cyan"  },
+    { "col":  2, "row": 0, "templateId": "gem", "powerupId": "ExtraLife"  },
+    { "col":  3, "row": 0, "templateId": "blue"  },
+    { "col":  4, "row": 0, "templateId": "gem", "powerupId": "MultiBall"  },
+    { "col":  5, "row": 0, "templateId": "green" },
+    { "col":  6, "row": 0, "templateId": "gem", "powerupId": "Laser"      },
+    { "col":  7, "row": 0, "templateId": "standard" },
+    { "col":  8, "row": 0, "templateId": "gem", "powerupId": "MultiBall"  },
+    { "col":  9, "row": 0, "templateId": "green" },
+    { "col": 10, "row": 0, "templateId": "gem", "powerupId": "ExtraLife"  },
+    { "col": 11, "row": 0, "templateId": "blue"  },
+    { "col": 12, "row": 0, "templateId": "gem", "powerupId": "SpeedBall"  },
+    { "col": 13, "row": 0, "templateId": "cyan"  },
+
+    { "col":  0, "row": 1, "templateId": "cyan" }, { "col":  1, "row": 1, "templateId": "cyan" },
+    { "col":  2, "row": 1, "templateId": "blue" }, { "col":  3, "row": 1, "templateId": "blue" },
+    { "col":  4, "row": 1, "templateId": "green" }, { "col":  5, "row": 1, "templateId": "green" },
+    { "col":  6, "row": 1, "templateId": "standard" }, { "col":  7, "row": 1, "templateId": "standard" },
+    { "col":  8, "row": 1, "templateId": "green" }, { "col":  9, "row": 1, "templateId": "green" },
+    { "col": 10, "row": 1, "templateId": "blue" }, { "col": 11, "row": 1, "templateId": "blue" },
+    { "col": 12, "row": 1, "templateId": "cyan" }, { "col": 13, "row": 1, "templateId": "cyan" },
+
+    { "col":  0, "row": 2, "templateId": "cyan" }, { "col":  1, "row": 2, "templateId": "cyan" },
+    { "col":  2, "row": 2, "templateId": "blue" }, { "col":  3, "row": 2, "templateId": "blue" },
+    { "col":  4, "row": 2, "templateId": "green" }, { "col":  5, "row": 2, "templateId": "green" },
+    { "col":  6, "row": 2, "templateId": "standard" }, { "col":  7, "row": 2, "templateId": "standard" },
+    { "col":  8, "row": 2, "templateId": "green" }, { "col":  9, "row": 2, "templateId": "green" },
+    { "col": 10, "row": 2, "templateId": "blue" }, { "col": 11, "row": 2, "templateId": "blue" },
+    { "col": 12, "row": 2, "templateId": "cyan" }, { "col": 13, "row": 2, "templateId": "cyan" },
+
+    { "col":  2, "row": 3, "templateId": "blue" }, { "col":  3, "row": 3, "templateId": "blue" },
+    { "col":  4, "row": 3, "templateId": "green" }, { "col":  5, "row": 3, "templateId": "green" },
+    { "col":  6, "row": 3, "templateId": "standard" }, { "col":  7, "row": 3, "templateId": "standard" },
+    { "col":  8, "row": 3, "templateId": "green" }, { "col":  9, "row": 3, "templateId": "green" },
+    { "col": 10, "row": 3, "templateId": "blue" }, { "col": 11, "row": 3, "templateId": "blue" },
+
+    { "col":  2, "row": 4, "templateId": "blue" }, { "col":  3, "row": 4, "templateId": "blue" },
+    { "col":  4, "row": 4, "templateId": "green" }, { "col":  5, "row": 4, "templateId": "green" },
+    { "col":  6, "row": 4, "templateId": "standard" }, { "col":  7, "row": 4, "templateId": "standard" },
+    { "col":  8, "row": 4, "templateId": "green" }, { "col":  9, "row": 4, "templateId": "green" },
+    { "col": 10, "row": 4, "templateId": "blue" }, { "col": 11, "row": 4, "templateId": "blue" },
+
+    { "col":  4, "row": 5, "templateId": "green" }, { "col":  5, "row": 5, "templateId": "green" },
+    { "col":  6, "row": 5, "templateId": "standard" }, { "col":  7, "row": 5, "templateId": "standard" },
+    { "col":  8, "row": 5, "templateId": "green" }, { "col":  9, "row": 5, "templateId": "green" },
+
+    { "col":  4, "row": 6, "templateId": "green" }, { "col":  5, "row": 6, "templateId": "green" },
+    { "col":  6, "row": 6, "templateId": "standard" }, { "col":  7, "row": 6, "templateId": "standard" },
+    { "col":  8, "row": 6, "templateId": "green" }, { "col":  9, "row": 6, "templateId": "green" },
+
+    { "col":  6, "row": 7, "templateId": "standard" }, { "col":  7, "row": 7, "templateId": "standard" }
+  ]
+}

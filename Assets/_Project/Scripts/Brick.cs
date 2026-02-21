@@ -111,7 +111,10 @@ public class Brick : MonoBehaviour
         BrickParticleGenerator.SpawnBurst(transform.position, popupColor, particleCount, isSpecial);
 
         _visual?.PlayBreakEffect();
-        SfxPlayer.Instance?.PlayBrickBreak();
+        if (_maxHitPoints > 1)
+            SfxPlayer.Instance?.PlayBrickBreakHeavy();
+        else
+            SfxPlayer.Instance?.PlayBrickBreak();
 
         if (!string.IsNullOrEmpty(_powerupId))
         {

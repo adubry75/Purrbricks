@@ -1008,12 +1008,14 @@ MonoBehaviour:
   _paddleHit: {fileID: 8300000, guid: e487a4cab634edd4bab4a381d5076c8a, type: 3}
   _wallHit: {fileID: 8300000, guid: e487a4cab634edd4bab4a381d5076c8a, type: 3}
   _brickBreak: {fileID: 8300000, guid: e487a4cab634edd4bab4a381d5076c8a, type: 3}
+  _brickBreakHeavy: {fileID: 0}
   _brickHit: {fileID: 8300000, guid: 186470a7822f2394fb4d6661f07bc05e, type: 3}
   _lifeLost: {fileID: 8300000, guid: e487a4cab634edd4bab4a381d5076c8a, type: 3}
   _win: {fileID: 8300000, guid: ba7731ec97455874dbfb8230360a761d, type: 3}
   _gameOver: {fileID: 8300000, guid: e487a4cab634edd4bab4a381d5076c8a, type: 3}
   _laser: {fileID: 8300000, guid: 126f315c59d563f4a934a3f44fd2246b, type: 3}
   _powerupPickup: {fileID: 8300000, guid: 8e51de29b15a0c64ab7d71ea7a072d74, type: 3}
+  _furyStrike: {fileID: 0}
   _volume: 0.7
   _pitchMin: 0.97
   _pitchMax: 1.03
@@ -1295,6 +1297,11 @@ MonoBehaviour:
   - {fileID: 11400000, guid: 75ca2e8c2846ee345994a3499146cf91, type: 2}
   - {fileID: 11400000, guid: 859f343f28115a74db45783f280e449c, type: 2}
   - {fileID: 11400000, guid: 072dd162825af43428e90b6e589da83b, type: 2}
+  - {fileID: 11400000, guid: 82c94082cd225f14f8cefac9cf345f1c, type: 2}
+  - {fileID: 11400000, guid: 4b1cbf182cea7414b98a17e65e14f7a6, type: 2}
+  - {fileID: 11400000, guid: e4de2c80f8f7db745a58fa7eda36e2f8, type: 2}
+  - {fileID: 11400000, guid: 1cd3e4752a861f64c9f676ecdf6fd56a, type: 2}
+  - {fileID: 11400000, guid: 31e2d2b9016deee4887236c700783060, type: 2}
 --- !u!4 &776083533
 Transform:
   m_ObjectHideFlags: 0
@@ -2143,6 +2150,50 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &1161839674
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1161839676}
+  - component: {fileID: 1161839675}
+  m_Layer: 0
+  m_Name: PowerupNotification
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &1161839675
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1161839674}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 010ee91bee1a599488d59c11437eb6d4, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PowerupNotification
+--- !u!4 &1161839676
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1161839674}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1184986101
 GameObject:
   m_ObjectHideFlags: 0
@@ -2729,6 +2780,50 @@ TrailRenderer:
   m_Autodestruct: 0
   m_Emitting: 1
   m_ApplyActiveColorSpace: 1
+--- !u!1 &1388394581
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1388394583}
+  - component: {fileID: 1388394582}
+  m_Layer: 0
+  m_Name: HavocBar
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &1388394582
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1388394581}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: dff6ffe40c0b4804aac732c95d9d27eb, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::HavocBar
+--- !u!4 &1388394583
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1388394581}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1601206117
 GameObject:
   m_ObjectHideFlags: 0
@@ -2906,6 +3001,50 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &1678714755
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1678714757}
+  - component: {fileID: 1678714756}
+  m_Layer: 0
+  m_Name: ScreenEffects
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &1678714756
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1678714755}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2a559b4b61c85c04bbc8497f71b8f5cb, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ScreenEffects
+--- !u!4 &1678714757
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1678714755}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1682921466
 GameObject:
   m_ObjectHideFlags: 0
@@ -2950,6 +3089,26 @@ MonoBehaviour:
   - level_07
   - level_08
   - level_09
+  - level_10
+  - level_11
+  - level_12
+  - level_13
+  - level_14
+  - level_15
+  - level_16
+  - level_17
+  - level_18
+  - level_19
+  - level_20
+  - level_21
+  - level_22
+  - level_23
+  - level_24
+  - level_25
+  - level_26
+  - level_27
+  - level_28
+  - level_29
   _levelClearDelay: 3
   _levelLoader: {fileID: 1184986102}
   _ball: {fileID: 1374096748}
@@ -3920,3 +4079,6 @@ SceneRoots:
   - {fileID: 1133823280}
   - {fileID: 1002204267}
   - {fileID: 1623825118}
+  - {fileID: 1678714757}
+  - {fileID: 1161839676}
+  - {fileID: 1388394583}

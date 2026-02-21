@@ -41,12 +41,26 @@ public class BallController : MonoBehaviour
     private const float SPEED_MULTIPLIER = 2f;
     private const float ZIP_MULTIPLIER   = 2.5f;
 
-    // Effective speed accounting for all active flags
+    // ── Speed ramp (Fury Strike charge) ───────────────────────────────────────
+    private const float RAMP_MAX  = 2.0f;   // maximum speed multiplier
+    private const float RAMP_RATE = 0.015f; // multiplier gained per second while live
+    private float _rampMultiplier = 1.0f;
+
+    /// <summary>0 = no charge, 1 = Fury Strike ready.</summary>
+    public float RampFraction => Mathf.Clamp01((_rampMultiplier - 1f) / (RAMP_MAX - 1f));
+
+    public void ResetRamp() => _rampMultiplier = 1.0f;
+
+    // ── Ball visuals ──────────────────────────────────────────────────────────
+    private SpriteRenderer _ballSr;
+    private TrailRenderer  _ballTrail;
+
+    // Effective speed accounting for all active flags + ramp
     private float EffectiveSpeed
     {
         get
         {
-            float s = _speed;
+            float s = _speed * _rampMultiplier;
             if (_isSpeedBoost) s *= SPEED_MULTIPLIER;
             if (_isZipBall)    s *= ZIP_MULTIPLIER;
             return s;
@@ -62,6 +76,8 @@ public class BallController : MonoBehaviour
     {
         if (_rb == null) _rb = GetComponent<Rigidbody2D>();
         _launchDirection = _launchDirection.normalized;
+        _ballSr    = GetComponent<SpriteRenderer>();
+        _ballTrail = GetComponent<TrailRenderer>();
     }
 
     private void Update()
@@ -86,11 +102,67 @@ public class BallController : MonoBehaviour
             if (Input.GetKeyDown(KeyCode.Space))
                 ReleaseStickyHold();
         }
+
+        UpdateBallColor();
+    }
+
+    private void UpdateBallColor()
+    {
+        // Determine dominant powerup tint
+        Color tint;
+        if (_isFireball)
+            tint = new Color(1.0f, 0.45f, 0.0f);      // fire orange
+        else if (_isBomb)
+            tint = new Color(1.0f, 0.20f, 1.0f);      // magenta
+        else if (_isSpeedBoost)
+            tint = new Color(1.0f, 0.85f, 0.10f);     // gold
+        else if (_isSticky)
+            tint = new Color(0.70f, 0.20f, 1.0f);     // purple
+        else if (_isCursed)
+            tint = new Color(0.25f, 0.55f, 0.20f);    // murky green
+        else if (_isZipBall)
+            tint = new Color(0.35f, 0.90f, 0.10f);    // sickly green
+        else
+            tint = Color.white;
+
+        // Blend toward ramp heat as charge builds: tinge red/orange at high ramp
+        float ramp = RampFraction;
+        if (ramp > 0.6f && tint == Color.white)
+        {
+            float t = (ramp - 0.6f) / 0.4f;
+            tint = Color.Lerp(Color.white, new Color(1f, 0.5f, 0.1f), t);
+        }
+
+        if (_ballSr != null)
+            _ballSr.color = tint;
+
+        // Update trail gradient to match
+        if (_ballTrail != null)
+        {
+            Gradient g = new Gradient();
+            g.SetKeys(
+                new GradientColorKey[]
+                {
+                    new GradientColorKey(tint, 0f),
+                    new GradientColorKey(new Color(tint.r * 0.4f, tint.g * 0.4f, tint.b * 0.4f), 1f)
+                },
+                new GradientAlphaKey[]
+                {
+                    new GradientAlphaKey(0.90f, 0f),
+                    new GradientAlphaKey(0.00f, 1f)
+                }
+            );
+            _ballTrail.colorGradient = g;
+        }
     }
 
     private void FixedUpdate()
     {
         if (!_launched || _isStickyHeld) return;
+
+        // Speed ramp — charges while ball is live
+        if (_rampMultiplier < RAMP_MAX)
+            _rampMultiplier = Mathf.Min(RAMP_MAX, _rampMultiplier + RAMP_RATE * Time.fixedDeltaTime);
 
         // Fireball pierce: restore pre-bounce direction from last frame
         if (_wantFireballPierce)
@@ -199,13 +271,14 @@ public class BallController : MonoBehaviour
             currentDir.x * Mathf.Sin(rad) + currentDir.y * Mathf.Cos(rad)
         ).normalized;
 
-        cloneBall._launched     = true;
-        cloneBall._isSpeedBoost = _isSpeedBoost;
-        cloneBall._isSticky     = _isSticky;
-        cloneBall._isFireball   = _isFireball;
-        cloneBall._isBomb       = _isBomb;
-        cloneBall._isCursed     = _isCursed;
-        cloneBall._isZipBall    = _isZipBall;
+        cloneBall._launched        = true;
+        cloneBall._isSpeedBoost    = _isSpeedBoost;
+        cloneBall._isSticky        = _isSticky;
+        cloneBall._isFireball      = _isFireball;
+        cloneBall._isBomb          = _isBomb;
+        cloneBall._isCursed        = _isCursed;
+        cloneBall._isZipBall       = _isZipBall;
+        cloneBall._rampMultiplier  = _rampMultiplier;
 
         var cloneRb = cloneBall.GetComponent<Rigidbody2D>();
         if (cloneRb != null)
@@ -324,6 +397,9 @@ public class BallController : MonoBehaviour
         _isZipBall          = false;
         _wantFireballPierce = false;
         _curseTimer         = 0f;
+        _rampMultiplier     = 1.0f;
+
+        if (_ballSr != null) _ballSr.color = Color.white;
 
         if (_rb != null)
         {

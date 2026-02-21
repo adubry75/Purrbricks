@@ -55,7 +55,10 @@ public class PowerupManager : MonoBehaviour
         }
 
         if (changed)
+        {
+            UpdateBadVignette();
             OnPowerupsChanged?.Invoke();
+        }
     }
 
     /// <summary>Called when the player picks up a powerup.</summary>
@@ -63,21 +66,20 @@ public class PowerupManager : MonoBehaviour
     {
         if (type == PowerupType.ExtraLife)
         {
-            // Instant, no timer
             GameManager.Instance?.AddLife();
+            PowerupNotification.Instance?.ShowPowerup(type);
             return;
         }
 
         if (type == PowerupType.MultiBall)
         {
-            // Instant effect, no timer
             SpawnMultiBalls();
+            PowerupNotification.Instance?.ShowPowerup(type);
             return;
         }
 
         bool wasActive = _timers.ContainsKey(type);
 
-        // Stack: add to existing time or start fresh
         if (wasActive)
             _timers[type] += POWERUP_DURATION;
         else
@@ -85,6 +87,12 @@ public class PowerupManager : MonoBehaviour
             _timers[type] = POWERUP_DURATION;
             ApplyEffect(type);
         }
+
+        // Fanfare notification (show even on stack refresh)
+        PowerupNotification.Instance?.ShowPowerup(type);
+
+        // Bad powerup vignette
+        UpdateBadVignette();
 
         OnPowerupsChanged?.Invoke();
     }
@@ -106,7 +114,18 @@ public class PowerupManager : MonoBehaviour
         foreach (var t in types)
             RemoveEffect(t);
         _timers.Clear();
+        ScreenEffects.Instance?.SetBadVignette(false);
         OnPowerupsChanged?.Invoke();
+    }
+
+    private void UpdateBadVignette()
+    {
+        bool anyBad = false;
+        foreach (var kvp in _timers)
+        {
+            if ((int)kvp.Key >= 8) { anyBad = true; break; }
+        }
+        ScreenEffects.Instance?.SetBadVignette(anyBad);
     }
 
     // ── Apply / Remove effects ────────────────────────────────────────────────

@@ -12,11 +12,17 @@ public static class PurrbricksSetup
         EnsureDir("Assets/_Project/BrickTemplates");
 
         // Arcade palette: vivid, saturated colors
-        var standard = EnsureTemplate("standard", "Standard", 1,   100,  new Color(0.85f, 0.85f, 0.95f)); // soft blue-white
-        var red      = EnsureTemplate("red",      "Red",      1,   300,  new Color(1.00f, 0.18f, 0.25f)); // hot red
-        var blue     = EnsureTemplate("blue",     "Blue",     1,   200,  new Color(0.20f, 0.55f, 1.00f)); // electric blue
-        var steel    = EnsureTemplate("steel",    "Steel",    4,   1000, new Color(0.72f, 0.82f, 0.95f)); // chrome silver
-        var gem      = EnsureTemplate("gem",      "Gem",      1,  10000, new Color(1.00f, 0.25f, 0.75f)); // hot magenta
+        var standard = EnsureTemplate("standard", "Standard", 1,   100,  new Color(0.85f, 0.85f, 0.95f));
+        var red      = EnsureTemplate("red",      "Red",      1,   300,  new Color(1.00f, 0.18f, 0.25f));
+        var blue     = EnsureTemplate("blue",     "Blue",     1,   200,  new Color(0.20f, 0.55f, 1.00f));
+        var steel    = EnsureTemplate("steel",    "Steel",    4,   1000, new Color(0.72f, 0.82f, 0.95f));
+        var gem      = EnsureTemplate("gem",      "Gem",      1,  10000, new Color(1.00f, 0.25f, 0.75f));
+        // ── New brick types for levels 10-29 ─────────────────────────────────
+        var gold     = EnsureTemplate("gold",     "Gold",     2,   500,  new Color(1.00f, 0.78f, 0.05f)); // 2-hit golden brick
+        var purple   = EnsureTemplate("purple",   "Purple",   1,   400,  new Color(0.60f, 0.05f, 0.88f)); // vivid purple
+        var green    = EnsureTemplate("green",    "Green",    1,   250,  new Color(0.10f, 0.88f, 0.35f)); // vivid green
+        var cyan     = EnsureTemplate("cyan",     "Cyan",     1,   200,  new Color(0.10f, 0.88f, 0.95f)); // electric cyan
+        var dark     = EnsureTemplate("dark",     "Dark",     3,   750,  new Color(0.25f, 0.10f, 0.42f)); // dark violet, 3-hit
 
         AssetDatabase.SaveAssets();
 
@@ -27,12 +33,17 @@ public static class PurrbricksSetup
 
         var regSo = new SerializedObject(reg);
         var tArr = regSo.FindProperty("_templates");
-        tArr.arraySize = 5;
+        tArr.arraySize = 10;
         tArr.GetArrayElementAtIndex(0).objectReferenceValue = standard;
         tArr.GetArrayElementAtIndex(1).objectReferenceValue = red;
         tArr.GetArrayElementAtIndex(2).objectReferenceValue = blue;
         tArr.GetArrayElementAtIndex(3).objectReferenceValue = steel;
         tArr.GetArrayElementAtIndex(4).objectReferenceValue = gem;
+        tArr.GetArrayElementAtIndex(5).objectReferenceValue = gold;
+        tArr.GetArrayElementAtIndex(6).objectReferenceValue = purple;
+        tArr.GetArrayElementAtIndex(7).objectReferenceValue = green;
+        tArr.GetArrayElementAtIndex(8).objectReferenceValue = cyan;
+        tArr.GetArrayElementAtIndex(9).objectReferenceValue = dark;
         regSo.ApplyModifiedProperties();
 
         // ── 3. BrickSkinRegistry ──────────────────────────────────────────────
@@ -95,13 +106,10 @@ public static class PurrbricksSetup
             gmSo.FindProperty("_levelLoader").objectReferenceValue = loader;
 
             var levelIds = gmSo.FindProperty("_levelIds");
-            if (levelIds.arraySize == 0)
-            {
-                levelIds.arraySize = 3;
-                levelIds.GetArrayElementAtIndex(0).stringValue = "level_00";
-                levelIds.GetArrayElementAtIndex(1).stringValue = "level_01";
-                levelIds.GetArrayElementAtIndex(2).stringValue = "level_02";
-            }
+            // Always refresh to 30 levels
+            levelIds.arraySize = 30;
+            for (int i = 0; i < 30; i++)
+                levelIds.GetArrayElementAtIndex(i).stringValue = $"level_{i:D2}";
             gmSo.ApplyModifiedProperties();
         }
 
@@ -143,6 +151,30 @@ public static class PurrbricksSetup
         {
             puHudGO.AddComponent<PowerupHUD>();
             Debug.Log("Added PowerupHUD.");
+        }
+
+        // ── 11c. ScreenEffects ───────────────────────────────────────────────
+        var screenFxGO = EnsureGO("ScreenEffects");
+        if (screenFxGO.GetComponent<ScreenEffects>() == null)
+        {
+            screenFxGO.AddComponent<ScreenEffects>();
+            Debug.Log("Added ScreenEffects.");
+        }
+
+        // ── 11d. PowerupNotification ─────────────────────────────────────────
+        var puNotifGO = EnsureGO("PowerupNotification");
+        if (puNotifGO.GetComponent<PowerupNotification>() == null)
+        {
+            puNotifGO.AddComponent<PowerupNotification>();
+            Debug.Log("Added PowerupNotification.");
+        }
+
+        // ── 11e. HavocBar (Fury Strike charge bar) ───────────────────────────
+        var havocGO = EnsureGO("HavocBar");
+        if (havocGO.GetComponent<HavocBar>() == null)
+        {
+            havocGO.AddComponent<HavocBar>();
+            Debug.Log("Added HavocBar.");
         }
 
         // ── 11. UI Screens ───────────────────────────────────────────────────

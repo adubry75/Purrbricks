@@ -101,6 +101,14 @@ public class GameManager : MonoBehaviour
             if (Input.GetKeyDown(KeyCode.Keypad8)) PowerupManager.Instance?.Apply(PowerupType.BombBrick);
         }
 
+        // Fury Strike: ENTER when charge bar is full
+        if (_state == GameState.Playing &&
+            (Input.GetKeyDown(KeyCode.Return) || Input.GetKeyDown(KeyCode.KeypadEnter)))
+        {
+            if (_ball != null && _ball.RampFraction >= 1f)
+                TriggerFuryStrike();
+        }
+
         // Debug hotkey: clear all but 1 brick
         if (Input.GetKeyDown(KeyCode.K) && _state == GameState.Playing)
             ClearAllButOneBrick();
@@ -145,6 +153,9 @@ public class GameManager : MonoBehaviour
     }
 
     public bool IsPrimaryBall(BallController ball) => ball == _ball;
+
+    /// <summary>Exposes the primary ball so HavocBar can read RampFraction.</summary>
+    public BallController GetPrimaryBall() => _ball;
 
     /// <summary>Called by BallController.SpawnClone after it creates a clone.</summary>
     public void RegisterClone() => _activeClonesCount++;
@@ -424,6 +435,8 @@ public class GameManager : MonoBehaviour
     private void LoseLife()
     {
         SfxPlayer.Instance?.PlayLifeLost();
+        ScreenEffects.Instance?.FlashRed();
+        CameraShake.Instance?.Shake(0.30f, 0.55f);
         _lives--;
         _hud?.SetLives(_lives);
 
@@ -493,6 +506,38 @@ public class GameManager : MonoBehaviour
         _combo = 0;
         _hud?.SetCombo(_combo);
         _comboTimer = 0f;
+    }
+
+    // ── Fury Strike ─────────────────────────────────────────────────────────
+
+    private void TriggerFuryStrike()
+    {
+        var allBalls = Object.FindObjectsByType<BallController>(FindObjectsSortMode.None);
+        if (allBalls.Length == 0) return;
+
+        // Visuals & audio
+        ScreenEffects.Instance?.FlashWhite(0.70f, 0.45f);
+        CameraShake.Instance?.Shake(0.55f, 0.90f);
+        PowerupNotification.Instance?.Show("FURY STRIKE!", new Color(1f, 0.80f, 0.05f), isSpecial: true);
+        SfxPlayer.Instance?.PlayFuryStrike();
+
+        // 3×3 explosion around every active ball
+        foreach (var ball in allBalls)
+        {
+            if (ball == null) continue;
+
+            Vector2 center = ball.transform.position;
+            BrickParticleGenerator.SpawnBurst(center, new Color(1f, 0.70f, 0.05f), 45, true);
+
+            var hits = Physics2D.OverlapBoxAll(center, new Vector2(4.4f, 1.8f), 0f);
+            foreach (var col in hits)
+            {
+                var b = col.GetComponent<Brick>();
+                if (b != null) b.Hit();
+            }
+
+            ball.ResetRamp();
+        }
     }
 
     // ── Debug Helpers ───────────────────────────────────────────────────────
