@@ -6,6 +6,16 @@ using UnityEngine;
 /// </summary>
 public static class BrickParticleGenerator
 {
+    // Cached once — Shader.Find is extremely slow and must never run per-brick
+    private static Material s_material;
+
+    private static Material GetMaterial()
+    {
+        if (s_material == null)
+            s_material = new Material(Shader.Find("Sprites/Default"));
+        return s_material;
+    }
+
     /// <summary>
     /// Creates a one-shot particle explosion at the given position.
     /// </summary>
@@ -61,7 +71,7 @@ public static class BrickParticleGenerator
 
         // Renderer
         var renderer = ps.GetComponent<ParticleSystemRenderer>();
-        renderer.material = new Material(Shader.Find("Sprites/Default"));
+        renderer.material = GetMaterial();
         renderer.sortingLayerName = "Default";
         renderer.sortingOrder = 10; // Above bricks
 

@@ -38,6 +38,9 @@ public class BallController : MonoBehaviour
     private bool _wantFireballPierce;
     private Vector2 _savedVelocity;
 
+    // Pre-allocated buffer for bomb overlap queries — avoids heap allocation
+    private static readonly Collider2D[] s_overlapBuffer = new Collider2D[64];
+
     private const float SPEED_MULTIPLIER = 2f;
     private const float ZIP_MULTIPLIER   = 2.5f;
 
@@ -54,6 +57,12 @@ public class BallController : MonoBehaviour
     // ── Ball visuals ──────────────────────────────────────────────────────────
     private SpriteRenderer _ballSr;
     private TrailRenderer  _ballTrail;
+
+    // Cached gradient objects — rebuilt only when tint changes, not every frame
+    private readonly Gradient           _trailGradient   = new Gradient();
+    private readonly GradientColorKey[] _colorKeys       = new GradientColorKey[2];
+    private readonly GradientAlphaKey[] _alphaKeys       = new GradientAlphaKey[2];
+    private Color _lastTint = Color.clear;
 
     // Effective speed accounting for all active flags + ramp
     private float EffectiveSpeed
@@ -75,6 +84,7 @@ public class BallController : MonoBehaviour
     private void Awake()
     {
         if (_rb == null) _rb = GetComponent<Rigidbody2D>();
+        _rb.interpolation = RigidbodyInterpolation2D.Interpolate;
         _launchDirection = _launchDirection.normalized;
         _ballSr    = GetComponent<SpriteRenderer>();
         _ballTrail = GetComponent<TrailRenderer>();
@@ -136,23 +146,17 @@ public class BallController : MonoBehaviour
         if (_ballSr != null)
             _ballSr.color = tint;
 
-        // Update trail gradient to match
-        if (_ballTrail != null)
+        // Only rebuild the trail gradient when the tint actually changed — avoids
+        // allocating new Gradient/array objects every frame (major GC pressure).
+        if (_ballTrail != null && tint != _lastTint)
         {
-            Gradient g = new Gradient();
-            g.SetKeys(
-                new GradientColorKey[]
-                {
-                    new GradientColorKey(tint, 0f),
-                    new GradientColorKey(new Color(tint.r * 0.4f, tint.g * 0.4f, tint.b * 0.4f), 1f)
-                },
-                new GradientAlphaKey[]
-                {
-                    new GradientAlphaKey(0.90f, 0f),
-                    new GradientAlphaKey(0.00f, 1f)
-                }
-            );
-            _ballTrail.colorGradient = g;
+            _lastTint = tint;
+            _colorKeys[0] = new GradientColorKey(tint, 0f);
+            _colorKeys[1] = new GradientColorKey(new Color(tint.r * 0.4f, tint.g * 0.4f, tint.b * 0.4f), 1f);
+            _alphaKeys[0] = new GradientAlphaKey(0.90f, 0f);
+            _alphaKeys[1] = new GradientAlphaKey(0.00f, 1f);
+            _trailGradient.SetKeys(_colorKeys, _alphaKeys);
+            _ballTrail.colorGradient = _trailGradient;
         }
     }
 
@@ -362,10 +366,10 @@ public class BallController : MonoBehaviour
         BrickParticleGenerator.SpawnBurst(center, new Color(1f, 0.5f, 0f), 35, true);
 
         // 3×3 area = ~4.4 wide × 1.8 tall for standard bricks
-        var overlaps = Physics2D.OverlapBoxAll(center, new Vector2(4.4f, 1.8f), 0f);
-        foreach (var col in overlaps)
+        int count = Physics2D.OverlapBoxNonAlloc(center, new Vector2(4.4f, 1.8f), 0f, s_overlapBuffer);
+        for (int i = 0; i < count; i++)
         {
-            var b = col.GetComponent<Brick>();
+            var b = s_overlapBuffer[i].GetComponent<Brick>();
             if (b != null && b != source)
                 b.Hit();
         }

@@ -7,6 +7,7 @@ using UnityEngine.UI;
 /// </summary>
 public class ScorePopup : MonoBehaviour
 {
+    private static Font s_font;
     private CanvasGroup _canvasGroup;
     private Vector3 _startPos;
     private float _elapsed;
@@ -45,7 +46,8 @@ public class ScorePopup : MonoBehaviour
 
         var text = textGO.AddComponent<Text>();
         text.text = $"+{points}";
-        text.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
+        if (s_font == null) s_font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
+        text.font = s_font;
         text.fontSize = 88;
         text.fontStyle = FontStyle.Bold;
         text.alignment = TextAnchor.MiddleCenter;

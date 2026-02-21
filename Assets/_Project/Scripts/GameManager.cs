@@ -50,6 +50,9 @@ public class GameManager : MonoBehaviour
     private bool _primaryBallOnHold; // true while primary fell but clones still active
     private int _activeClonesCount;  // explicit count — avoids deferred-Destroy false positives
 
+    // Pre-allocated buffer for Fury Strike overlap queries — avoids heap allocation
+    private static readonly Collider2D[] s_furyBuffer = new Collider2D[128];
+
     [SerializeField] private GameState _state = GameState.MainMenu;
 
     private void Awake()
@@ -180,6 +183,7 @@ public class GameManager : MonoBehaviour
         _hud?.SetCombo(_combo);
 
         LoadLevel(_currentLevelIndex);
+        MusicPlayer.Instance?.PlayGameplay();
         SetState(GameState.Ready);
 
         _mainMenuUI?.Hide();
@@ -225,6 +229,7 @@ public class GameManager : MonoBehaviour
         _gameOverUI?.Hide();
 
         LoadLevel(_currentLevelIndex);
+        MusicPlayer.Instance?.PlayGameplay();
         SetState(GameState.Ready);
     }
 
@@ -242,6 +247,7 @@ public class GameManager : MonoBehaviour
         }
 
         LoadLevel(next);
+        MusicPlayer.Instance?.PlayGameplay();
         SetState(GameState.Ready);
     }
 
@@ -303,8 +309,6 @@ public class GameManager : MonoBehaviour
     public void SetState(GameState newState)
     {
         _state = newState;
-        Debug.Log("GameState = " + _state);
-
         Time.timeScale = 1f;
 
         switch (_state)
@@ -313,12 +317,14 @@ public class GameManager : MonoBehaviour
                 SetCursorMenuMode();
                 _hud?.gameObject.SetActive(false);
                 SfxPlayer.Instance?.MuteAll(true);
+                MusicPlayer.Instance?.PlayMenu();
                 break;
 
             case GameState.HighScores:
                 SetCursorMenuMode();
                 _hud?.gameObject.SetActive(false);
                 SfxPlayer.Instance?.MuteAll(true);
+                // Menu music continues — no change needed
                 break;
 
             case GameState.Ready:
@@ -347,6 +353,7 @@ public class GameManager : MonoBehaviour
                 Time.timeScale = 0f;
                 SfxPlayer.Instance?.PlayGameOver();
                 _gameOverUI?.ShowGameOver(_score);
+                MusicPlayer.Instance?.PlayGameOver();
                 break;
 
             case GameState.Cleared:
@@ -361,6 +368,7 @@ public class GameManager : MonoBehaviour
                 SetCursorMenuMode();
                 Time.timeScale = 0f;
                 _victoryUI?.ShowVictory(_score);
+                MusicPlayer.Instance?.PlayLevelFinish();
                 break;
         }
     }
@@ -529,10 +537,10 @@ public class GameManager : MonoBehaviour
             Vector2 center = ball.transform.position;
             BrickParticleGenerator.SpawnBurst(center, new Color(1f, 0.70f, 0.05f), 45, true);
 
-            var hits = Physics2D.OverlapBoxAll(center, new Vector2(4.4f, 1.8f), 0f);
-            foreach (var col in hits)
+            int hitCount = Physics2D.OverlapBoxNonAlloc(center, new Vector2(4.4f, 1.8f), 0f, s_furyBuffer);
+            for (int i = 0; i < hitCount; i++)
             {
-                var b = col.GetComponent<Brick>();
+                var b = s_furyBuffer[i].GetComponent<Brick>();
                 if (b != null) b.Hit();
             }
 

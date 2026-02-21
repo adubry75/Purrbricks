@@ -177,6 +177,36 @@ public static class PurrbricksSetup
             Debug.Log("Added HavocBar.");
         }
 
+        // ── 11f. MusicPlayer ─────────────────────────────────────────────────
+        var musicGO = EnsureGO("MusicPlayer");
+        var music = musicGO.GetComponent<MusicPlayer>();
+        if (music == null) music = musicGO.AddComponent<MusicPlayer>();
+
+        var musicSo = new SerializedObject(music);
+
+        var menuClip = AssetDatabase.LoadAssetAtPath<AudioClip>(
+            "Assets/_Project/Audio/purrbricks-mainmenu-Neon Echo Mainframe.mp3");
+        var goClip = AssetDatabase.LoadAssetAtPath<AudioClip>(
+            "Assets/_Project/Audio/purrbricks-gameover1.mp3");
+        var finishClip = AssetDatabase.LoadAssetAtPath<AudioClip>(
+            "Assets/_Project/Audio/purrbricks-levelfinish1.mp3");
+        var gp1 = AssetDatabase.LoadAssetAtPath<AudioClip>("Assets/_Project/Audio/purrbricks-gameplay1.mp3");
+        var gp2 = AssetDatabase.LoadAssetAtPath<AudioClip>("Assets/_Project/Audio/purrbricks-gameplay2.mp3");
+        var gp3 = AssetDatabase.LoadAssetAtPath<AudioClip>("Assets/_Project/Audio/purrbricks-gameplay3.mp3");
+
+        musicSo.FindProperty("_menuTrack").objectReferenceValue      = menuClip;
+        musicSo.FindProperty("_gameOverTrack").objectReferenceValue  = goClip;
+        musicSo.FindProperty("_levelFinishTrack").objectReferenceValue = finishClip;
+
+        var gpArr = musicSo.FindProperty("_gameplayTracks");
+        gpArr.arraySize = 3;
+        gpArr.GetArrayElementAtIndex(0).objectReferenceValue = gp1;
+        gpArr.GetArrayElementAtIndex(1).objectReferenceValue = gp2;
+        gpArr.GetArrayElementAtIndex(2).objectReferenceValue = gp3;
+
+        musicSo.ApplyModifiedProperties();
+        Debug.Log("Wired MusicPlayer with all audio clips.");
+
         // ── 11. UI Screens ───────────────────────────────────────────────────
         var mainMenuGO = EnsureGO("MainMenuUI");
         if (mainMenuGO.GetComponent<MainMenuUI>() == null)

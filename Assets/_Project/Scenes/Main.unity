@@ -1008,14 +1008,14 @@ MonoBehaviour:
   _paddleHit: {fileID: 8300000, guid: e487a4cab634edd4bab4a381d5076c8a, type: 3}
   _wallHit: {fileID: 8300000, guid: e487a4cab634edd4bab4a381d5076c8a, type: 3}
   _brickBreak: {fileID: 8300000, guid: e487a4cab634edd4bab4a381d5076c8a, type: 3}
-  _brickBreakHeavy: {fileID: 0}
+  _brickBreakHeavy: {fileID: 8300000, guid: 9e6399915d186f549a9fc6aaea2dbbcd, type: 3}
   _brickHit: {fileID: 8300000, guid: 186470a7822f2394fb4d6661f07bc05e, type: 3}
   _lifeLost: {fileID: 8300000, guid: e487a4cab634edd4bab4a381d5076c8a, type: 3}
   _win: {fileID: 8300000, guid: ba7731ec97455874dbfb8230360a761d, type: 3}
   _gameOver: {fileID: 8300000, guid: e487a4cab634edd4bab4a381d5076c8a, type: 3}
   _laser: {fileID: 8300000, guid: 126f315c59d563f4a934a3f44fd2246b, type: 3}
   _powerupPickup: {fileID: 8300000, guid: 8e51de29b15a0c64ab7d71ea7a072d74, type: 3}
-  _furyStrike: {fileID: 0}
+  _furyStrike: {fileID: 8300000, guid: 4cb0ec94c0e3a2d48a96397413cbf041, type: 3}
   _volume: 0.7
   _pitchMin: 0.97
   _pitchMax: 1.03
@@ -2241,6 +2241,60 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &1187075746
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1187075748}
+  - component: {fileID: 1187075747}
+  m_Layer: 0
+  m_Name: MusicPlayer
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &1187075747
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1187075746}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bd05db1723e445041aa235a15b54a5b4, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::MusicPlayer
+  _menuTrack: {fileID: 8300000, guid: 8ecd401e6e4ddb3429bc627e09d8fe87, type: 3}
+  _gameplayTracks:
+  - {fileID: 8300000, guid: d2aef167c1dfb2e4fbb8b84e56d3b333, type: 3}
+  - {fileID: 8300000, guid: 991073b155ed60740851eee350a68f4d, type: 3}
+  - {fileID: 8300000, guid: f86f4d162f1c8224f8329dcbe82b7854, type: 3}
+  _gameOverTrack: {fileID: 8300000, guid: 51c362cfccbd93e43a5b4a56154a95d6, type: 3}
+  _levelFinishTrack: {fileID: 8300000, guid: 8e13f77b10a04584b916c92745aac7b4, type: 3}
+  _musicVolume: 0.5
+  _crossfadeDuration: 1.5
+  _furyPitchMax: 1.28
+--- !u!4 &1187075748
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1187075746}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1202018261
 GameObject:
   m_ObjectHideFlags: 0
@@ -2678,7 +2732,7 @@ TrailRenderer:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1374096743}
-  m_Enabled: 1
+  m_Enabled: 0
   m_CastShadows: 1
   m_ReceiveShadows: 1
   m_DynamicOccludee: 1
@@ -4082,3 +4136,4 @@ SceneRoots:
   - {fileID: 1678714757}
   - {fileID: 1161839676}
   - {fileID: 1388394583}
+  - {fileID: 1187075748}
