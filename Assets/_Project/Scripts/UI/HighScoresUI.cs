@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Events;
 using UnityEngine.UI;
 
 /// <summary>
@@ -9,6 +10,9 @@ public class HighScoresUI : MonoBehaviour
 {
     private Canvas _canvas;
     private GameObject _scoresPanel;
+    private GameObject panel;
+    [SerializeField] private Sprite _mainMenuSprite;
+
 
     private void Awake()
     {
@@ -19,11 +23,11 @@ public class HighScoresUI : MonoBehaviour
     private void BuildUI()
     {
         _canvas = gameObject.AddComponent<Canvas>();
-        _canvas.renderMode   = RenderMode.ScreenSpaceOverlay;
+        _canvas.renderMode = RenderMode.ScreenSpaceOverlay;
         _canvas.sortingOrder = 100;
 
         var scaler = gameObject.AddComponent<CanvasScaler>();
-        scaler.uiScaleMode         = CanvasScaler.ScaleMode.ScaleWithScreenSize;
+        scaler.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
         scaler.referenceResolution = new Vector2(1920, 1080);
 
         gameObject.AddComponent<GraphicRaycaster>();
@@ -35,9 +39,9 @@ public class HighScoresUI : MonoBehaviour
         panelImg.color = new Color(0f, 0f, 0f, 0.78f);
 
         var panelRt = panel.GetComponent<RectTransform>();
-        panelRt.anchorMin       = Vector2.zero;
-        panelRt.anchorMax       = Vector2.one;
-        panelRt.sizeDelta       = Vector2.zero;
+        panelRt.anchorMin = Vector2.zero;
+        panelRt.anchorMax = Vector2.one;
+        panelRt.sizeDelta = Vector2.zero;
         panelRt.anchoredPosition = new Vector2(-160f, 0f);
 
         // Title
@@ -45,21 +49,21 @@ public class HighScoresUI : MonoBehaviour
         titleGO.transform.SetParent(panel.transform, false);
 
         var titleTxt = titleGO.AddComponent<Text>();
-        titleTxt.text      = "HIGH SCORES";
-        titleTxt.font      = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
-        titleTxt.fontSize  = 90;
+        titleTxt.text = "HIGH SCORES";
+        titleTxt.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
+        titleTxt.fontSize = 90;
         titleTxt.fontStyle = FontStyle.Bold;
         titleTxt.alignment = TextAnchor.MiddleCenter;
-        titleTxt.color     = UIStyle.AccentGold;
+        titleTxt.color = UIStyle.AccentGold;
 
         var titleRt = titleTxt.GetComponent<RectTransform>();
-        titleRt.anchorMin       = new Vector2(0.5f, 0.5f);
-        titleRt.anchorMax       = new Vector2(0.5f, 0.5f);
-        titleRt.sizeDelta       = new Vector2(1000f, 110f);
+        titleRt.anchorMin = new Vector2(0.5f, 0.5f);
+        titleRt.anchorMax = new Vector2(0.5f, 0.5f);
+        titleRt.sizeDelta = new Vector2(1000f, 110f);
         titleRt.anchoredPosition = new Vector2(0f, 405f);
 
         var titleOl = titleGO.AddComponent<Outline>();
-        titleOl.effectColor    = Color.black;
+        titleOl.effectColor = Color.black;
         titleOl.effectDistance = new Vector2(4f, -4f);
 
         // Scores list
@@ -67,29 +71,36 @@ public class HighScoresUI : MonoBehaviour
         _scoresPanel.transform.SetParent(panel.transform, false);
 
         var spRt = _scoresPanel.AddComponent<RectTransform>();
-        spRt.anchorMin       = new Vector2(0.5f, 0.5f);
-        spRt.anchorMax       = new Vector2(0.5f, 0.5f);
-        spRt.sizeDelta       = new Vector2(800f, 700f);
+        spRt.anchorMin = new Vector2(0.5f, 0.5f);
+        spRt.anchorMax = new Vector2(0.5f, 0.5f);
+        spRt.sizeDelta = new Vector2(800f, 700f);
         spRt.anchoredPosition = Vector2.zero;
 
         // Column headers
-        CreateHeaderText(panel, "#",      new Vector2(-310f, 310f));
-        CreateHeaderText(panel, "NAME",   new Vector2( -50f, 310f));
-        CreateHeaderText(panel, "SCORE",  new Vector2( 250f, 310f));
+        CreateHeaderText(panel, "#", new Vector2(-310f, 310f));
+        CreateHeaderText(panel, "NAME", new Vector2(-50f, 310f));
+        CreateHeaderText(panel, "SCORE", new Vector2(250f, 310f));
 
         // Divider line
-        var lineGO  = new GameObject("Divider");
+        var lineGO = new GameObject("Divider");
         lineGO.transform.SetParent(panel.transform, false);
         var lineImg = lineGO.AddComponent<Image>();
         lineImg.color = new Color(0.35f, 0.70f, 1f, 0.45f);
-        var lineRt  = lineGO.GetComponent<RectTransform>();
-        lineRt.anchorMin       = new Vector2(0.5f, 0.5f);
-        lineRt.anchorMax       = new Vector2(0.5f, 0.5f);
-        lineRt.sizeDelta       = new Vector2(760f, 2f);
+        var lineRt = lineGO.GetComponent<RectTransform>();
+        lineRt.anchorMin = new Vector2(0.5f, 0.5f);
+        lineRt.anchorMax = new Vector2(0.5f, 0.5f);
+        lineRt.sizeDelta = new Vector2(760f, 2f);
         lineRt.anchoredPosition = new Vector2(0f, 290f);
 
-        UIStyle.CreateButton(panel.transform, "Main Menu", new Vector2(0f, -450f), new Vector2(280f, 75f),
+        if (_mainMenuSprite != null)
+        {
+            CreateImageButton(panel.transform, _mainMenuSprite, new Vector2(0f, -380f), () => GameManager.Instance?.ShowMainMenu());
+        }
+        else
+        {
+            UIStyle.CreateButton(panel.transform, "Main Menu", new Vector2(0f, -380f), new Vector2(280f, 75f),
             () => GameManager.Instance?.ShowMainMenu(), UIStyle.AccentBlue);
+        }
     }
 
     private void CreateHeaderText(GameObject parent, string text, Vector2 pos)
@@ -98,17 +109,17 @@ public class HighScoresUI : MonoBehaviour
         go.transform.SetParent(parent.transform, false);
 
         var txt = go.AddComponent<Text>();
-        txt.text      = text;
-        txt.font      = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
-        txt.fontSize  = 28;
+        txt.text = text;
+        txt.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
+        txt.fontSize = 28;
         txt.fontStyle = FontStyle.Bold;
         txt.alignment = TextAnchor.MiddleCenter;
-        txt.color     = new Color(0.55f, 0.75f, 1f, 0.70f);
+        txt.color = new Color(0.55f, 0.75f, 1f, 0.70f);
 
         var rt = txt.GetComponent<RectTransform>();
-        rt.anchorMin       = new Vector2(0.5f, 0.5f);
-        rt.anchorMax       = new Vector2(0.5f, 0.5f);
-        rt.sizeDelta       = new Vector2(300f, 36f);
+        rt.anchorMin = new Vector2(0.5f, 0.5f);
+        rt.anchorMax = new Vector2(0.5f, 0.5f);
+        rt.sizeDelta = new Vector2(300f, 36f);
         rt.anchoredPosition = pos;
     }
 
@@ -127,18 +138,18 @@ public class HighScoresUI : MonoBehaviour
 
         if (scores.Count == 0)
         {
-            var emptyGO  = new GameObject("Empty");
+            var emptyGO = new GameObject("Empty");
             emptyGO.transform.SetParent(_scoresPanel.transform, false);
             var emptyTxt = emptyGO.AddComponent<Text>();
-            emptyTxt.text      = "No scores yet — be the first!";
-            emptyTxt.font      = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
-            emptyTxt.fontSize  = 32;
+            emptyTxt.text = "No scores yet — be the first!";
+            emptyTxt.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
+            emptyTxt.fontSize = 32;
             emptyTxt.alignment = TextAnchor.MiddleCenter;
-            emptyTxt.color     = new Color(0.6f, 0.6f, 0.6f, 0.7f);
+            emptyTxt.color = new Color(0.6f, 0.6f, 0.6f, 0.7f);
             var emptyRt = emptyTxt.GetComponent<RectTransform>();
-            emptyRt.anchorMin       = new Vector2(0.5f, 0.5f);
-            emptyRt.anchorMax       = new Vector2(0.5f, 0.5f);
-            emptyRt.sizeDelta       = new Vector2(700f, 50f);
+            emptyRt.anchorMin = new Vector2(0.5f, 0.5f);
+            emptyRt.anchorMax = new Vector2(0.5f, 0.5f);
+            emptyRt.sizeDelta = new Vector2(700f, 50f);
             emptyRt.anchoredPosition = new Vector2(0f, 150f);
         }
     }
@@ -146,7 +157,7 @@ public class HighScoresUI : MonoBehaviour
     private void CreateScoreEntry(int rank, string playerName, int score, float yPos)
     {
         // Row background (alternating subtle tint)
-        var rowGO  = new GameObject($"Row{rank}");
+        var rowGO = new GameObject($"Row{rank}");
         rowGO.transform.SetParent(_scoresPanel.transform, false);
 
         var rowImg = rowGO.AddComponent<Image>();
@@ -155,9 +166,9 @@ public class HighScoresUI : MonoBehaviour
             : new Color(0f, 0f, 0f, 0f);
 
         var rowRt = rowGO.GetComponent<RectTransform>();
-        rowRt.anchorMin       = new Vector2(0.5f, 0.5f);
-        rowRt.anchorMax       = new Vector2(0.5f, 0.5f);
-        rowRt.sizeDelta       = new Vector2(760f, 52f);
+        rowRt.anchorMin = new Vector2(0.5f, 0.5f);
+        rowRt.anchorMax = new Vector2(0.5f, 0.5f);
+        rowRt.sizeDelta = new Vector2(760f, 52f);
         rowRt.anchoredPosition = new Vector2(0f, yPos);
 
         // Medal color for top 3
@@ -180,25 +191,56 @@ public class HighScoresUI : MonoBehaviour
         go.transform.SetParent(parent.transform, false);
 
         var txt = go.AddComponent<Text>();
-        txt.text      = text;
-        txt.font      = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
-        txt.fontSize  = fontSize;
+        txt.text = text;
+        txt.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
+        txt.fontSize = fontSize;
         txt.fontStyle = FontStyle.Bold;
         txt.alignment = TextAnchor.MiddleCenter;
-        txt.color     = color;
+        txt.color = color;
 
         var rt = txt.GetComponent<RectTransform>();
-        rt.anchorMin       = new Vector2(0.5f, 0.5f);
-        rt.anchorMax       = new Vector2(0.5f, 0.5f);
-        rt.sizeDelta       = new Vector2(300f, 54f);
+        rt.anchorMin = new Vector2(0.5f, 0.5f);
+        rt.anchorMax = new Vector2(0.5f, 0.5f);
+        rt.sizeDelta = new Vector2(300f, 54f);
         rt.anchoredPosition = pos;
 
         var ol = go.AddComponent<Outline>();
-        ol.effectColor    = Color.black;
+        ol.effectColor = Color.black;
         ol.effectDistance = new Vector2(2f, -2f);
     }
 
-    public void Show()  { gameObject.SetActive(true); RefreshScores(); }
-    public void Hide()  { gameObject.SetActive(false); }
+    private void CreateImageButton(Transform parent, Sprite sprite, Vector2 anchoredPos, UnityAction onClick)
+    {
+        if (sprite == null) return;
+
+        var go = new GameObject("ImageButton");
+        go.transform.SetParent(parent, false);
+
+        var img = go.AddComponent<Image>();
+        img.sprite = sprite;
+        img.type = Image.Type.Simple;
+        img.preserveAspect = true;
+
+        var btn = go.AddComponent<Button>();
+        btn.targetGraphic = img;
+        btn.onClick.AddListener(onClick);
+
+        var colors = btn.colors;
+        colors.normalColor = Color.white;
+        colors.highlightedColor = new Color(1.15f, 1.15f, 1.15f);
+        colors.pressedColor = new Color(0.80f, 0.80f, 0.80f);
+        btn.colors = colors;
+
+        // Size: fixed height 90, width from sprite aspect ratio
+        float aspect = (float)sprite.texture.width / sprite.texture.height;
+        var rt = go.GetComponent<RectTransform>();
+        rt.anchorMin = new Vector2(0.5f, 0.5f);
+        rt.anchorMax = new Vector2(0.5f, 0.5f);
+        rt.sizeDelta = new Vector2(aspect * 90f, 90f);
+        rt.anchoredPosition = anchoredPos;
+    }
+
+    public void Show() { gameObject.SetActive(true); RefreshScores(); }
+    public void Hide() { gameObject.SetActive(false); }
     public void ShowScores() { Show(); }
 }

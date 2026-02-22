@@ -1645,6 +1645,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c4d26f335aa692b4ba3a122e1dba3374, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::HighScoresUI
+  _mainMenuSprite: {fileID: 1834576589134219898, guid: 682cc326217660545be1da3a2281c8ad, type: 3}
 --- !u!4 &874544252
 Transform:
   m_ObjectHideFlags: 0
@@ -2726,6 +2727,7 @@ MonoBehaviour:
   _minHorizontal: 0.1
   _maxBounceAngleDegrees: 75
   _paddleObjectName: Paddle
+  _ignorePaddleBounceTime: 0.12
 --- !u!114 &1374096749
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2923,6 +2925,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9204a72b4cca3eb4ba6464b86008d26b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::VictoryUI
+  _nextLevelSprite: {fileID: 8382195974450436383, guid: 1f469fb366c95924ab73450ccd4c18f4, type: 3}
 --- !u!4 &1601206119
 Transform:
   m_ObjectHideFlags: 0
@@ -3872,11 +3875,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: 'Hold Space to Aim
-
-    Release to Launch
-
-'
+  m_text: 
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
   m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}

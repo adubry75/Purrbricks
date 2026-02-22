@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.Events;
 using UnityEngine.UI;
 
 /// <summary>
@@ -7,6 +8,8 @@ using UnityEngine.UI;
 public class VictoryUI : MonoBehaviour
 {
     private Canvas _canvas;
+    private GameObject panel;
+    [SerializeField] private Sprite _nextLevelSprite;
 
     private void Awake()
     {
@@ -17,33 +20,40 @@ public class VictoryUI : MonoBehaviour
     private void BuildUI()
     {
         _canvas = gameObject.AddComponent<Canvas>();
-        _canvas.renderMode   = RenderMode.ScreenSpaceOverlay;
+        _canvas.renderMode = RenderMode.ScreenSpaceOverlay;
         _canvas.sortingOrder = 200;
 
         var scaler = gameObject.AddComponent<CanvasScaler>();
-        scaler.uiScaleMode         = CanvasScaler.ScaleMode.ScaleWithScreenSize;
+        scaler.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
         scaler.referenceResolution = new Vector2(1920, 1080);
 
         gameObject.AddComponent<GraphicRaycaster>();
 
-        var panel = new GameObject("Panel");
+        panel = new GameObject("Panel");
         panel.transform.SetParent(transform, false);
 
         var panelImg = panel.AddComponent<Image>();
         panelImg.color = new Color(0f, 0f, 0f, 0.65f);
 
         var panelRt = panel.GetComponent<RectTransform>();
-        panelRt.anchorMin       = Vector2.zero;
-        panelRt.anchorMax       = Vector2.one;
-        panelRt.sizeDelta       = Vector2.zero;
+        panelRt.anchorMin = Vector2.zero;
+        panelRt.anchorMax = Vector2.one;
+        panelRt.sizeDelta = Vector2.zero;
         panelRt.anchoredPosition = new Vector2(-160f, 0f);
 
-        CreateText(panel, "LEVEL COMPLETE!", new Vector2(0f,  190f), 90, new Color(0.20f, 1f, 0.45f));
-        CreateText(panel, "Level Score: 0",  new Vector2(0f,   95f), 52, Color.white,                    "LevelScoreText");
-        CreateText(panel, "Combo Bonus: 0",  new Vector2(0f,   20f), 38, new Color(1f, 0.85f, 0.15f),   "ComboBonusText");
-        CreateText(panel, "Best Combo: ×0",  new Vector2(0f,  -45f), 38, new Color(0.45f, 0.85f, 1f),   "BestComboText");
+        CreateText(panel, "LEVEL COMPLETE!", new Vector2(0f, 190f), 90, new Color(0.20f, 1f, 0.45f));
+        CreateText(panel, "Level Score: 0", new Vector2(0f, 95f), 52, Color.white, "LevelScoreText");
+        CreateText(panel, "Combo Bonus: 0", new Vector2(0f, 20f), 38, new Color(1f, 0.85f, 0.15f), "ComboBonusText");
+        CreateText(panel, "Best Combo: ×0", new Vector2(0f, -45f), 38, new Color(0.45f, 0.85f, 1f), "BestComboText");
 
-        UIStyle.CreateButton(panel.transform, "Next Level", new Vector2(0f, -145f), new Vector2(320f, 80f), OnNextLevel, UIStyle.AccentGreen);
+        if (_nextLevelSprite != null)
+        {
+            CreateImageButton(panel.transform, _nextLevelSprite, new Vector2(0f, -145f), () => OnNextLevel());
+        }
+        else
+        {
+            UIStyle.CreateButton(panel.transform, "Next Level", new Vector2(0f, -145f), new Vector2(320f, 80f), OnNextLevel, UIStyle.AccentGreen);
+        }
     }
 
     private void CreateText(GameObject parent, string text, Vector2 pos, int fontSize, Color color, string objName = null)
@@ -52,21 +62,21 @@ public class VictoryUI : MonoBehaviour
         go.transform.SetParent(parent.transform, false);
 
         var txt = go.AddComponent<Text>();
-        txt.text      = text;
-        txt.font      = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
-        txt.fontSize  = fontSize;
+        txt.text = text;
+        txt.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
+        txt.fontSize = fontSize;
         txt.fontStyle = FontStyle.Bold;
         txt.alignment = TextAnchor.MiddleCenter;
-        txt.color     = color;
+        txt.color = color;
 
         var rt = txt.GetComponent<RectTransform>();
-        rt.anchorMin       = new Vector2(0.5f, 0.5f);
-        rt.anchorMax       = new Vector2(0.5f, 0.5f);
-        rt.sizeDelta       = new Vector2(1000f, fontSize + 30f);
+        rt.anchorMin = new Vector2(0.5f, 0.5f);
+        rt.anchorMax = new Vector2(0.5f, 0.5f);
+        rt.sizeDelta = new Vector2(1000f, fontSize + 30f);
         rt.anchoredPosition = pos;
 
         var ol = go.AddComponent<Outline>();
-        ol.effectColor    = Color.black;
+        ol.effectColor = Color.black;
         ol.effectDistance = new Vector2(4f, -4f);
     }
 
@@ -101,14 +111,14 @@ public class VictoryUI : MonoBehaviour
         var go = new GameObject("Confetti");
         go.transform.position = position;
 
-        var ps   = go.AddComponent<ParticleSystem>();
+        var ps = go.AddComponent<ParticleSystem>();
         var main = ps.main;
-        main.startLifetime   = new ParticleSystem.MinMaxCurve(2f, 3f);
-        main.startSpeed      = new ParticleSystem.MinMaxCurve(8f, 12f);
-        main.startSize       = new ParticleSystem.MinMaxCurve(0.10f, 0.25f);
-        main.startColor      = new ParticleSystem.MinMaxGradient(Color.white);
+        main.startLifetime = new ParticleSystem.MinMaxCurve(2f, 3f);
+        main.startSpeed = new ParticleSystem.MinMaxCurve(8f, 12f);
+        main.startSize = new ParticleSystem.MinMaxCurve(0.10f, 0.25f);
+        main.startColor = new ParticleSystem.MinMaxGradient(Color.white);
         main.gravityModifier = 0.5f;
-        main.loop            = false;
+        main.loop = false;
         main.useUnscaledTime = true;
 
         var emission = ps.emission;
@@ -116,12 +126,12 @@ public class VictoryUI : MonoBehaviour
 
         var shape = ps.shape;
         shape.shapeType = ParticleSystemShapeType.Cone;
-        shape.angle     = 15f;
-        shape.radius    = 0.2f;
+        shape.angle = 15f;
+        shape.radius = 0.2f;
 
-        var col     = ps.colorOverLifetime;
+        var col = ps.colorOverLifetime;
         col.enabled = true;
-        var grad    = new Gradient();
+        var grad = new Gradient();
         grad.SetKeys(
             new[] {
                 new GradientColorKey(new Color(1f, 0.2f, 0.2f), 0f),
@@ -136,8 +146,8 @@ public class VictoryUI : MonoBehaviour
         );
         col.color = new ParticleSystem.MinMaxGradient(grad);
 
-        var renderer       = ps.GetComponent<ParticleSystemRenderer>();
-        renderer.material  = new Material(Shader.Find("Sprites/Default"));
+        var renderer = ps.GetComponent<ParticleSystemRenderer>();
+        renderer.material = new Material(Shader.Find("Sprites/Default"));
         renderer.sortingOrder = 250;
 
         Destroy(go, 4f);
@@ -147,4 +157,35 @@ public class VictoryUI : MonoBehaviour
 
     public void Show() { gameObject.SetActive(true); }
     public void Hide() { gameObject.SetActive(false); }
+
+    private void CreateImageButton(Transform parent, Sprite sprite, Vector2 anchoredPos, UnityAction onClick)
+    {
+        if (sprite == null) return;
+
+        var go = new GameObject("ImageButton");
+        go.transform.SetParent(parent, false);
+
+        var img = go.AddComponent<Image>();
+        img.sprite = sprite;
+        img.type = Image.Type.Simple;
+        img.preserveAspect = true;
+
+        var btn = go.AddComponent<Button>();
+        btn.targetGraphic = img;
+        btn.onClick.AddListener(onClick);
+
+        var colors = btn.colors;
+        colors.normalColor = Color.white;
+        colors.highlightedColor = new Color(1.15f, 1.15f, 1.15f);
+        colors.pressedColor = new Color(0.80f, 0.80f, 0.80f);
+        btn.colors = colors;
+
+        // Size: fixed height 90, width from sprite aspect ratio
+        float aspect = (float)sprite.texture.width / sprite.texture.height;
+        var rt = go.GetComponent<RectTransform>();
+        rt.anchorMin = new Vector2(0.5f, 0.5f);
+        rt.anchorMax = new Vector2(0.5f, 0.5f);
+        rt.sizeDelta = new Vector2(aspect * 90f, 90f);
+        rt.anchoredPosition = anchoredPos;
+    }
 }

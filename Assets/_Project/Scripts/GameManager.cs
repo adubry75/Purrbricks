@@ -353,7 +353,7 @@ public class GameManager : MonoBehaviour
                 SetCursorPlayMode();
                 _hud?.gameObject.SetActive(true);
                 _hud?.SetState("Ready");
-                _hud?.ShowCenter("Press Space to Launch");
+                _hud?.ShowCenter("Hold Space to Aim\r\nRelease to Launch");
                 SfxPlayer.Instance?.MuteAll(false);
                 break;
 
@@ -382,7 +382,7 @@ public class GameManager : MonoBehaviour
                 SetCursorMenuMode();
                 Time.timeScale = 0f;
                 _hud?.SetState("Cleared");
-                _hud?.ShowCenter("Level Cleared!");
+                //_hud?.ShowCenter("Level Cleared!");
                 _ball?.ResetToPaddle();
                 break;
 
