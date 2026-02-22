@@ -2012,7 +2012,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1050643305}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: f4688fdb7df04437aeb418b961361dc5, type: 3}
   m_Name: 
@@ -2290,6 +2290,8 @@ MonoBehaviour:
   - {fileID: 8300000, guid: 4e9fa68ff56d4e6429e22e769f75edcc, type: 3}
   - {fileID: 8300000, guid: 5a0b1593192933f4ab2614b6e12c68dd, type: 3}
   - {fileID: 8300000, guid: 28191d206f8cb2d4581557fc3d1075fb, type: 3}
+  - {fileID: 8300000, guid: 8fd292b9a374ff94b81d7b14392aee04, type: 3}
+  - {fileID: 8300000, guid: 0ada18742807ee64f84b100bb9dcdf58, type: 3}
   _gameOverTrack: {fileID: 8300000, guid: 51c362cfccbd93e43a5b4a56154a95d6, type: 3}
   _levelFinishTrack: {fileID: 8300000, guid: 8e13f77b10a04584b916c92745aac7b4, type: 3}
   _musicVolume: 0.5
@@ -2399,7 +2401,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1278232228}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: f4688fdb7df04437aeb418b961361dc5, type: 3}
   m_Name: 
@@ -3553,7 +3555,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Image
   m_Material: {fileID: 0}
-  m_Color: {r: 1, g: 1, b: 1, a: 0.392}
+  m_Color: {r: 0, g: 0, b: 0, a: 1}
   m_RaycastTarget: 1
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
@@ -3812,7 +3814,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Image
   m_Material: {fileID: 0}
-  m_Color: {r: 1, g: 1, b: 1, a: 0.392}
+  m_Color: {r: 0, g: 0, b: 0, a: 1}
   m_RaycastTarget: 1
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1

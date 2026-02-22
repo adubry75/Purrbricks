@@ -124,6 +124,9 @@ public class GameManager : MonoBehaviour
         if (Input.GetKeyDown(KeyCode.K) && _state == GameState.Playing)
             ClearAllButOneBrick();
 
+        if (_state == GameState.Playing && Input.GetKeyDown(KeyCode.Backslash))
+            DebugDropPrimaryBallIntoDeathZone();
+
         if (_state == GameState.Playing && Input.GetKeyDown(KeyCode.Escape))
             SetState(GameState.Paused);
         else if (_state == GameState.Paused && Input.GetKeyDown(KeyCode.Escape))
@@ -696,6 +699,25 @@ public class GameManager : MonoBehaviour
                 Destroy(bricks[i].gameObject);
             }
         }
+    }
+
+    private void DebugDropPrimaryBallIntoDeathZone()
+    {
+        if (_ball == null) return;
+
+        var deathZone = FindFirstObjectByType<DeathZone>();
+        if (deathZone != null)
+        {
+            _ball.transform.position = deathZone.transform.position;
+            var rb = _ball.GetComponent<Rigidbody2D>();
+            if (rb != null)
+            {
+                rb.linearVelocity = Vector2.zero;
+                rb.angularVelocity = 0f;
+            }
+        }
+
+        OnPrimaryBallLost();
     }
 
     private void ClearAllParticles()

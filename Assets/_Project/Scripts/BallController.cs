@@ -67,7 +67,7 @@ public class BallController : MonoBehaviour
     private LineRenderer _aimLine;
     private bool _isAiming;
     private Vector2 _aimDir;
-    private Vector2 _aimMouseStartScreen; // screen-px position when Space first pressed
+    private float _aimAngleDegrees;
     private PaddleController _paddleCtrl;
 
     // Cached gradient objects — rebuilt only when tint changes, not every frame
@@ -277,22 +277,18 @@ public class BallController : MonoBehaviour
                 _paddleCtrl = _paddle.GetComponent<PaddleController>();
             _paddleCtrl?.SetFrozen(true);
 
-            // On first frame of aiming: record where the mouse was, default to straight up.
-            // We use mouse-delta aiming rather than world-position aiming because the
-            // paddle follows the mouse, so ball.x ≈ mouse.x always, making position-relative
-            // aim permanently point straight up regardless of cursor position.
             if (!_isAiming)
             {
-                _aimMouseStartScreen = Input.mousePosition;
+                _aimAngleDegrees = 0f;
                 _aimDir = Vector2.up;
                 _isAiming = true;
             }
 
-            // Angle = horizontal mouse movement from start, mapped to ±60°.
-            // Moving ~1/3 of screen width left or right reaches the ±60° clamp.
-            float mouseDeltaX = Input.mousePosition.x - _aimMouseStartScreen.x;
-            float angle = Mathf.Clamp(mouseDeltaX / Screen.width * 180f, -60f, 60f);
-            float rad = angle * Mathf.Deg2Rad;
+            var mouse = Mouse.current;
+            float deltaX = mouse?.delta.ReadValue().x ?? 0f;
+            float deltaDegrees = deltaX / Screen.width * 180f;
+            _aimAngleDegrees = Mathf.Clamp(_aimAngleDegrees + deltaDegrees, -60f, 60f);
+            float rad = _aimAngleDegrees * Mathf.Deg2Rad;
             _aimDir = new Vector2(Mathf.Sin(rad), Mathf.Cos(rad));
 
             if (_aimLineGO != null)
@@ -532,7 +528,7 @@ public class BallController : MonoBehaviour
         _isStickyHeld = false;
         _isAiming = false;
         _aimDir = _launchDirection;
-        _aimMouseStartScreen = Vector2.zero;
+        _aimAngleDegrees = 0f;
         _paddleCtrl?.SetFrozen(false);
         if (_aimLineGO != null) _aimLineGO.SetActive(false);
         _isSticky = false;
