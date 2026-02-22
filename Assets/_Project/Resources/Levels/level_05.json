@@ -4,10 +4,10 @@
   "ballSpeed": 9.6,
   "grid": { "cols": 12, "rows": 6, "brickWidth": 1.35, "brickHeight": 0.45, "gapX": 0.08, "gapY": 0.16 },
   "bricks": [
-    { "col":  0, "row": 0, "templateId": "steel", "hp": 3 }, { "col":  1, "row": 0, "templateId": "gem", "powerupId": "Fireball" },
-    { "col":  2, "row": 0, "templateId": "steel", "hp": 3 }, { "col":  3, "row": 0, "templateId": "gem" },
-    { "col":  4, "row": 0, "templateId": "steel", "hp": 3 }, { "col":  5, "row": 0, "templateId": "gem", "powerupId": "MultiBall" },
-    { "col":  6, "row": 0, "templateId": "steel", "hp": 3 }, { "col":  7, "row": 0, "templateId": "gem" },
+    { "col":  0, "row": 0, "templateId": "steel", "hp": 3 , "powerupId": "WidePaddle"}, { "col":  1, "row": 0, "templateId": "gem", "powerupId": "Fireball" },
+    { "col":  2, "row": 0, "templateId": "steel", "hp": 3 , "powerupId": "MultiBall"}, { "col":  3, "row": 0, "templateId": "gem" , "powerupId": "ShrinkPaddle"},
+    { "col":  4, "row": 0, "templateId": "steel", "hp": 3 , "powerupId": "WidePaddle"}, { "col":  5, "row": 0, "templateId": "gem", "powerupId": "MultiBall" },
+    { "col":  6, "row": 0, "templateId": "steel", "hp": 3 , "powerupId": "MultiBall"}, { "col":  7, "row": 0, "templateId": "gem" , "powerupId": "ShrinkPaddle"},
     { "col":  8, "row": 0, "templateId": "steel", "hp": 3 }, { "col":  9, "row": 0, "templateId": "gem", "powerupId": "ExtraLife" },
     { "col": 10, "row": 0, "templateId": "steel", "hp": 3 }, { "col": 11, "row": 0, "templateId": "gem" },
 

@@ -99,7 +99,7 @@ public class GameManager : MonoBehaviour
 
     private void Update()
     {
-        // Numpad debug: activate powerups (1-6)
+        // Numpad debug: activate powerups (1-8)
         if (_state == GameState.Playing)
         {
             if (Input.GetKeyDown(KeyCode.Keypad1)) PowerupManager.Instance?.Apply(PowerupType.WidePaddle);
@@ -110,6 +110,14 @@ public class GameManager : MonoBehaviour
             if (Input.GetKeyDown(KeyCode.Keypad6)) PowerupManager.Instance?.Apply(PowerupType.Laser);
             if (Input.GetKeyDown(KeyCode.Keypad7)) PowerupManager.Instance?.Apply(PowerupType.Fireball);
             if (Input.GetKeyDown(KeyCode.Keypad8)) PowerupManager.Instance?.Apply(PowerupType.BombBrick);
+        }
+
+        if (_state == GameState.Playing && (Input.GetKey(KeyCode.LeftControl) || Input.GetKey(KeyCode.RightControl)))
+        {
+            if (Input.GetKeyDown(KeyCode.Keypad1)) PowerupManager.Instance?.Apply(PowerupType.ShrinkPaddle);
+            if (Input.GetKeyDown(KeyCode.Keypad2)) PowerupManager.Instance?.Apply(PowerupType.ZipBall);
+            if (Input.GetKeyDown(KeyCode.Keypad3)) PowerupManager.Instance?.Apply(PowerupType.FlipControls);
+            if (Input.GetKeyDown(KeyCode.Keypad4)) PowerupManager.Instance?.Apply(PowerupType.CursedBall);
         }
 
         // Fury Strike: ENTER when charge bar is full
@@ -126,6 +134,9 @@ public class GameManager : MonoBehaviour
 
         if (_state == GameState.Playing && Input.GetKeyDown(KeyCode.Backslash))
             DebugDropPrimaryBallIntoDeathZone();
+
+        if (_state == GameState.Playing && Input.GetKeyDown(KeyCode.RightBracket))
+            DebugClearLevelBricks();
 
         if (_state == GameState.Playing && Input.GetKeyDown(KeyCode.Escape))
             SetState(GameState.Paused);
@@ -475,6 +486,8 @@ public class GameManager : MonoBehaviour
         _lives--;
         _hud?.SetLives(_lives);
 
+        PowerupManager.Instance?.ResetAll();
+
         if (_lives <= 0)
         {
             SetState(GameState.GameOver);
@@ -699,6 +712,27 @@ public class GameManager : MonoBehaviour
                 Destroy(bricks[i].gameObject);
             }
         }
+    }
+
+    private void DebugClearLevelBricks()
+    {
+        if (_isAdvancingLevel) return;
+
+        var bricks = Object.FindObjectsByType<Brick>(FindObjectsSortMode.None);
+        if (bricks.Length == 0)
+        {
+            Debug.Log("DebugClearLevelBricks: No bricks to clear.");
+            return;
+        }
+
+        foreach (var brick in bricks)
+        {
+            if (brick == null) continue;
+            LevelManager.Instance?.OnBrickDestroyed();
+            Destroy(brick.gameObject);
+        }
+
+        Debug.Log("DebugClearLevelBricks: Cleared all bricks via ] hotkey.");
     }
 
     private void DebugDropPrimaryBallIntoDeathZone()

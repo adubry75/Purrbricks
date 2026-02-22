@@ -4,8 +4,8 @@
   "ballSpeed": 9.5,
   "grid": { "cols": 12, "rows": 8, "brickWidth": 1.35, "brickHeight": 0.45, "gapX": 0.08, "gapY": 0.16 },
   "bricks": [
-    { "col":  3, "row": 0, "templateId": "purple" }, { "col":  8, "row": 0, "templateId": "purple" },
-    { "col":  2, "row": 1, "templateId": "purple" }, { "col":  9, "row": 1, "templateId": "purple" },
+    { "col":  3, "row": 0, "templateId": "purple" , "powerupId": "Fireball"}, { "col":  8, "row": 0, "templateId": "purple" , "powerupId": "BombBrick"},
+    { "col":  2, "row": 1, "templateId": "purple" , "powerupId": "FlipControls"}, { "col":  9, "row": 1, "templateId": "purple" },
     { "col":  1, "row": 2, "templateId": "purple" }, { "col": 10, "row": 2, "templateId": "purple" },
     { "col":  0, "row": 3, "templateId": "purple" }, { "col": 11, "row": 3, "templateId": "purple" },
     { "col":  0, "row": 4, "templateId": "purple" }, { "col": 11, "row": 4, "templateId": "purple" },

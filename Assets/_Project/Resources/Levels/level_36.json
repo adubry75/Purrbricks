@@ -4,8 +4,8 @@
   "ballSpeed": 14.0,
   "grid": { "cols": 16, "rows": 10, "brickWidth": 0.96, "brickHeight": 0.38, "gapX": 0.07, "gapY": 0.12 },
   "bricks": [
-    { "col":  4, "row": 0, "templateId": "red" }, { "col":  5, "row": 0, "templateId": "red" },
-    { "col":  6, "row": 0, "templateId": "red" }, { "col":  7, "row": 0, "templateId": "red" },
+    { "col":  4, "row": 0, "templateId": "red" , "powerupId": "BombBrick"}, { "col":  5, "row": 0, "templateId": "red" , "powerupId": "WidePaddle"},
+    { "col":  6, "row": 0, "templateId": "red" , "powerupId": "CursedBall"}, { "col":  7, "row": 0, "templateId": "red" },
     { "col":  8, "row": 0, "templateId": "red" }, { "col":  9, "row": 0, "templateId": "red" },
     { "col": 10, "row": 0, "templateId": "red" }, { "col": 11, "row": 0, "templateId": "red" },
 

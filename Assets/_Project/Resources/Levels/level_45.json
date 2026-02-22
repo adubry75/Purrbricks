@@ -4,8 +4,8 @@
   "ballSpeed": 15.5,
   "grid": { "cols": 24, "rows": 12, "brickWidth": 0.60, "brickHeight": 0.24, "gapX": 0.05, "gapY": 0.08 },
   "bricks": [
-    { "col":  6, "row": 0, "templateId": "dark" }, { "col":  7, "row": 0, "templateId": "dark" },
-    { "col":  8, "row": 0, "templateId": "dark" }, { "col":  9, "row": 0, "templateId": "dark" },
+    { "col":  6, "row": 0, "templateId": "dark" , "powerupId": "WidePaddle"}, { "col":  7, "row": 0, "templateId": "dark" , "powerupId": "MultiBall"},
+    { "col":  8, "row": 0, "templateId": "dark" , "powerupId": "ShrinkPaddle"}, { "col":  9, "row": 0, "templateId": "dark" },
     { "col": 10, "row": 0, "templateId": "dark" }, { "col": 11, "row": 0, "templateId": "dark" },
     { "col": 12, "row": 0, "templateId": "dark" }, { "col": 13, "row": 0, "templateId": "dark" },
     { "col": 14, "row": 0, "templateId": "dark" }, { "col": 15, "row": 0, "templateId": "dark" },

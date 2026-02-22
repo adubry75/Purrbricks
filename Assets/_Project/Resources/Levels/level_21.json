@@ -4,10 +4,10 @@
   "ballSpeed": 11.5,
   "grid": { "cols": 12, "rows": 10, "brickWidth": 1.35, "brickHeight": 0.42, "gapX": 0.08, "gapY": 0.10 },
   "bricks": [
-    { "col":  4, "row": 0, "templateId": "blue" },
+    { "col":  4, "row": 0, "templateId": "blue" , "powerupId": "WidePaddle"},
     { "col":  5, "row": 0, "templateId": "gem", "powerupId": "Fireball" },
-    { "col":  6, "row": 0, "templateId": "gem" },
-    { "col":  7, "row": 0, "templateId": "blue" },
+    { "col":  6, "row": 0, "templateId": "gem" , "powerupId": "MultiBall"},
+    { "col":  7, "row": 0, "templateId": "blue" , "powerupId": "ShrinkPaddle"},
 
     { "col":  4, "row": 1, "templateId": "blue" }, { "col":  5, "row": 1, "templateId": "blue" },
     { "col":  6, "row": 1, "templateId": "blue" }, { "col":  7, "row": 1, "templateId": "blue" },

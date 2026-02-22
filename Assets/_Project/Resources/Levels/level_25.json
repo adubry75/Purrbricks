@@ -4,8 +4,8 @@
   "ballSpeed": 12.0,
   "grid": { "cols": 12, "rows": 10, "brickWidth": 1.35, "brickHeight": 0.42, "gapX": 0.08, "gapY": 0.10 },
   "bricks": [
-    { "col":  6, "row": 0, "templateId": "gold" }, { "col":  7, "row": 0, "templateId": "gold" },
-    { "col":  8, "row": 0, "templateId": "gold" }, { "col":  9, "row": 0, "templateId": "gold" },
+    { "col":  6, "row": 0, "templateId": "gold" , "powerupId": "ExtraLife"}, { "col":  7, "row": 0, "templateId": "gold" , "powerupId": "Laser"},
+    { "col":  8, "row": 0, "templateId": "gold" , "powerupId": "ShrinkPaddle"}, { "col":  9, "row": 0, "templateId": "gold" },
     { "col": 10, "row": 0, "templateId": "gold" },
     { "col": 11, "row": 0, "templateId": "gem", "powerupId": "Fireball" },
 

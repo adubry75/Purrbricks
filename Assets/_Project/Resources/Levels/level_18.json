@@ -4,8 +4,8 @@
   "ballSpeed": 11.0,
   "grid": { "cols": 12, "rows": 6, "brickWidth": 1.35, "brickHeight": 0.45, "gapX": 0.08, "gapY": 0.16 },
   "bricks": [
-    { "col":  0, "row": 0, "templateId": "steel" },
-    { "col":  1, "row": 0, "templateId": "cyan" }, { "col":  2, "row": 0, "templateId": "cyan" },
+    { "col":  0, "row": 0, "templateId": "steel" , "powerupId": "Laser"},
+    { "col":  1, "row": 0, "templateId": "cyan" , "powerupId": "Fireball"}, { "col":  2, "row": 0, "templateId": "cyan" , "powerupId": "ZipBall"},
     { "col":  3, "row": 0, "templateId": "cyan" }, { "col":  4, "row": 0, "templateId": "cyan" },
     { "col":  5, "row": 0, "templateId": "cyan" }, { "col":  6, "row": 0, "templateId": "cyan" },
     { "col":  7, "row": 0, "templateId": "cyan" }, { "col":  8, "row": 0, "templateId": "cyan" },

@@ -4,8 +4,8 @@
   "ballSpeed": 10.5,
   "grid": { "cols": 14, "rows": 7, "brickWidth": 1.35, "brickHeight": 0.45, "gapX": 0.06, "gapY": 0.14 },
   "bricks": [
-    { "col":  0, "row": 0, "templateId": "standard" }, { "col":  1, "row": 0, "templateId": "standard" },
-    { "col":  3, "row": 0, "templateId": "standard" }, { "col":  4, "row": 0, "templateId": "standard" },
+    { "col":  0, "row": 0, "templateId": "standard" , "powerupId": "StickyBall"}, { "col":  1, "row": 0, "templateId": "standard" , "powerupId": "SpeedBall"},
+    { "col":  3, "row": 0, "templateId": "standard" , "powerupId": "FlipControls"}, { "col":  4, "row": 0, "templateId": "standard" },
     { "col":  6, "row": 0, "templateId": "standard" }, { "col":  7, "row": 0, "templateId": "standard" },
     { "col":  9, "row": 0, "templateId": "standard" }, { "col": 10, "row": 0, "templateId": "standard" },
     { "col": 12, "row": 0, "templateId": "standard" }, { "col": 13, "row": 0, "templateId": "standard" },

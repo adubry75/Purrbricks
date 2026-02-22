@@ -4,8 +4,8 @@
   "ballSpeed": 11.0,
   "grid": { "cols": 12, "rows": 10, "brickWidth": 1.35, "brickHeight": 0.42, "gapX": 0.08, "gapY": 0.12 },
   "bricks": [
-    { "col":  0, "row": 0, "templateId": "standard" }, { "col":  1, "row": 0, "templateId": "standard" },
-    { "col":  2, "row": 0, "templateId": "standard" }, { "col":  3, "row": 0, "templateId": "standard" },
+    { "col":  0, "row": 0, "templateId": "standard" , "powerupId": "ExtraLife"}, { "col":  1, "row": 0, "templateId": "standard" , "powerupId": "Laser"},
+    { "col":  2, "row": 0, "templateId": "standard" , "powerupId": "ShrinkPaddle"}, { "col":  3, "row": 0, "templateId": "standard" },
     { "col":  4, "row": 0, "templateId": "gem", "powerupId": "SpeedBall" },
 
     { "col":  0, "row": 1, "templateId": "standard" }, { "col":  1, "row": 1, "templateId": "standard" },
