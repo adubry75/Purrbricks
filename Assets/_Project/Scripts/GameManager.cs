@@ -281,6 +281,26 @@ public class GameManager : MonoBehaviour
         SetState(GameState.Ready);
     }
 
+    /// <summary>
+    /// Replay the current level from scratch (keeps lives and cumulative score from earlier levels).
+    /// Any score earned in this attempt is rolled back so the level starts fresh.
+    /// </summary>
+    public void ReplayCurrentLevel()
+    {
+        _victoryUI?.Hide();
+
+        // Roll back score to what it was before this level started
+        _score = _levelStartScore;
+        _combo = 0;
+        _comboTimer = 0f;
+        _hud?.SetScore(_score);
+        _hud?.SetCombo(_combo);
+
+        LoadLevel(_currentLevelIndex);
+        MusicPlayer.Instance?.PlayGameplay(_currentLevelIndex);
+        SetState(GameState.Ready);
+    }
+
     // ── Level Loading ───────────────────────────────────────────────────────
 
     public void LoadLevel(int levelIndex)
@@ -401,11 +421,15 @@ public class GameManager : MonoBehaviour
                 break;
 
             case GameState.Victory:
+            {
                 SetCursorMenuMode();
                 Time.timeScale = 0f;
-                _victoryUI?.ShowVictory(_score - _levelStartScore, _levelComboBonus, _levelBestCombo);
+                string levelId = (_levelIds != null && _currentLevelIndex < _levelIds.Length)
+                    ? _levelIds[_currentLevelIndex] : "";
+                _victoryUI?.ShowVictory(_score - _levelStartScore, _levelComboBonus, _levelBestCombo, levelId);
                 MusicPlayer.Instance?.PlayLevelFinish();
                 break;
+            }
         }
     }
 
