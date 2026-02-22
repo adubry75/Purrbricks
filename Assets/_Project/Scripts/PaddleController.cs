@@ -66,8 +66,8 @@ public class PaddleController : MonoBehaviour
             var ball = FindFirstObjectByType<BallController>();
             targetX = ball != null ? ball.transform.position.x : 0f;
         }
-        else
-        {
+            else
+            {
             float mouseX = _camera.ScreenToWorldPoint(Input.mousePosition).x;
             targetX = _isFlipped ? -mouseX : mouseX;
         }
@@ -131,7 +131,11 @@ public class PaddleController : MonoBehaviour
     public void SetFrozen(bool frozen)
     {
         _isFrozen = frozen;
-        if (frozen) _frozenX = transform.position.x;
+        if (frozen)
+        {
+            _frozenX = transform.position.x;
+        }
+        
     }
 
     public void SetDemoMode(bool isDemoMode)

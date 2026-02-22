@@ -2283,6 +2283,12 @@ MonoBehaviour:
   - {fileID: 8300000, guid: 44b05f1fa9321c94e94d2637ea16134f, type: 3}
   - {fileID: 8300000, guid: baa823fdd6c8e5041b32e32687ee5b53, type: 3}
   - {fileID: 8300000, guid: c23e665ace153d841b693f0ede7248c5, type: 3}
+  - {fileID: 8300000, guid: 1df9dc50db58b384094296bd90a2a6eb, type: 3}
+  - {fileID: 8300000, guid: 71609432f0e99cc4ca8240eec8aa6815, type: 3}
+  - {fileID: 8300000, guid: 4ee2f2f7d922e1f45b347150570073ff, type: 3}
+  - {fileID: 8300000, guid: 4e9fa68ff56d4e6429e22e769f75edcc, type: 3}
+  - {fileID: 8300000, guid: 5a0b1593192933f4ab2614b6e12c68dd, type: 3}
+  - {fileID: 8300000, guid: 28191d206f8cb2d4581557fc3d1075fb, type: 3}
   _gameOverTrack: {fileID: 8300000, guid: 51c362cfccbd93e43a5b4a56154a95d6, type: 3}
   _levelFinishTrack: {fileID: 8300000, guid: 8e13f77b10a04584b916c92745aac7b4, type: 3}
   _musicVolume: 0.5

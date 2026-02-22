@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.InputSystem;
 
 public class BallController : MonoBehaviour
 {
@@ -21,6 +22,9 @@ public class BallController : MonoBehaviour
     [SerializeField] private float _maxBounceAngleDegrees = 75f;
     [SerializeField] private string _paddleObjectName = "Paddle";
 
+    private float _ignorePaddleBounceUntil;
+    [SerializeField] private float _ignorePaddleBounceTime = 0.12f;
+
     private bool _launched;
     private bool _isSticky;
     private bool _isStickyHeld;     // caught by paddle, waiting for space
@@ -42,10 +46,10 @@ public class BallController : MonoBehaviour
     private static readonly Collider2D[] s_overlapBuffer = new Collider2D[64];
 
     private const float SPEED_MULTIPLIER = 2f;
-    private const float ZIP_MULTIPLIER   = 2.5f;
+    private const float ZIP_MULTIPLIER = 2.5f;
 
     // ── Speed ramp (Fury Strike charge) ───────────────────────────────────────
-    private const float RAMP_MAX  = 2.0f;   // maximum speed multiplier
+    private const float RAMP_MAX = 2.0f;   // maximum speed multiplier
     private const float RAMP_RATE = 0.015f; // multiplier gained per second while live
     private float _rampMultiplier = 1.0f;
 
@@ -56,19 +60,20 @@ public class BallController : MonoBehaviour
 
     // ── Ball visuals ──────────────────────────────────────────────────────────
     private SpriteRenderer _ballSr;
-    private TrailRenderer  _ballTrail;
+    private TrailRenderer _ballTrail;
 
     // ── Aim system ────────────────────────────────────────────────────────────
-    private GameObject       _aimLineGO;
-    private LineRenderer     _aimLine;
-    private bool             _isAiming;
-    private Vector2          _aimDir;
+    private GameObject _aimLineGO;
+    private LineRenderer _aimLine;
+    private bool _isAiming;
+    private Vector2 _aimDir;
+    private Vector2 _aimMouseStartScreen; // screen-px position when Space first pressed
     private PaddleController _paddleCtrl;
 
     // Cached gradient objects — rebuilt only when tint changes, not every frame
-    private readonly Gradient           _trailGradient   = new Gradient();
-    private readonly GradientColorKey[] _colorKeys       = new GradientColorKey[2];
-    private readonly GradientAlphaKey[] _alphaKeys       = new GradientAlphaKey[2];
+    private readonly Gradient _trailGradient = new Gradient();
+    private readonly GradientColorKey[] _colorKeys = new GradientColorKey[2];
+    private readonly GradientAlphaKey[] _alphaKeys = new GradientAlphaKey[2];
     private Color _lastTint = Color.clear;
 
     // Effective speed accounting for all active flags + ramp
@@ -78,7 +83,7 @@ public class BallController : MonoBehaviour
         {
             float s = _speed * _rampMultiplier;
             if (_isSpeedBoost) s *= SPEED_MULTIPLIER;
-            if (_isZipBall)    s *= ZIP_MULTIPLIER;
+            if (_isZipBall) s *= ZIP_MULTIPLIER;
             return s;
         }
     }
@@ -93,9 +98,9 @@ public class BallController : MonoBehaviour
         if (_rb == null) _rb = GetComponent<Rigidbody2D>();
         _rb.interpolation = RigidbodyInterpolation2D.Interpolate;
         _launchDirection = _launchDirection.normalized;
-        _aimDir          = _launchDirection;
-        _ballSr          = GetComponent<SpriteRenderer>();
-        _ballTrail       = GetComponent<TrailRenderer>();
+        _aimDir = _launchDirection;
+        _ballSr = GetComponent<SpriteRenderer>();
+        _ballTrail = GetComponent<TrailRenderer>();
 
         SetupAimLine();
     }
@@ -106,11 +111,11 @@ public class BallController : MonoBehaviour
         _aimLineGO.transform.SetParent(transform, false);
 
         _aimLine = _aimLineGO.AddComponent<LineRenderer>();
-        _aimLine.positionCount  = 2;
-        _aimLine.startWidth     = 0.06f;
-        _aimLine.endWidth       = 0.01f;
-        _aimLine.useWorldSpace  = true;
-        _aimLine.sortingOrder   = 10;
+        _aimLine.positionCount = 2;
+        _aimLine.startWidth = 0.06f;
+        _aimLine.endWidth = 0.01f;
+        _aimLine.useWorldSpace = true;
+        _aimLine.sortingOrder = 10;
 
         var shader = Shader.Find("Sprites/Default");
         if (shader != null)
@@ -267,48 +272,45 @@ public class BallController : MonoBehaviour
     {
         if (Input.GetKey(KeyCode.Space))
         {
-            // Freeze paddle so mouse can aim freely from any position
+            // Freeze paddle so mouse can aim freely
             if (_paddleCtrl == null && _paddle != null)
                 _paddleCtrl = _paddle.GetComponent<PaddleController>();
             _paddleCtrl?.SetFrozen(true);
 
-            _isAiming = true;
-
-            // Compute direction from ball toward mouse cursor
-            if (Camera.main != null)
+            // On first frame of aiming: record where the mouse was, default to straight up.
+            // We use mouse-delta aiming rather than world-position aiming because the
+            // paddle follows the mouse, so ball.x ≈ mouse.x always, making position-relative
+            // aim permanently point straight up regardless of cursor position.
+            if (!_isAiming)
             {
-                Vector3 mouseWorld = Camera.main.ScreenToWorldPoint(Input.mousePosition);
-                mouseWorld.z = transform.position.z;
-                Vector2 toMouse = (Vector2)mouseWorld - (Vector2)transform.position;
-
-                if (toMouse.sqrMagnitude > 0.01f)
-                {
-                    // Clamp to ±60° from straight up (guarantees upward component ≥ sin30° ≈ 0.5)
-                    float angle = Mathf.Atan2(toMouse.x, toMouse.y) * Mathf.Rad2Deg;
-                    angle   = Mathf.Clamp(angle, -60f, 60f);
-                    _aimDir = new Vector2(
-                        Mathf.Sin(angle * Mathf.Deg2Rad),
-                        Mathf.Cos(angle * Mathf.Deg2Rad));
-                }
+                _aimMouseStartScreen = Input.mousePosition;
+                _aimDir = Vector2.up;
+                _isAiming = true;
             }
 
-            // Draw aim line
+            // Angle = horizontal mouse movement from start, mapped to ±60°.
+            // Moving ~1/3 of screen width left or right reaches the ±60° clamp.
+            float mouseDeltaX = Input.mousePosition.x - _aimMouseStartScreen.x;
+            float angle = Mathf.Clamp(mouseDeltaX / Screen.width * 180f, -60f, 60f);
+            float rad = angle * Mathf.Deg2Rad;
+            _aimDir = new Vector2(Mathf.Sin(rad), Mathf.Cos(rad));
+
             if (_aimLineGO != null)
             {
-                _aimLineGO.SetActive(true);
                 Vector2 origin = transform.position;
+                _aimLineGO.SetActive(true);
                 _aimLine.SetPosition(0, origin);
                 _aimLine.SetPosition(1, origin + _aimDir * 2.8f);
             }
         }
         else if (Input.GetKeyUp(KeyCode.Space))
         {
-            // Unfreeze paddle and fire in aimed direction
-            _paddleCtrl?.SetFrozen(false);
             if (_aimLineGO != null) _aimLineGO.SetActive(false);
             _launchDirection = _aimDir;
             _isAiming = false;
             Launch();
+            WarpMouseToPaddleX();
+            _paddleCtrl?.SetFrozen(false);
         }
         else
         {
@@ -317,12 +319,34 @@ public class BallController : MonoBehaviour
         }
     }
 
+    private void WarpMouseToPaddleX()
+    {
+        if (_paddle == null) return;
+        var cam = Camera.main;
+        if (cam == null) return;
+
+        var mouse = Mouse.current;
+        if (mouse == null) return;
+
+        // Paddle's x in screen coords
+        float paddleScreenX = cam.WorldToScreenPoint(_paddle.position).x;
+
+        // Keep current Y so we only "snap" horizontally
+        float mouseY = mouse.position.ReadValue().y;
+
+        mouse.WarpCursorPosition(new Vector2(paddleScreenX, mouseY));
+    }
+
+
     public void Launch()
     {
+        Debug.Log($"LAUNCH dir={_launchDirection} vel={_rb.linearVelocity}");
+
         if (_launched) return;
         if (_rb == null) _rb = GetComponent<Rigidbody2D>();
         if (_rb == null) return;
 
+        _ignorePaddleBounceUntil = Time.time + _ignorePaddleBounceTime;
         _launched = true;
         _isStickyHeld = false;
         _rb.simulated = true;
@@ -380,14 +404,14 @@ public class BallController : MonoBehaviour
             currentDir.x * Mathf.Sin(rad) + currentDir.y * Mathf.Cos(rad)
         ).normalized;
 
-        cloneBall._launched        = true;
-        cloneBall._isSpeedBoost    = _isSpeedBoost;
-        cloneBall._isSticky        = _isSticky;
-        cloneBall._isFireball      = _isFireball;
-        cloneBall._isBomb          = _isBomb;
-        cloneBall._isCursed        = _isCursed;
-        cloneBall._isZipBall       = _isZipBall;
-        cloneBall._rampMultiplier  = _rampMultiplier;
+        cloneBall._launched = true;
+        cloneBall._isSpeedBoost = _isSpeedBoost;
+        cloneBall._isSticky = _isSticky;
+        cloneBall._isFireball = _isFireball;
+        cloneBall._isBomb = _isBomb;
+        cloneBall._isCursed = _isCursed;
+        cloneBall._isZipBall = _isZipBall;
+        cloneBall._rampMultiplier = _rampMultiplier;
 
         var cloneRb = cloneBall.GetComponent<Rigidbody2D>();
         if (cloneRb != null)
@@ -421,6 +445,14 @@ public class BallController : MonoBehaviour
 
     private void OnCollisionEnter2D(Collision2D collision)
     {
+        if (collision.collider.gameObject.name == _paddleObjectName)
+        {
+            Debug.Log($"PADDLE COLLISION at t={Time.time} vel={_rb.linearVelocity}");
+            if (Time.time < _ignorePaddleBounceUntil)
+                return;
+        }
+
+
         // Sticky catch
         if (_isSticky && collision.collider.gameObject.name == _paddleObjectName && !_isStickyHeld)
         {
@@ -482,13 +514,13 @@ public class BallController : MonoBehaviour
 
     private void HandlePaddleBounce(Collision2D collision)
     {
-        float paddleWidth   = collision.collider.bounds.size.x;
+        float paddleWidth = collision.collider.bounds.size.x;
         float paddleCenterX = collision.collider.bounds.center.x;
-        float hitX          = collision.GetContact(0).point.x;
+        float hitX = collision.GetContact(0).point.x;
 
         float t = Mathf.Clamp((hitX - paddleCenterX) / (paddleWidth * 0.5f), -1f, 1f);
         float angle = t * _maxBounceAngleDegrees;
-        float rad   = angle * Mathf.Deg2Rad;
+        float rad = angle * Mathf.Deg2Rad;
         Vector2 dir = new Vector2(Mathf.Sin(rad), Mathf.Cos(rad)).normalized;
 
         _rb.linearVelocity = dir * EffectiveSpeed;
@@ -496,29 +528,30 @@ public class BallController : MonoBehaviour
 
     public void ResetToPaddle()
     {
-        _launched           = false;
-        _isStickyHeld       = false;
-        _isAiming           = false;
-        _aimDir             = _launchDirection;
+        _launched = false;
+        _isStickyHeld = false;
+        _isAiming = false;
+        _aimDir = _launchDirection;
+        _aimMouseStartScreen = Vector2.zero;
         _paddleCtrl?.SetFrozen(false);
         if (_aimLineGO != null) _aimLineGO.SetActive(false);
-        _isSticky           = false;
-        _isSpeedBoost       = false;
-        _isFireball         = false;
-        _isBomb             = false;
-        _isCursed           = false;
-        _isZipBall          = false;
+        _isSticky = false;
+        _isSpeedBoost = false;
+        _isFireball = false;
+        _isBomb = false;
+        _isCursed = false;
+        _isZipBall = false;
         _wantFireballPierce = false;
-        _curseTimer         = 0f;
-        _rampMultiplier     = 1.0f;
+        _curseTimer = 0f;
+        _rampMultiplier = 1.0f;
 
         if (_ballSr != null) _ballSr.color = Color.white;
 
         if (_rb != null)
         {
-            _rb.linearVelocity  = Vector2.zero;
+            _rb.linearVelocity = Vector2.zero;
             _rb.angularVelocity = 0f;
-            _rb.simulated       = false;
+            _rb.simulated = false;
         }
 
         if (_paddle == null)
