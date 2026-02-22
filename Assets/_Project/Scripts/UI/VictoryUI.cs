@@ -38,10 +38,12 @@ public class VictoryUI : MonoBehaviour
         panelRt.sizeDelta       = Vector2.zero;
         panelRt.anchoredPosition = new Vector2(-160f, 0f);
 
-        CreateText(panel, "LEVEL COMPLETE!", new Vector2(0f, 160f), 90,  new Color(0.20f, 1f, 0.45f));
-        CreateText(panel, "Score: 0",        new Vector2(0f,  55f), 52,  Color.white, "ScoreText");
+        CreateText(panel, "LEVEL COMPLETE!", new Vector2(0f,  190f), 90, new Color(0.20f, 1f, 0.45f));
+        CreateText(panel, "Level Score: 0",  new Vector2(0f,   95f), 52, Color.white,                    "LevelScoreText");
+        CreateText(panel, "Combo Bonus: 0",  new Vector2(0f,   20f), 38, new Color(1f, 0.85f, 0.15f),   "ComboBonusText");
+        CreateText(panel, "Best Combo: ×0",  new Vector2(0f,  -45f), 38, new Color(0.45f, 0.85f, 1f),   "BestComboText");
 
-        UIStyle.CreateButton(panel.transform, "Next Level", new Vector2(0f, -95f), new Vector2(320f, 80f), OnNextLevel, UIStyle.AccentGreen);
+        UIStyle.CreateButton(panel.transform, "Next Level", new Vector2(0f, -145f), new Vector2(320f, 80f), OnNextLevel, UIStyle.AccentGreen);
     }
 
     private void CreateText(GameObject parent, string text, Vector2 pos, int fontSize, Color color, string objName = null)
@@ -68,13 +70,22 @@ public class VictoryUI : MonoBehaviour
         ol.effectDistance = new Vector2(4f, -4f);
     }
 
-    public void ShowVictory(int currentScore)
+    public void ShowVictory(int levelScore, int comboBonus, int bestCombo)
     {
         gameObject.SetActive(true);
 
-        var scoreText = transform.Find("Panel/ScoreText")?.GetComponent<Text>();
-        if (scoreText != null)
-            scoreText.text = $"Score: {currentScore:N0}";
+        var t1 = transform.Find("Panel/LevelScoreText")?.GetComponent<Text>();
+        if (t1 != null) t1.text = $"Level Score:  {levelScore:N0}";
+
+        var t2 = transform.Find("Panel/ComboBonusText")?.GetComponent<Text>();
+        if (t2 != null) t2.text = comboBonus > 0
+            ? $"Combo Bonus:  +{comboBonus:N0}"
+            : "Combo Bonus:  —";
+
+        var t3 = transform.Find("Panel/BestComboText")?.GetComponent<Text>();
+        if (t3 != null) t3.text = bestCombo > 0
+            ? $"Best Combo:  ×{bestCombo + 1}"
+            : "Best Combo:  —";
 
         SpawnConfetti();
     }

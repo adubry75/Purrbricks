@@ -19,6 +19,7 @@ public class BrickVisualController : MonoBehaviour
     private bool _isPowerupBrick;
     private GameObject _powerupOverlay;
     private float _overlayPulseTimer;
+    private float _overlayBaseScale = 0.18f; // world-sized base, corrected per brick
 
     private void Awake()
     {
@@ -36,7 +37,7 @@ public class BrickVisualController : MonoBehaviour
         c.a = 1f;
         _sr.color = c;
 
-        // Powerup overlay: pulsing glow ring
+        // Powerup overlay: subtle pulsing ring within brick bounds
         if (_isPowerupBrick && _powerupOverlay != null)
         {
             _overlayPulseTimer += Time.deltaTime * 2.5f;
@@ -45,10 +46,10 @@ public class BrickVisualController : MonoBehaviour
             if (osr != null)
             {
                 Color oc = osr.color;
-                oc.a = 0.4f + 0.4f * glowPulse;
+                oc.a = 0.25f + 0.20f * glowPulse; // subtler: max alpha 0.45
                 osr.color = oc;
             }
-            float scalePulse = 1.0f + 0.08f * glowPulse;
+            float scalePulse = _overlayBaseScale * (1.0f + 0.06f * glowPulse);
             _powerupOverlay.transform.localScale = Vector3.one * scalePulse;
         }
     }
@@ -120,9 +121,9 @@ public class BrickVisualController : MonoBehaviour
     {
         _isPowerupBrick = true;
 
-        // Boost shimmer so it clearly pulses
-        _shimmerSpeed  = 4f;
-        _shimmerAmount = 0.20f;
+        // Gentle shimmer to hint at special status without being distracting
+        _shimmerSpeed  = 3.0f;
+        _shimmerAmount = 0.10f;
 
         // Determine overlay color from type
         Color overlayColor = Color.white;
@@ -140,10 +141,18 @@ public class BrickVisualController : MonoBehaviour
 
         var osr = _powerupOverlay.AddComponent<SpriteRenderer>();
         osr.sprite = CreateRingSprite();
-        osr.color  = new Color(overlayColor.r, overlayColor.g, overlayColor.b, 0.7f);
+        osr.color  = new Color(overlayColor.r, overlayColor.g, overlayColor.b, 0.35f);
         osr.sortingOrder = _sr != null ? _sr.sortingOrder + 1 : 2;
 
-        _powerupOverlay.transform.localScale = Vector3.one * 1.1f;
+        // Scale the ring to fit within the brick bounds.
+        // The ring sprite is 32px at PPU = 32*0.36 = 11.52, so native world size = 32/11.52 ≈ 2.778.
+        // We want the ring to span ~90% of the brick's visual height.
+        // Estimate brick height from sprite bounds (fallback to 0.40 if not available).
+        float brickH = (_sr != null && _sr.sprite != null)
+            ? _sr.bounds.size.y
+            : 0.40f;
+        _overlayBaseScale = (brickH * 0.90f) / 2.778f;
+        _powerupOverlay.transform.localScale = Vector3.one * _overlayBaseScale;
     }
 
     private static Sprite _ringSprite;

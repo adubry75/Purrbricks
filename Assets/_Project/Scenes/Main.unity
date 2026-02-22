@@ -367,7 +367,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: -300, y: 0}
+  m_AnchoredPosition: {x: -650, y: 20}
   m_SizeDelta: {x: 200, y: 50}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &127460275
@@ -683,7 +683,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: -850, y: 0}
+  m_AnchoredPosition: {x: -850, y: 20}
   m_SizeDelta: {x: 200, y: 50}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!1 &519420028
@@ -1361,7 +1361,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 814134067}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: f4688fdb7df04437aeb418b961361dc5, type: 3}
   m_Name: 
@@ -1534,13 +1534,13 @@ BoxCollider2D:
   m_SpriteTilingProperty:
     border: {x: 0, y: 0, z: 0, w: 0}
     pivot: {x: 0.5, y: 0.5}
-    oldSize: {x: 1, y: 1}
-    newSize: {x: 1, y: 1}
+    oldSize: {x: 2.5, y: 0.48}
+    newSize: {x: 2.5, y: 0.48}
     adaptiveTilingThreshold: 0.5
     drawMode: 0
     adaptiveTiling: 0
   m_AutoTiling: 0
-  m_Size: {x: 1, y: 1}
+  m_Size: {x: 2.5, y: 0.5}
   m_EdgeRadius: 0
 --- !u!212 &842519043
 SpriteRenderer:
@@ -1591,12 +1591,12 @@ SpriteRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 0
   m_MaskInteraction: 0
-  m_Sprite: {fileID: 7482667652216324306, guid: 311925a002f4447b3a28927169b83ea6, type: 3}
+  m_Sprite: {fileID: 6436194679782145604, guid: e4b9e9c9762c817469b8740aa939900b, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
   m_FlipY: 0
   m_DrawMode: 0
-  m_Size: {x: 1, y: 1}
+  m_Size: {x: 2.5, y: 0.48}
   m_AdaptiveModeThreshold: 0.5
   m_SpriteTileMode: 0
   m_WasSpriteAssigned: 1
@@ -1611,7 +1611,7 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: -2.5, y: -7, z: 0}
-  m_LocalScale: {x: 2.5, y: 0.35, z: 1}
+  m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
@@ -2275,6 +2275,14 @@ MonoBehaviour:
   - {fileID: 8300000, guid: d2aef167c1dfb2e4fbb8b84e56d3b333, type: 3}
   - {fileID: 8300000, guid: 991073b155ed60740851eee350a68f4d, type: 3}
   - {fileID: 8300000, guid: f86f4d162f1c8224f8329dcbe82b7854, type: 3}
+  - {fileID: 8300000, guid: 111758149c95c114e920bb905a334b58, type: 3}
+  - {fileID: 8300000, guid: c9ca6daf2e171e840aff185f8557c924, type: 3}
+  - {fileID: 8300000, guid: d09da2913e2854c4cae3fceff2e5da09, type: 3}
+  - {fileID: 8300000, guid: 29c653aca9ad78344afb774999add766, type: 3}
+  - {fileID: 8300000, guid: bbbda7ccc516f404694a1807491aae18, type: 3}
+  - {fileID: 8300000, guid: 44b05f1fa9321c94e94d2637ea16134f, type: 3}
+  - {fileID: 8300000, guid: baa823fdd6c8e5041b32e32687ee5b53, type: 3}
+  - {fileID: 8300000, guid: c23e665ace153d841b693f0ede7248c5, type: 3}
   _gameOverTrack: {fileID: 8300000, guid: 51c362cfccbd93e43a5b4a56154a95d6, type: 3}
   _levelFinishTrack: {fileID: 8300000, guid: 8e13f77b10a04584b916c92745aac7b4, type: 3}
   _musicVolume: 0.5
@@ -2616,7 +2624,7 @@ CircleCollider2D:
   m_CompositeOperation: 0
   m_CompositeOrder: 0
   m_Offset: {x: 0, y: 0}
-  m_Radius: 0.49999997
+  m_Radius: 0.2
 --- !u!212 &1374096746
 SpriteRenderer:
   serializedVersion: 2
@@ -2666,12 +2674,12 @@ SpriteRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 0
   m_MaskInteraction: 0
-  m_Sprite: {fileID: -2413806693520163455, guid: a86470a33a6bf42c4b3595704624658b, type: 3}
+  m_Sprite: {fileID: -3603556060819865620, guid: 3800f5bc60094c24ebc6859eefa87217, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
   m_FlipY: 0
   m_DrawMode: 0
-  m_Size: {x: 1, y: 1}
+  m_Size: {x: 0.34, y: 0.36}
   m_AdaptiveModeThreshold: 0.5
   m_SpriteTileMode: 0
   m_WasSpriteAssigned: 1
@@ -2686,7 +2694,7 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: -2.5, y: -6.5, z: 0}
-  m_LocalScale: {x: 0.35, y: 0.35, z: 1}
+  m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
@@ -2724,6 +2732,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b8594eb476773d543af2c1ac10c9e484, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::BallTrail
+  _baseEmissionRate: 55
+  _maxEmissionRate: 190
 --- !u!96 &1374096750
 TrailRenderer:
   serializedVersion: 4
@@ -2951,6 +2961,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2321e605a15b49041bbc5b637c30239c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::MainMenuUI
+  _playSprite: {fileID: 1901785496931978614, guid: e8ccf9ee4fc1d484994dbfd820b627c3, type: 3}
+  _highScoresSprite: {fileID: 3786401663543500468, guid: f2c70f9834fc92e40a471190c2779052, type: 3}
+  _quitSprite: {fileID: 7915122063046066817, guid: 9d7d2b5805c6e144ab386c6ee5c63405, type: 3}
 --- !u!4 &1606839530
 Transform:
   m_ObjectHideFlags: 0
@@ -3163,6 +3176,26 @@ MonoBehaviour:
   - level_27
   - level_28
   - level_29
+  - level_30
+  - level_31
+  - level_32
+  - level_33
+  - level_34
+  - level_35
+  - level_36
+  - level_37
+  - level_38
+  - level_39
+  - level_40
+  - level_41
+  - level_42
+  - level_43
+  - level_44
+  - level_45
+  - level_46
+  - level_47
+  - level_48
+  - level_49
   _levelClearDelay: 3
   _levelLoader: {fileID: 1184986102}
   _ball: {fileID: 1374096748}
@@ -3218,8 +3251,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 350, y: 0}
-  m_SizeDelta: {x: 300, y: 50}
+  m_AnchoredPosition: {x: 0, y: -28}
+  m_SizeDelta: {x: 600, y: 50}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1722306025
 MonoBehaviour:
@@ -3833,7 +3866,9 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: 'Press Space to Launch
+  m_text: 'Hold Space to Aim
+
+    Release to Launch
 
 '
   m_isRightToLeft: 0
@@ -4099,8 +4134,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: 300, y: 50}
+  m_AnchoredPosition: {x: 0, y: 20}
+  m_SizeDelta: {x: 600, y: 50}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!1660057539 &9223372036854775807
 SceneRoots:

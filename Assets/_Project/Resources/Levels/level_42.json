@@ -1,0 +1,76 @@
+{
+  "id": "level_42",
+  "displayName": "Pac-Attack",
+  "ballSpeed": 15.0,
+  "grid": { "cols": 20, "rows": 12, "brickWidth": 0.75, "brickHeight": 0.30, "gapX": 0.06, "gapY": 0.10 },
+  "bricks": [
+    { "col":  6, "row": 0, "templateId": "gold" }, { "col":  7, "row": 0, "templateId": "gold" },
+    { "col":  8, "row": 0, "templateId": "gold" }, { "col":  9, "row": 0, "templateId": "gold" },
+    { "col": 10, "row": 0, "templateId": "gold" }, { "col": 11, "row": 0, "templateId": "gold" },
+    { "col": 12, "row": 0, "templateId": "gold" }, { "col": 13, "row": 0, "templateId": "gold" },
+
+    { "col":  4, "row": 1, "templateId": "gold" }, { "col":  5, "row": 1, "templateId": "gold" },
+    { "col":  6, "row": 1, "templateId": "gold" }, { "col":  7, "row": 1, "templateId": "gold" },
+    { "col":  8, "row": 1, "templateId": "gold" }, { "col":  9, "row": 1, "templateId": "gold" },
+    { "col": 10, "row": 1, "templateId": "gold" }, { "col": 11, "row": 1, "templateId": "gold" },
+    { "col": 12, "row": 1, "templateId": "gold" }, { "col": 13, "row": 1, "templateId": "gold" },
+    { "col": 14, "row": 1, "templateId": "gold" }, { "col": 15, "row": 1, "templateId": "gold" },
+
+    { "col":  3, "row": 2, "templateId": "gold" }, { "col":  4, "row": 2, "templateId": "gold" },
+    { "col":  5, "row": 2, "templateId": "gold" }, { "col":  6, "row": 2, "templateId": "gem", "powerupId": "Fireball" },
+    { "col":  7, "row": 2, "templateId": "gold" }, { "col":  8, "row": 2, "templateId": "gold" },
+    { "col":  9, "row": 2, "templateId": "gold" }, { "col": 10, "row": 2, "templateId": "gold" },
+    { "col": 11, "row": 2, "templateId": "gold" }, { "col": 12, "row": 2, "templateId": "gold" },
+    { "col": 13, "row": 2, "templateId": "gold" }, { "col": 14, "row": 2, "templateId": "gold" },
+    { "col": 15, "row": 2, "templateId": "gold" }, { "col": 16, "row": 2, "templateId": "gold" },
+
+    { "col":  3, "row": 3, "templateId": "gold" }, { "col":  4, "row": 3, "templateId": "gold" },
+    { "col":  5, "row": 3, "templateId": "gold" }, { "col":  6, "row": 3, "templateId": "gold" },
+    { "col":  7, "row": 3, "templateId": "gold" }, { "col":  8, "row": 3, "templateId": "gold" },
+    { "col":  9, "row": 3, "templateId": "gold" }, { "col": 10, "row": 3, "templateId": "gold" },
+    { "col": 11, "row": 3, "templateId": "gold" }, { "col": 12, "row": 3, "templateId": "gold" },
+    { "col": 13, "row": 3, "templateId": "gold" }, { "col": 14, "row": 3, "templateId": "gold" },
+    { "col": 15, "row": 3, "templateId": "gold" }, { "col": 16, "row": 3, "templateId": "gold" },
+
+    { "col":  2, "row": 4, "templateId": "gem", "powerupId": "WidePaddle" }, { "col":  3, "row": 4, "templateId": "gold" },
+    { "col":  4, "row": 4, "templateId": "gold" }, { "col":  5, "row": 4, "templateId": "gold" },
+    { "col":  6, "row": 4, "templateId": "gold" }, { "col":  7, "row": 4, "templateId": "gold" },
+    { "col":  8, "row": 4, "templateId": "gold" },
+
+    { "col":  2, "row": 5, "templateId": "gold" }, { "col":  3, "row": 5, "templateId": "gold" },
+    { "col":  4, "row": 5, "templateId": "gold" }, { "col":  5, "row": 5, "templateId": "gold" },
+    { "col":  6, "row": 5, "templateId": "gold" },
+
+    { "col":  2, "row": 6, "templateId": "gold" }, { "col":  3, "row": 6, "templateId": "gold" },
+    { "col":  4, "row": 6, "templateId": "gold" }, { "col":  5, "row": 6, "templateId": "gold" },
+    { "col":  6, "row": 6, "templateId": "gold" },
+
+    { "col":  2, "row": 7, "templateId": "gold" }, { "col":  3, "row": 7, "templateId": "gold" },
+    { "col":  4, "row": 7, "templateId": "gold" }, { "col":  5, "row": 7, "templateId": "gold" },
+    { "col":  6, "row": 7, "templateId": "gold" }, { "col":  7, "row": 7, "templateId": "gold" },
+    { "col":  8, "row": 7, "templateId": "gold" },
+
+    { "col":  3, "row": 8, "templateId": "gold" }, { "col":  4, "row": 8, "templateId": "gold" },
+    { "col":  5, "row": 8, "templateId": "gold" }, { "col":  6, "row": 8, "templateId": "gold" },
+    { "col":  7, "row": 8, "templateId": "gold" }, { "col":  8, "row": 8, "templateId": "gold" },
+    { "col":  9, "row": 8, "templateId": "gold" }, { "col": 10, "row": 8, "templateId": "gold" },
+    { "col": 11, "row": 8, "templateId": "gold" }, { "col": 12, "row": 8, "templateId": "gold" },
+    { "col": 13, "row": 8, "templateId": "gold" }, { "col": 14, "row": 8, "templateId": "gold" },
+    { "col": 15, "row": 8, "templateId": "gold" }, { "col": 16, "row": 8, "templateId": "gold" },
+
+    { "col":  4, "row": 9, "templateId": "gold" }, { "col":  5, "row": 9, "templateId": "gold" },
+    { "col":  6, "row": 9, "templateId": "gold" }, { "col":  7, "row": 9, "templateId": "gem", "powerupId": "MultiBall" },
+    { "col":  8, "row": 9, "templateId": "gold" }, { "col":  9, "row": 9, "templateId": "gold" },
+    { "col": 10, "row": 9, "templateId": "gold" }, { "col": 11, "row": 9, "templateId": "gold" },
+    { "col": 12, "row": 9, "templateId": "gold" }, { "col": 13, "row": 9, "templateId": "gold" },
+    { "col": 14, "row": 9, "templateId": "gold" }, { "col": 15, "row": 9, "templateId": "gold" },
+
+    { "col":  6, "row": 10, "templateId": "gold" }, { "col":  7, "row": 10, "templateId": "gold" },
+    { "col":  8, "row": 10, "templateId": "gold" }, { "col":  9, "row": 10, "templateId": "gem", "powerupId": "ExtraLife" },
+    { "col": 10, "row": 10, "templateId": "gold" }, { "col": 11, "row": 10, "templateId": "gold" },
+    { "col": 12, "row": 10, "templateId": "gold" }, { "col": 13, "row": 10, "templateId": "gold" },
+
+    { "col": 16, "row": 5, "templateId": "dark" }, { "col": 17, "row": 5, "templateId": "dark" },
+    { "col": 16, "row": 6, "templateId": "dark" }, { "col": 17, "row": 6, "templateId": "dark" }
+  ]
+}

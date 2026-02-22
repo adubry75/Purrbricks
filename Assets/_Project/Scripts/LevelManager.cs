@@ -6,6 +6,8 @@ public class LevelManager : MonoBehaviour
 
     private int _bricksRemaining;
 
+    public int BricksRemaining => _bricksRemaining;
+
     private void Awake()
     {
         Instance = this;

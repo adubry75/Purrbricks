@@ -50,6 +50,14 @@ public class GameManager : MonoBehaviour
     private bool _primaryBallOnHold; // true while primary fell but clones still active
     private int _activeClonesCount;  // explicit count — avoids deferred-Destroy false positives
 
+    // ── Per-level score stats (reset each LoadLevel) ─────────────────────────
+    private int _levelStartScore;
+    private int _levelBestCombo;
+    private int _levelComboBonus;   // accumulated bonus above base from combos
+
+    /// <summary>Current game state — readable by other scripts (e.g. BallController).</summary>
+    public GameState State => _state;
+
     // Pre-allocated buffer for Fury Strike overlap queries — avoids heap allocation
     private static readonly Collider2D[] s_furyBuffer = new Collider2D[128];
 
@@ -139,9 +147,9 @@ public class GameManager : MonoBehaviour
             }
         }
 
-        if (_state == GameState.Ready && Input.GetKeyDown(KeyCode.Space))
+        // Transition to Playing the moment BallController launches (via aim system)
+        if (_state == GameState.Ready && _ball != null && _ball.IsLaunched())
         {
-            _ball.Launch();
             _hud?.SetStatus("");
             SetState(GameState.Playing);
         }
@@ -183,7 +191,7 @@ public class GameManager : MonoBehaviour
         _hud?.SetCombo(_combo);
 
         LoadLevel(_currentLevelIndex);
-        MusicPlayer.Instance?.PlayGameplay();
+        MusicPlayer.Instance?.PlayGameplay(0);
         SetState(GameState.Ready);
 
         _mainMenuUI?.Hide();
@@ -214,6 +222,14 @@ public class GameManager : MonoBehaviour
         SetState(GameState.HighScores);
     }
 
+    /// <summary>Called by GameOverUI after name is submitted — shows high scores without changing music.</summary>
+    public void ShowHighScoresAfterGameOver()
+    {
+        _gameOverUI?.Hide();
+        _highScoresUI?.Show();
+        // Intentionally no music change — game over track keeps playing
+    }
+
     public void RestartGame()
     {
         _score = 0;
@@ -229,7 +245,7 @@ public class GameManager : MonoBehaviour
         _gameOverUI?.Hide();
 
         LoadLevel(_currentLevelIndex);
-        MusicPlayer.Instance?.PlayGameplay();
+        MusicPlayer.Instance?.PlayGameplay(0);
         SetState(GameState.Ready);
     }
 
@@ -247,7 +263,7 @@ public class GameManager : MonoBehaviour
         }
 
         LoadLevel(next);
-        MusicPlayer.Instance?.PlayGameplay();
+        MusicPlayer.Instance?.PlayGameplay(_currentLevelIndex);
         SetState(GameState.Ready);
     }
 
@@ -277,6 +293,11 @@ public class GameManager : MonoBehaviour
 
         _levelLoader.LoadLevel(_levelIds[_currentLevelIndex]);
 
+        // Reset per-level score stats
+        _levelStartScore = _score;
+        _levelBestCombo  = 0;
+        _levelComboBonus = 0;
+
         // Reset powerups between levels
         PowerupManager.Instance?.ResetAll();
 
@@ -291,8 +312,9 @@ public class GameManager : MonoBehaviour
         _ball.ResetToPaddle();
         _paddle.ResetPosition();
 
-        // Show level number in status
-        _hud?.SetStatus($"Level {_currentLevelIndex + 1} - Ready");
+        // Show persistent level info (number + title) in HUD
+        string levelTitle = _levelLoader?.CurrentLevel?.displayName ?? "";
+        _hud?.SetLevelInfo(_currentLevelIndex + 1, levelTitle);
     }
 
     private void LoadDemoLevel()
@@ -367,7 +389,7 @@ public class GameManager : MonoBehaviour
             case GameState.Victory:
                 SetCursorMenuMode();
                 Time.timeScale = 0f;
-                _victoryUI?.ShowVictory(_score);
+                _victoryUI?.ShowVictory(_score - _levelStartScore, _levelComboBonus, _levelBestCombo);
                 MusicPlayer.Instance?.PlayLevelFinish();
                 break;
         }
@@ -390,6 +412,7 @@ public class GameManager : MonoBehaviour
     // Called when the PRIMARY ball hits the death zone
     public void OnPrimaryBallLost()
     {
+        if (_isAdvancingLevel) return; // level already clearing, ignore
         if (_state != GameState.Playing && !_isDemoMode) return;
 
         if (_isDemoMode)
@@ -417,6 +440,7 @@ public class GameManager : MonoBehaviour
     // Called when a CLONE ball hits the death zone (already destroyed by DeathZone)
     public void OnCloneBallLost()
     {
+        if (_isAdvancingLevel) return; // level already clearing, ignore
         if (_state != GameState.Playing && !_isDemoMode) return;
         if (_isDemoMode) return;
 
@@ -475,13 +499,26 @@ public class GameManager : MonoBehaviour
         _advanceRoutine = StartCoroutine(AdvanceLevelRoutine());
     }
 
+    /// <summary>Called by LevelManager when exactly 1 destructible brick remains.</summary>
+    public void OnLastBrickRemaining(Vector3 brickPos)
+    {
+        if (_isDemoMode || _state != GameState.Playing) return;
+        Time.timeScale = 0.35f;
+        CameraShake.Instance?.ZoomIn(0.65f, 2.5f);
+    }
+
     private IEnumerator AdvanceLevelRoutine()
     {
-        // Skip "Cleared" state, go straight to Victory
-        SfxPlayer.Instance?.PlayWin();
+        // Hold slow-mo for a beat so the final-brick destruction plays dramatically,
+        // then restore normal speed. All waits are realtime so they work during slow-mo.
+        yield return new WaitForSecondsRealtime(0.55f);
+
+        _ball?.ResetToPaddle();
         Time.timeScale = 1f;
+        CameraShake.Instance?.ResetZoom();
+        SfxPlayer.Instance?.PlayWin();
+        yield return new WaitForSecondsRealtime(1.5f); // let particles/effects finish
         SetState(GameState.Victory);
-        yield break;
     }
 
     // ── Scoring ─────────────────────────────────────────────────────────────
@@ -489,9 +526,11 @@ public class GameManager : MonoBehaviour
     public int AddScore(int basePoints)
     {
         int multiplier = 1 + _combo;
-        int points = basePoints * multiplier;
+        int points     = basePoints * multiplier;
+        int comboBonus = basePoints * _combo; // extra above base
 
-        _score += points;
+        _score           += points;
+        _levelComboBonus += comboBonus;
         _hud?.SetScore(_score);
         _comboTimer = _comboResetSeconds;
 
@@ -501,6 +540,7 @@ public class GameManager : MonoBehaviour
     public void IncrementCombo()
     {
         _combo++;
+        if (_combo > _levelBestCombo) _levelBestCombo = _combo;
         _hud?.SetCombo(_combo);
         _comboTimer = _comboResetSeconds;
 
@@ -518,34 +558,120 @@ public class GameManager : MonoBehaviour
 
     // ── Fury Strike ─────────────────────────────────────────────────────────
 
+    private Coroutine _furyRoutine;
+
     private void TriggerFuryStrike()
     {
-        var allBalls = Object.FindObjectsByType<BallController>(FindObjectsSortMode.None);
-        if (allBalls.Length == 0) return;
+        if (_furyRoutine != null) return; // already running
+        _furyRoutine = StartCoroutine(FuryStrikeSequence());
+    }
 
-        // Visuals & audio
-        ScreenEffects.Instance?.FlashWhite(0.70f, 0.45f);
-        CameraShake.Instance?.Shake(0.55f, 0.90f);
-        PowerupNotification.Instance?.Show("FURY STRIKE!", new Color(1f, 0.80f, 0.05f), isSpecial: true);
+    private IEnumerator FuryStrikeSequence()
+    {
+        var allBalls = Object.FindObjectsByType<BallController>(FindObjectsSortMode.None);
+        if (allBalls.Length == 0) { _furyRoutine = null; yield break; }
+
+        // Collect destructible bricks and sort top-to-bottom, left-to-right
+        var allBricks = Object.FindObjectsByType<Brick>(FindObjectsSortMode.None);
+        var targets   = new System.Collections.Generic.List<Brick>(allBricks.Length);
+        foreach (var b in allBricks)
+            if (!b.IsIndestructible) targets.Add(b);
+
+        if (targets.Count == 0) { _furyRoutine = null; yield break; }
+
+        targets.Sort((a, b2) =>
+        {
+            int rowCmp = b2.transform.position.y.CompareTo(a.transform.position.y);
+            return rowCmp != 0 ? rowCmp : a.transform.position.x.CompareTo(b2.transform.position.x);
+        });
+
+        // Reset ramp on all balls before we begin
+        foreach (var ball in allBalls) ball.ResetRamp();
+
+        // ── Enter slow-motion ───────────────────────────────────────────────
+        Time.timeScale = 0.08f;
+
+        // Dramatic intro: flash, shake, notification, audio
+        ScreenEffects.Instance?.FlashWhite(0.90f, 0.70f);
+        CameraShake.Instance?.Shake(0.85f, 1.20f);
+        PowerupNotification.Instance?.Show("FURY STRIKE!", new Color(1f, 0.85f, 0.05f), isSpecial: true);
         SfxPlayer.Instance?.PlayFuryStrike();
 
-        // 3×3 explosion around every active ball
+        // Gold burst at each ball position
         foreach (var ball in allBalls)
+            if (ball != null)
+                BrickParticleGenerator.SpawnBurst(ball.transform.position, new Color(1f, 0.85f, 0.05f), 60, true);
+
+        // Create one sweeping laser beam per ball (additive gold beams)
+        var beamGOs = new GameObject[allBalls.Length];
+        var beams   = new LineRenderer[allBalls.Length];
+        var beamMat = new Material(Shader.Find("Sprites/Default"));
+        beamMat.SetInt("_SrcBlend", (int)UnityEngine.Rendering.BlendMode.SrcAlpha);
+        beamMat.SetInt("_DstBlend", (int)UnityEngine.Rendering.BlendMode.One); // Additive
+
+        for (int i = 0; i < allBalls.Length; i++)
         {
-            if (ball == null) continue;
+            beamGOs[i] = new GameObject("FuryBeam");
+            var lr = beamGOs[i].AddComponent<LineRenderer>();
+            lr.positionCount = 2;
+            lr.startWidth    = 0.10f;
+            lr.endWidth      = 0.03f;
+            lr.material      = beamMat;
+            lr.sortingOrder  = 20;
 
-            Vector2 center = ball.transform.position;
-            BrickParticleGenerator.SpawnBurst(center, new Color(1f, 0.70f, 0.05f), 45, true);
+            var grad = new Gradient();
+            grad.SetKeys(
+                new GradientColorKey[] {
+                    new GradientColorKey(new Color(1f, 1f, 0.5f), 0f),
+                    new GradientColorKey(new Color(1f, 0.45f, 0f), 1f)
+                },
+                new GradientAlphaKey[] {
+                    new GradientAlphaKey(0.95f, 0f),
+                    new GradientAlphaKey(0.15f, 1f)
+                }
+            );
+            lr.colorGradient = grad;
+            beams[i] = lr;
+        }
 
-            int hitCount = Physics2D.OverlapBoxNonAlloc(center, new Vector2(4.4f, 1.8f), 0f, s_furyBuffer);
-            for (int i = 0; i < hitCount; i++)
+        // Hold briefly for dramatic effect before carnage begins
+        yield return new WaitForSecondsRealtime(0.32f);
+
+        // ── Stagger-destroy bricks, beams sweep to each target ─────────────
+        float delayBetween = Mathf.Clamp(0.85f / Mathf.Max(1, targets.Count), 0.012f, 0.050f);
+
+        foreach (var brick in targets)
+        {
+            if (brick == null) continue;
+
+            // Point each beam at this brick
+            for (int i = 0; i < allBalls.Length; i++)
             {
-                var b = s_furyBuffer[i].GetComponent<Brick>();
-                if (b != null) b.Hit();
+                if (allBalls[i] != null && beams[i] != null)
+                {
+                    beams[i].SetPosition(0, allBalls[i].transform.position);
+                    beams[i].SetPosition(1, brick.transform.position);
+                }
             }
 
-            ball.ResetRamp();
+            brick.FuryKill();
+            yield return new WaitForSecondsRealtime(delayBetween);
         }
+
+        // Final big shake as the dust settles
+        CameraShake.Instance?.Shake(0.45f, 0.55f);
+        yield return new WaitForSecondsRealtime(0.22f);
+
+        // Clean up laser beams
+        foreach (var go in beamGOs)
+            if (go != null) Object.Destroy(go);
+        Object.Destroy(beamMat);
+
+        // Restore time scale only if still actively playing
+        if (_state == GameState.Playing)
+            Time.timeScale = 1f;
+
+        _furyRoutine = null;
     }
 
     // ── Debug Helpers ───────────────────────────────────────────────────────
@@ -577,8 +703,10 @@ public class GameManager : MonoBehaviour
         var particles = Object.FindObjectsByType<ParticleSystem>(FindObjectsSortMode.None);
         foreach (var ps in particles)
         {
-            if (ps != null)
-                Destroy(ps.gameObject);
+            if (ps == null) continue;
+            // Don't destroy the ball's own GameObject — BallTrail puts its PS on the ball root.
+            if (ps.GetComponent<BallController>() != null) continue;
+            Destroy(ps.gameObject);
         }
     }
 }

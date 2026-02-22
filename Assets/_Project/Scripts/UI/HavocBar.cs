@@ -11,6 +11,7 @@ public class HavocBar : MonoBehaviour
     public static HavocBar Instance { get; private set; }
 
     private Image _fill;
+    private RectTransform _fillRt;
     private Text _readyLabel;
     private float _displayFraction;
 
@@ -44,8 +45,8 @@ public class HavocBar : MonoBehaviour
         cRt.anchorMin     = new Vector2(0.5f, 0f);
         cRt.anchorMax     = new Vector2(0.5f, 0f);
         cRt.pivot         = new Vector2(0.5f, 0f);
-        cRt.sizeDelta     = new Vector2(580f, 34f);
-        cRt.anchoredPosition = new Vector2(-160f, 22f);
+        cRt.sizeDelta     = new Vector2(580f, 30f);
+        cRt.anchoredPosition = new Vector2(-160f, 12f);
 
         // ── Track (dark background) ───────────────────────────────────────────
         var trackGO  = new GameObject("Track");
@@ -61,19 +62,18 @@ public class HavocBar : MonoBehaviour
         trackBorder.effectColor    = new Color(0.30f, 0.60f, 1f, 0.65f);
         trackBorder.effectDistance = new Vector2(1.5f, -1.5f);
 
-        // ── Fill (color-ramp progress) ────────────────────────────────────────
+        // ── Fill (anchor-based left-to-right progress bar) ────────────────────
+        // anchorMax.x is driven by _displayFraction every Update — starts at 0 width.
         var fillGO = new GameObject("Fill");
         fillGO.transform.SetParent(trackGO.transform, false);
-        _fill             = fillGO.AddComponent<Image>();
-        _fill.color       = ColorLow;
-        _fill.type        = Image.Type.Filled;
-        _fill.fillMethod  = Image.FillMethod.Horizontal;
-        _fill.fillAmount  = 0f;
-        var fillRt        = _fill.GetComponent<RectTransform>();
-        fillRt.anchorMin  = Vector2.zero;
-        fillRt.anchorMax  = Vector2.one;
-        fillRt.offsetMin  = new Vector2(2f, 2f);
-        fillRt.offsetMax  = new Vector2(-2f, -2f);
+        _fill        = fillGO.AddComponent<Image>();
+        _fill.color  = ColorLow;
+        _fill.type   = Image.Type.Simple;
+        _fillRt      = fillGO.GetComponent<RectTransform>();
+        _fillRt.anchorMin = new Vector2(0f, 0f);
+        _fillRt.anchorMax = new Vector2(0f, 1f); // 0-width to start; driven in Update
+        _fillRt.offsetMin = new Vector2(2f, 2f);
+        _fillRt.offsetMax = new Vector2(0f, -2f);
 
         // ── "FURY" watermark text inside bar ──────────────────────────────────
         var innerLbl    = new GameObject("InnerLabel");
@@ -121,10 +121,10 @@ public class HavocBar : MonoBehaviour
 
         _displayFraction = Mathf.Lerp(_displayFraction, target, Time.unscaledDeltaTime * 5f);
 
-        // Fill amount + color ramp
-        if (_fill != null)
+        // Grow fill bar left-to-right via anchorMax.x + color ramp
+        if (_fill != null && _fillRt != null)
         {
-            _fill.fillAmount = _displayFraction;
+            _fillRt.anchorMax = new Vector2(_displayFraction, 1f);
 
             Color fc;
             if (_displayFraction < 0.5f)

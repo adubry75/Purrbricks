@@ -2,15 +2,18 @@ using UnityEngine;
 using UnityEngine.UI;
 
 /// <summary>
-/// Game Over screen: shows final score, name entry if high score, restart buttons.
+/// Game Over screen: shows final score, always-visible name entry, and a SUBMIT button.
+/// Enter key or SUBMIT saves score (if high score) then shows High Scores directly.
+/// No Play Again or Main Menu buttons — navigation happens via HighScoresUI.
 /// </summary>
 public class GameOverUI : MonoBehaviour
 {
-    private Canvas _canvas;
+    private Canvas     _canvas;
     private InputField _nameInput;
-    private GameObject _namePanel;
-    private Text _titleText;
-    private int _finalScore;
+    private Text       _titleText;
+    private GameObject _highScoreLabel;
+    private int        _finalScore;
+    private bool       _submitted;
 
     private void Awake()
     {
@@ -37,9 +40,9 @@ public class GameOverUI : MonoBehaviour
         panelImg.color = new Color(0f, 0f, 0f, 0.88f);
 
         var panelRt = panel.GetComponent<RectTransform>();
-        panelRt.anchorMin       = Vector2.zero;
-        panelRt.anchorMax       = Vector2.one;
-        panelRt.sizeDelta       = Vector2.zero;
+        panelRt.anchorMin        = Vector2.zero;
+        panelRt.anchorMax        = Vector2.one;
+        panelRt.sizeDelta        = Vector2.zero;
         panelRt.anchoredPosition = new Vector2(-160f, 0f);
 
         // Title
@@ -55,65 +58,40 @@ public class GameOverUI : MonoBehaviour
         _titleText.color     = UIStyle.AccentRed;
 
         var titleRt = _titleText.GetComponent<RectTransform>();
-        titleRt.anchorMin       = new Vector2(0.5f, 0.5f);
-        titleRt.anchorMax       = new Vector2(0.5f, 0.5f);
-        titleRt.sizeDelta       = new Vector2(800f, 120f);
-        titleRt.anchoredPosition = new Vector2(0f, 210f);
+        titleRt.anchorMin        = new Vector2(0.5f, 0.5f);
+        titleRt.anchorMax        = new Vector2(0.5f, 0.5f);
+        titleRt.sizeDelta        = new Vector2(800f, 120f);
+        titleRt.anchoredPosition = new Vector2(0f, 220f);
 
         var titleOl = titleGO.AddComponent<Outline>();
         titleOl.effectColor    = Color.black;
         titleOl.effectDistance = new Vector2(4f, -4f);
 
         // Score
-        CreateText(panel, "Score: 0", new Vector2(0f, 90f), 60, Color.white, "ScoreText");
+        CreateText(panel, "Score: 0", new Vector2(0f, 100f), 60, Color.white, "ScoreText");
 
-        // High score name entry
-        _namePanel = new GameObject("NamePanel");
-        _namePanel.transform.SetParent(panel.transform, false);
+        // ── Name entry panel (always visible) ───────────────────────────────
+        var namePanel = new GameObject("NamePanel");
+        namePanel.transform.SetParent(panel.transform, false);
 
-        var npRt = _namePanel.AddComponent<RectTransform>();
-        npRt.anchorMin       = new Vector2(0.5f, 0.5f);
-        npRt.anchorMax       = new Vector2(0.5f, 0.5f);
-        npRt.sizeDelta       = new Vector2(620f, 200f);
-        npRt.anchoredPosition = new Vector2(0f, -40f);
+        var npRt = namePanel.AddComponent<RectTransform>();
+        npRt.anchorMin        = new Vector2(0.5f, 0.5f);
+        npRt.anchorMax        = new Vector2(0.5f, 0.5f);
+        npRt.sizeDelta        = new Vector2(660f, 210f);
+        npRt.anchoredPosition = new Vector2(0f, -55f);
 
-        CreateText(_namePanel, "NEW HIGH SCORE!", new Vector2(0f, 68f), 40, UIStyle.AccentGold);
-        CreateText(_namePanel, "Enter your name:", new Vector2(0f, 18f), 30, Color.white);
-        CreateNameInput(_namePanel);
+        // "NEW HIGH SCORE!" — shown only when relevant
+        _highScoreLabel = CreateText(namePanel, "NEW HIGH SCORE!", new Vector2(0f, 72f), 40, UIStyle.AccentGold);
 
-        _namePanel.SetActive(false);
+        CreateText(namePanel, "Enter your name:", new Vector2(0f, 18f), 30, Color.white);
 
-        // Buttons
-        UIStyle.CreateButton(panel.transform, "Play Again", new Vector2(-160f, -215f), new Vector2(280f, 75f), OnPlayAgain, UIStyle.AccentBlue);
-        UIStyle.CreateButton(panel.transform, "Main Menu",  new Vector2( 160f, -215f), new Vector2(280f, 75f), OnMainMenu,  UIStyle.AccentGold);
+        // Input field (shifted left) + SUBMIT button (right)
+        CreateNameInputRow(namePanel);
     }
 
-    private void CreateText(GameObject parent, string text, Vector2 pos, int fontSize, Color color, string objName = null)
+    private void CreateNameInputRow(GameObject parent)
     {
-        var go = new GameObject(objName ?? text);
-        go.transform.SetParent(parent.transform, false);
-
-        var txt = go.AddComponent<Text>();
-        txt.text      = text;
-        txt.font      = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
-        txt.fontSize  = fontSize;
-        txt.fontStyle = FontStyle.Bold;
-        txt.alignment = TextAnchor.MiddleCenter;
-        txt.color     = color;
-
-        var rt = txt.GetComponent<RectTransform>();
-        rt.anchorMin       = new Vector2(0.5f, 0.5f);
-        rt.anchorMax       = new Vector2(0.5f, 0.5f);
-        rt.sizeDelta       = new Vector2(800f, fontSize + 20f);
-        rt.anchoredPosition = pos;
-
-        var ol = go.AddComponent<Outline>();
-        ol.effectColor    = Color.black;
-        ol.effectDistance = new Vector2(3f, -3f);
-    }
-
-    private void CreateNameInput(GameObject parent)
-    {
+        // Input field
         var inputGO = new GameObject("NameInput");
         inputGO.transform.SetParent(parent.transform, false);
 
@@ -130,10 +108,15 @@ public class GameOverUI : MonoBehaviour
         _nameInput.characterLimit = 12;
 
         var inputRt = inputGO.GetComponent<RectTransform>();
-        inputRt.anchorMin       = new Vector2(0.5f, 0.5f);
-        inputRt.anchorMax       = new Vector2(0.5f, 0.5f);
-        inputRt.sizeDelta       = new Vector2(420f, 55f);
-        inputRt.anchoredPosition = new Vector2(0f, -38f);
+        inputRt.anchorMin        = new Vector2(0.5f, 0.5f);
+        inputRt.anchorMax        = new Vector2(0.5f, 0.5f);
+        inputRt.sizeDelta        = new Vector2(340f, 55f);
+        inputRt.anchoredPosition = new Vector2(-100f, -42f);
+
+        // SUBMIT button to the right of the input
+        UIStyle.CreateButton(parent.transform, "SUBMIT",
+            new Vector2(165f, -42f), new Vector2(170f, 55f),
+            OnSubmit, UIStyle.AccentGreen);
     }
 
     private Text CreateInputText(GameObject parent)
@@ -156,9 +139,60 @@ public class GameOverUI : MonoBehaviour
         return txt;
     }
 
+    // Returns the created GameObject so callers can store/toggle it
+    private GameObject CreateText(GameObject parent, string text, Vector2 pos, int fontSize, Color color, string objName = null)
+    {
+        var go = new GameObject(objName ?? text);
+        go.transform.SetParent(parent.transform, false);
+
+        var txt = go.AddComponent<Text>();
+        txt.text      = text;
+        txt.font      = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
+        txt.fontSize  = fontSize;
+        txt.fontStyle = FontStyle.Bold;
+        txt.alignment = TextAnchor.MiddleCenter;
+        txt.color     = color;
+
+        var rt = txt.GetComponent<RectTransform>();
+        rt.anchorMin        = new Vector2(0.5f, 0.5f);
+        rt.anchorMax        = new Vector2(0.5f, 0.5f);
+        rt.sizeDelta        = new Vector2(800f, fontSize + 20f);
+        rt.anchoredPosition = pos;
+
+        var ol = go.AddComponent<Outline>();
+        ol.effectColor    = Color.black;
+        ol.effectDistance = new Vector2(3f, -3f);
+
+        return go;
+    }
+
+    private void Update()
+    {
+        if (!gameObject.activeSelf || _submitted) return;
+
+        if (Input.GetKeyDown(KeyCode.Return) || Input.GetKeyDown(KeyCode.KeypadEnter))
+            OnSubmit();
+    }
+
+    private void OnSubmit()
+    {
+        if (_submitted) return;
+        _submitted = true;
+
+        bool isHigh = HighScoreManager.Instance?.IsHighScore(_finalScore) ?? false;
+        if (isHigh && HighScoreManager.Instance != null)
+        {
+            string name = string.IsNullOrWhiteSpace(_nameInput?.text) ? "PLAYER" : _nameInput.text.Trim();
+            HighScoreManager.Instance.AddScore(name, _finalScore);
+        }
+
+        GameManager.Instance?.ShowHighScoresAfterGameOver();
+    }
+
     public void ShowGameOver(int finalScore)
     {
-        _finalScore      = finalScore;
+        _finalScore = finalScore;
+        _submitted  = false;
         gameObject.SetActive(true);
 
         if (_titleText != null)
@@ -171,17 +205,20 @@ public class GameOverUI : MonoBehaviour
         if (st != null) st.text = $"Final Score: {finalScore:N0}";
 
         bool isHigh = HighScoreManager.Instance?.IsHighScore(finalScore) ?? false;
-        _namePanel.SetActive(isHigh);
+        if (_highScoreLabel != null) _highScoreLabel.SetActive(isHigh);
+
+        _nameInput?.Select();
     }
 
     public void ShowGameComplete(int finalScore)
     {
-        _finalScore      = finalScore;
+        _finalScore = finalScore;
+        _submitted  = false;
         gameObject.SetActive(true);
 
         if (_titleText != null)
         {
-            _titleText.text  = "VICTORY!";
+            _titleText.text  = "ALL LEVELS CLEARED!";
             _titleText.color = UIStyle.AccentGreen;
         }
 
@@ -189,28 +226,9 @@ public class GameOverUI : MonoBehaviour
         if (st != null) st.text = $"Final Score: {finalScore:N0}";
 
         bool isHigh = HighScoreManager.Instance?.IsHighScore(finalScore) ?? false;
-        _namePanel.SetActive(isHigh);
-    }
+        if (_highScoreLabel != null) _highScoreLabel.SetActive(isHigh);
 
-    private void OnPlayAgain()
-    {
-        SaveScoreIfNeeded();
-        GameManager.Instance?.RestartGame();
-    }
-
-    private void OnMainMenu()
-    {
-        SaveScoreIfNeeded();
-        GameManager.Instance?.ShowMainMenu();
-    }
-
-    private void SaveScoreIfNeeded()
-    {
-        if (_namePanel.activeSelf && HighScoreManager.Instance != null)
-        {
-            string name = string.IsNullOrWhiteSpace(_nameInput.text) ? "PLAYER" : _nameInput.text;
-            HighScoreManager.Instance.AddScore(name, _finalScore);
-        }
+        _nameInput?.Select();
     }
 
     public void Show() { gameObject.SetActive(true); }

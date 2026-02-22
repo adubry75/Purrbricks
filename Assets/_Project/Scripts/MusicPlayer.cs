@@ -27,6 +27,7 @@ public class MusicPlayer : MonoBehaviour
     private AudioSource _inactive;
 
     private bool _inGameplay;
+    private bool _randomTracks;
     private int  _trackIndex;
     private Coroutine _musicRoutine;
 
@@ -67,13 +68,24 @@ public class MusicPlayer : MonoBehaviour
     public void PlayMenu()
     {
         _inGameplay = false;
+        // Don't restart if menu track is already playing (Menu ↔ HighScores continuity)
+        if (_active != null && _active.clip == _menuTrack && _active.isPlaying)
+            return;
         Run(MenuLoop());
     }
 
-    public void PlayGameplay()
+    public void PlayGameplay(int levelIndex = 0)
     {
-        _inGameplay = true;
-        _trackIndex = 0;
+        _inGameplay   = true;
+        _randomTracks = levelIndex != 0;
+
+        if (_gameplayTracks == null || _gameplayTracks.Length == 0)
+            _trackIndex = 0;
+        else if (levelIndex == 0)
+            _trackIndex = 0;
+        else
+            _trackIndex = Random.Range(0, _gameplayTracks.Length);
+
         Run(GameplayLoop());
     }
 
@@ -117,7 +129,9 @@ public class MusicPlayer : MonoBehaviour
 
             if (!_inGameplay) yield break;
 
-            _trackIndex = (_trackIndex + 1) % _gameplayTracks.Length;
+            _trackIndex = _randomTracks
+                ? Random.Range(0, _gameplayTracks.Length)
+                : (_trackIndex + 1) % _gameplayTracks.Length;
         }
     }
 

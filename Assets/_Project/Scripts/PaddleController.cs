@@ -26,6 +26,8 @@ public class PaddleController : MonoBehaviour
 
     private float _velocityX;
     private bool _isDemoMode;
+    private bool _isFrozen;
+    private float _frozenX;
 
     // Powerup state
     private bool _isWide;
@@ -50,6 +52,12 @@ public class PaddleController : MonoBehaviour
     {
         if (_camera == null) return;
         if (_leftWall == null || _rightWall == null) return;
+
+        if (_isFrozen)
+        {
+            transform.position = new Vector3(_frozenX, _yLocked, transform.position.z);
+            return;
+        }
 
         float targetX;
 
@@ -118,6 +126,12 @@ public class PaddleController : MonoBehaviour
     {
         _isLaser = on;
         _laserCooldown = 0f;
+    }
+
+    public void SetFrozen(bool frozen)
+    {
+        _isFrozen = frozen;
+        if (frozen) _frozenX = transform.position.x;
     }
 
     public void SetDemoMode(bool isDemoMode)

@@ -11,8 +11,8 @@
     { "col": 2, "row": 1, "templateId": "blue" }, { "col": 9, "row": 1, "templateId": "blue" },
 
     { "col": 1, "row": 2, "templateId": "blue" }, { "col": 10, "row": 2, "templateId": "blue" },
-    { "col": 3, "row": 2, "templateId": "gem" },  { "col": 4, "row": 2, "templateId": "gem" },
-    { "col": 7, "row": 2, "templateId": "gem" },  { "col": 8, "row": 2, "templateId": "gem" },
+    { "col": 3, "row": 2, "templateId": "gem", "powerupId": "Fireball" },  { "col": 4, "row": 2, "templateId": "gem", "powerupId": "MultiBall" },
+    { "col": 7, "row": 2, "templateId": "gem", "powerupId": "WidePaddle" },  { "col": 8, "row": 2, "templateId": "gem", "powerupId": "ExtraLife" },
 
     { "col": 1, "row": 3, "templateId": "blue" }, { "col": 10, "row": 3, "templateId": "blue" },
 

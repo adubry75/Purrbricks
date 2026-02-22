@@ -1,12 +1,18 @@
 using UnityEngine;
+using UnityEngine.Events;
 using UnityEngine.UI;
 
 /// <summary>
 /// Main menu screen: logo, Play, High Scores, Quit buttons.
 /// Uses UIStyle for AAA-quality cyberpunk button aesthetic.
+/// Assign button sprites via Inspector (PurrbricksSetup does this automatically).
 /// </summary>
 public class MainMenuUI : MonoBehaviour
 {
+    [SerializeField] private Sprite _playSprite;
+    [SerializeField] private Sprite _highScoresSprite;
+    [SerializeField] private Sprite _quitSprite;
+
     private Canvas _canvas;
     private GameObject _panel;
 
@@ -42,9 +48,18 @@ public class MainMenuUI : MonoBehaviour
 
         CreateTitle();
 
-        UIStyle.CreateButton(_panel.transform, "Play",        new Vector2(0f,  50f), new Vector2(320f, 80f), () => GameManager.Instance?.StartGame(),       UIStyle.AccentMagenta);
-        UIStyle.CreateButton(_panel.transform, "High Scores", new Vector2(0f, -50f), new Vector2(320f, 80f), () => GameManager.Instance?.ShowHighScores(), UIStyle.AccentBlue);
-        UIStyle.CreateButton(_panel.transform, "Quit",        new Vector2(0f,-150f), new Vector2(320f, 80f), QuitGame,                                       UIStyle.AccentRed);
+        if (_playSprite != null)
+        {
+            CreateImageButton(_panel.transform, _playSprite,        new Vector2(0f,  60f), () => GameManager.Instance?.StartGame());
+            CreateImageButton(_panel.transform, _highScoresSprite,  new Vector2(0f, -60f), () => GameManager.Instance?.ShowHighScores());
+            CreateImageButton(_panel.transform, _quitSprite,        new Vector2(0f,-180f), QuitGame);
+        }
+        else
+        {
+            UIStyle.CreateButton(_panel.transform, "Play",        new Vector2(0f,  50f), new Vector2(320f, 80f), () => GameManager.Instance?.StartGame(),    UIStyle.AccentMagenta);
+            UIStyle.CreateButton(_panel.transform, "High Scores", new Vector2(0f, -50f), new Vector2(320f, 80f), () => GameManager.Instance?.ShowHighScores(), UIStyle.AccentBlue);
+            UIStyle.CreateButton(_panel.transform, "Quit",        new Vector2(0f,-150f), new Vector2(320f, 80f), QuitGame,                                    UIStyle.AccentRed);
+        }
 
         CreateSubtitle();
     }
@@ -95,6 +110,37 @@ public class MainMenuUI : MonoBehaviour
         rt.anchorMax       = new Vector2(0.5f, 0.5f);
         rt.sizeDelta       = new Vector2(800f, 40f);
         rt.anchoredPosition = new Vector2(0f, 190f);
+    }
+
+    private void CreateImageButton(Transform parent, Sprite sprite, Vector2 anchoredPos, UnityAction onClick)
+    {
+        if (sprite == null) return;
+
+        var go  = new GameObject("ImageButton");
+        go.transform.SetParent(parent, false);
+
+        var img    = go.AddComponent<Image>();
+        img.sprite = sprite;
+        img.type   = Image.Type.Simple;
+        img.preserveAspect = true;
+
+        var btn = go.AddComponent<Button>();
+        btn.targetGraphic = img;
+        btn.onClick.AddListener(onClick);
+
+        var colors               = btn.colors;
+        colors.normalColor       = Color.white;
+        colors.highlightedColor  = new Color(1.15f, 1.15f, 1.15f);
+        colors.pressedColor      = new Color(0.80f, 0.80f, 0.80f);
+        btn.colors               = colors;
+
+        // Size: fixed height 90, width from sprite aspect ratio
+        float aspect   = (float)sprite.texture.width / sprite.texture.height;
+        var rt         = go.GetComponent<RectTransform>();
+        rt.anchorMin        = new Vector2(0.5f, 0.5f);
+        rt.anchorMax        = new Vector2(0.5f, 0.5f);
+        rt.sizeDelta        = new Vector2(aspect * 90f, 90f);
+        rt.anchoredPosition = anchoredPos;
     }
 
     private void QuitGame()

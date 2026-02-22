@@ -1,7 +1,8 @@
 {
   "permissions": {
     "allow": [
-      "Bash(dir \"C:\\\\Users\\\\adubr\\\\source\\\\repos\\\\Purrbricks\\\\Assets\\\\_Project\" /B /AD)"
+      "Bash(dir \"C:\\\\Users\\\\adubr\\\\source\\\\repos\\\\Purrbricks\\\\Assets\\\\_Project\" /B /AD)",
+      "Bash(ls:*)"
     ]
   }
 }

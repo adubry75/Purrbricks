@@ -71,6 +71,15 @@ public class Brick : MonoBehaviour
             _sr.color = tint;
     }
 
+    // -------- Called by Fury Strike — one-shots this brick regardless of HP --------
+
+    public void FuryKill()
+    {
+        if (_isIndestructible || _isDead) return;
+        _hitPoints = 1;
+        Hit();
+    }
+
     // -------- Called by BallController on collision --------
 
     public void Hit()
@@ -98,6 +107,12 @@ public class Brick : MonoBehaviour
 
         // ── Brick destroyed ──────────────────────────────────────────────────
         _isDead = true; // prevent any further hits this frame
+
+        // If this is the last destructible brick, trigger slow-mo + zoom NOW —
+        // right as the fatal hit lands, so the destruction plays in slow motion.
+        // BricksRemaining still includes this brick (OnBrickDestroyed hasn't fired yet).
+        if (LevelManager.Instance?.BricksRemaining == 1)
+            GameManager.Instance?.OnLastBrickRemaining(transform.position);
 
         // Bigger shake for destruction of a tough brick.
         if (_maxHitPoints > 1)

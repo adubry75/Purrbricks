@@ -88,11 +88,10 @@ public static class PurrbricksSetup
         }
 
         // ── 6b. Add BallTrail to Ball (find in scene) ────────────────────────
+        // BallTrail manages its own ParticleSystem internally; no TrailRenderer needed.
         var ball = Object.FindFirstObjectByType<BallController>();
         if (ball != null)
         {
-            if (ball.GetComponent<TrailRenderer>() == null)
-                ball.gameObject.AddComponent<TrailRenderer>();
             if (ball.GetComponent<BallTrail>() == null)
                 ball.gameObject.AddComponent<BallTrail>();
             Debug.Log("Added BallTrail to Ball.");
@@ -106,9 +105,9 @@ public static class PurrbricksSetup
             gmSo.FindProperty("_levelLoader").objectReferenceValue = loader;
 
             var levelIds = gmSo.FindProperty("_levelIds");
-            // Always refresh to 30 levels
-            levelIds.arraySize = 30;
-            for (int i = 0; i < 30; i++)
+            // Always refresh to 50 levels
+            levelIds.arraySize = 50;
+            for (int i = 0; i < 50; i++)
                 levelIds.GetArrayElementAtIndex(i).stringValue = $"level_{i:D2}";
             gmSo.ApplyModifiedProperties();
         }
@@ -236,7 +235,91 @@ public static class PurrbricksSetup
             Debug.Log("Added HighScoresUI.");
         }
 
-        // ── 12. Mark scene dirty ─────────────────────────────────────────────
+        // ── 12. Main menu button sprites + ball/paddle sprites ───────────────
+        // Refresh asset database so newly-added Art files are recognized
+        AssetDatabase.Refresh();
+
+        Sprite LoadSprite(string path)
+        {
+            var all = AssetDatabase.LoadAllAssetsAtPath(path);
+            foreach (var a in all)
+                if (a is Sprite s) return s;
+            return null;
+        }
+
+        var mainMenuUI = Object.FindFirstObjectByType<MainMenuUI>(FindObjectsInactive.Include);
+        if (mainMenuUI != null)
+        {
+            var mmSo = new SerializedObject(mainMenuUI);
+
+            var sp1 = LoadSprite("Assets/_Project/Art/play-button.png");
+            var sp2 = LoadSprite("Assets/_Project/Art/highscores-button.png");
+            var sp3 = LoadSprite("Assets/_Project/Art/quit-button.png");
+
+            if (sp1 != null) mmSo.FindProperty("_playSprite").objectReferenceValue        = sp1;
+            if (sp2 != null) mmSo.FindProperty("_highScoresSprite").objectReferenceValue  = sp2;
+            if (sp3 != null) mmSo.FindProperty("_quitSprite").objectReferenceValue        = sp3;
+            mmSo.ApplyModifiedProperties();
+
+            if (sp1 != null) Debug.Log("Assigned main menu button sprites.");
+            else Debug.LogWarning("Could not find button sprites in Assets/_Project/Art/");
+        }
+
+        // Ball sprite — assign + auto-fix PPU to match collider
+        var ballCtrl = Object.FindFirstObjectByType<BallController>(FindObjectsInactive.Include);
+        if (ballCtrl != null)
+        {
+            var sr = ballCtrl.GetComponent<SpriteRenderer>();
+            var ballSprite = LoadSprite("Assets/_Project/Art/ball.png");
+            if (sr != null && ballSprite != null)
+            {
+                var srSo = new SerializedObject(sr);
+                srSo.FindProperty("m_Sprite").objectReferenceValue = ballSprite;
+                srSo.ApplyModifiedProperties();
+
+                // Compute world diameter from collider so the sprite fits the hit area
+                float worldDiam = 0.4f; // fallback
+                var circleCol = ballCtrl.GetComponent<CircleCollider2D>();
+                if (circleCol != null)
+                    worldDiam = circleCol.radius * 2f * Mathf.Abs(ballCtrl.transform.lossyScale.x);
+                else
+                {
+                    var boxCol2 = ballCtrl.GetComponent<BoxCollider2D>();
+                    if (boxCol2 != null)
+                        worldDiam = boxCol2.size.x * Mathf.Abs(ballCtrl.transform.lossyScale.x);
+                }
+                SetSpritePPU(ballSprite, worldDiam);
+                Debug.Log($"Assigned ball.png and set PPU for world diameter {worldDiam:F2}u.");
+            }
+            else if (ballSprite == null)
+                Debug.LogWarning("ball.png not found in Assets/_Project/Art/ — import it into Unity first.");
+        }
+
+        // Paddle sprite — assign + auto-fix PPU to match collider width
+        var paddleCtrl = Object.FindFirstObjectByType<PaddleController>(FindObjectsInactive.Include);
+        if (paddleCtrl != null)
+        {
+            var sr = paddleCtrl.GetComponent<SpriteRenderer>();
+            var paddleSprite = LoadSprite("Assets/_Project/Art/paddle.png");
+            if (sr != null && paddleSprite != null)
+            {
+                var srSo = new SerializedObject(sr);
+                srSo.FindProperty("m_Sprite").objectReferenceValue = paddleSprite;
+                srSo.ApplyModifiedProperties();
+
+                // Compute world width from collider
+                float worldWidth = 2f; // fallback
+                var boxCol2 = paddleCtrl.GetComponent<BoxCollider2D>();
+                if (boxCol2 != null)
+                    worldWidth = boxCol2.size.x * Mathf.Abs(paddleCtrl.transform.lossyScale.x);
+                SetSpritePPU(paddleSprite, worldWidth);
+                Debug.Log($"Assigned paddle.png and set PPU for world width {worldWidth:F2}u.");
+            }
+            else if (paddleSprite == null)
+                Debug.LogWarning("paddle.png not found in Assets/_Project/Art/ — import it into Unity first.");
+        }
+
+        // ── Mark scene dirty ─────────────────────────────────────────────────
         UnityEditor.SceneManagement.EditorSceneManager.MarkSceneDirty(
             UnityEngine.SceneManagement.SceneManager.GetActiveScene());
 
@@ -248,6 +331,28 @@ public static class PurrbricksSetup
     }
 
     // ── Helpers ──────────────────────────────────────────────────────────────
+
+    /// <summary>
+    /// Sets the Pixels Per Unit on a sprite's texture importer so that
+    /// the sprite displays at exactly <paramref name="desiredWorldWidth"/> Unity units wide.
+    /// PPU = texture_pixel_width / desired_world_width.
+    /// </summary>
+    private static void SetSpritePPU(Sprite sprite, float desiredWorldWidth)
+    {
+        if (sprite == null || desiredWorldWidth <= 0f) return;
+
+        var path = AssetDatabase.GetAssetPath(sprite.texture);
+        if (string.IsNullOrEmpty(path)) return;
+
+        var ti = AssetImporter.GetAtPath(path) as TextureImporter;
+        if (ti == null) return;
+
+        int newPPU = Mathf.Max(1, Mathf.RoundToInt(sprite.texture.width / desiredWorldWidth));
+        if (ti.spritePixelsPerUnit == newPPU) return; // already correct
+
+        ti.spritePixelsPerUnit = newPPU;
+        AssetDatabase.ImportAsset(path, ImportAssetOptions.ForceUpdate);
+    }
 
     private static GameObject EnsureGO(string name)
     {

@@ -88,7 +88,7 @@ public class HighScoresUI : MonoBehaviour
         lineRt.sizeDelta       = new Vector2(760f, 2f);
         lineRt.anchoredPosition = new Vector2(0f, 290f);
 
-        UIStyle.CreateButton(panel.transform, "Back", new Vector2(0f, -450f), new Vector2(280f, 75f),
+        UIStyle.CreateButton(panel.transform, "Main Menu", new Vector2(0f, -450f), new Vector2(280f, 75f),
             () => GameManager.Instance?.ShowMainMenu(), UIStyle.AccentBlue);
     }
 

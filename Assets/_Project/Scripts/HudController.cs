@@ -9,6 +9,10 @@ public class HudController : MonoBehaviour
     [SerializeField] private TMP_Text _centerMessage;
     [SerializeField] private TMP_Text _comboText;
 
+    // Persisted across SetState calls so the level name is always visible
+    private string _levelInfo = "";
+    private string _lastState = "";
+
     public void SetScore(int score)
     {
         if (_scoreText != null) _scoreText.text = "Score: " + score;
@@ -19,9 +23,34 @@ public class HudController : MonoBehaviour
         if (_livesText != null) _livesText.text = "Lives: " + lives;
     }
 
+    /// <summary>
+    /// Stores the current level number and title so every subsequent
+    /// SetState call shows it persistently in the state text area.
+    /// </summary>
+    public void SetLevelInfo(int levelNumber, string levelTitle)
+    {
+        _levelInfo = string.IsNullOrEmpty(levelTitle)
+            ? $"Level {levelNumber}"
+            : $"Level {levelNumber}: {levelTitle}";
+        RefreshStateText();
+    }
+
     public void SetState(string state)
     {
-        if (_stateText != null) _stateText.text = state;
+        _lastState = state;
+        RefreshStateText();
+    }
+
+    private void RefreshStateText()
+    {
+        if (_stateText == null) return;
+
+        if (string.IsNullOrEmpty(_levelInfo))
+            _stateText.text = _lastState;
+        else if (string.IsNullOrEmpty(_lastState))
+            _stateText.text = _levelInfo;
+        else
+            _stateText.text = $"{_levelInfo}";
     }
 
     public void ShowCenter(string message)
@@ -46,15 +75,11 @@ public class HudController : MonoBehaviour
 
     public void SetStatus(string status)
     {
-        // Reuse your existing "state" line
         SetState(status);
     }
 
     public void SetLevel(int levelNumber)
     {
-        // If you already have a TMP_Text for Level, we can wire it later.
-        // For now, just show it in the state line so nothing breaks.
-        SetState($"Level: {levelNumber}");
+        SetLevelInfo(levelNumber, "");
     }
-
 }

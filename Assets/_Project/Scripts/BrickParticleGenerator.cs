@@ -9,7 +9,7 @@ public static class BrickParticleGenerator
     // Cached once — Shader.Find is extremely slow and must never run per-brick
     private static Material s_material;
 
-    private static Material GetMaterial()
+    public static Material GetMaterial()
     {
         if (s_material == null)
             s_material = new Material(Shader.Find("Sprites/Default"));
