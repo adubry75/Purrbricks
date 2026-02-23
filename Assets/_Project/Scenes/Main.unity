@@ -3211,6 +3211,16 @@ MonoBehaviour:
   - level_47
   - level_48
   - level_49
+  - level_50
+  - level_51
+  - level_52
+  - level_53
+  - level_54
+  - level_55
+  - level_56
+  - level_57
+  - level_58
+  - level_59
   _levelClearDelay: 3
   _levelLoader: {fileID: 1184986102}
   _ball: {fileID: 1374096748}

@@ -23,6 +23,15 @@ public class GridConfig
 }
 
 [Serializable]
+public class BrickMovement
+{
+    public string type = "horizontal"; // "horizontal" | "vertical" | "circular"
+    public float amplitude = 1.5f;
+    public float period = 2.5f;
+    public float phaseOffset = 0f;
+}
+
+[Serializable]
 public class BrickEntryData
 {
     public int col;
@@ -34,4 +43,5 @@ public class BrickEntryData
     public int? hp;
     public int? points;
     public bool isIndestructible;
+    public BrickMovement movement; // null = static brick
 }

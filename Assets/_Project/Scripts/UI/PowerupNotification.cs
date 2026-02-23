@@ -19,34 +19,46 @@ public class PowerupNotification : MonoBehaviour
     // Colors matching PowerupPickup orbs (index = (int)PowerupType)
     private static readonly Color[] TypeColors = new Color[]
     {
-        new Color(0.30f, 0.60f, 1.00f),   // WidePaddle   sky-blue
-        new Color(1.00f, 0.40f, 0.00f),   // MultiBall    orange
-        new Color(0.60f, 0.00f, 1.00f),   // StickyBall   purple
-        new Color(1.00f, 0.85f, 0.00f),   // SpeedBall    gold
-        new Color(0.10f, 1.00f, 0.30f),   // ExtraLife    green
-        new Color(1.00f, 0.10f, 0.30f),   // Laser        crimson
-        new Color(1.00f, 0.45f, 0.00f),   // Fireball     fire-orange
-        new Color(0.90f, 0.20f, 0.90f),   // BombBrick    magenta
-        new Color(0.90f, 0.20f, 0.20f),   // ShrinkPaddle red
-        new Color(0.40f, 0.90f, 0.10f),   // ZipBall      sickly-green
-        new Color(0.65f, 0.10f, 0.80f),   // FlipControls dark-purple
-        new Color(0.20f, 0.75f, 0.35f),   // CursedBall   murky-green
+        new Color(0.30f, 0.60f, 1.00f),   // 0  WidePaddle   sky-blue
+        new Color(1.00f, 0.40f, 0.00f),   // 1  MultiBall    orange
+        new Color(0.60f, 0.00f, 1.00f),   // 2  StickyBall   purple
+        new Color(1.00f, 0.85f, 0.00f),   // 3  SpeedBall    gold
+        new Color(0.10f, 1.00f, 0.30f),   // 4  ExtraLife    green
+        new Color(1.00f, 0.10f, 0.30f),   // 5  Laser        crimson
+        new Color(1.00f, 0.45f, 0.00f),   // 6  Fireball     fire-orange
+        new Color(0.90f, 0.20f, 0.90f),   // 7  BombBrick    magenta
+        new Color(0.00f, 0.90f, 1.00f),   // 8  ShieldWall   cyan
+        new Color(0.60f, 0.85f, 1.00f),   // 9  BigBall      light-blue
+        new Color(1.00f, 0.85f, 0.00f),   // 10 ScoreFrenzy  gold
+        new Color(0.90f, 0.20f, 0.20f),   // 11 ShrinkPaddle red
+        new Color(0.40f, 0.90f, 0.10f),   // 12 ZipBall      sickly-green
+        new Color(0.65f, 0.10f, 0.80f),   // 13 FlipControls dark-purple
+        new Color(0.20f, 0.75f, 0.35f),   // 14 CursedBall   murky-green
+        new Color(1.00f, 0.25f, 0.50f),   // 15 TinyBall     hot-pink
+        new Color(0.55f, 0.55f, 0.60f),   // 16 InvisiBall   gray
+        new Color(1.00f, 0.55f, 0.00f),   // 17 DrunkenPaddle amber
     };
 
     private static readonly string[] TypeLabels = new string[]
     {
-        "WIDE PADDLE",
-        "MULTI-BALL!",
-        "STICKY BALL",
-        "SPEED BALL",
-        "+ 1 LIFE!",
-        "LASER!",
-        "FIREBALL!",
-        "BOMB BRICK!",
-        "⚠ SHRINK",
-        "⚠ ZIP BALL",
-        "⚠ FLIP CTRL",
-        "⚠ CURSED",
+        "WIDE PADDLE",    // 0
+        "MULTI-BALL!",    // 1
+        "STICKY BALL",    // 2
+        "SPEED BALL",     // 3
+        "+ 1 LIFE!",      // 4
+        "LASER!",         // 5
+        "FIREBALL!",      // 6
+        "BOMB BRICK!",    // 7
+        "SHIELD!",        // 8
+        "BIG BALL!",      // 9
+        "SCORE FRENZY!",  // 10
+        "⚠ SHRINK",       // 11
+        "⚠ ZIP BALL",     // 12
+        "⚠ FLIP CTRL",    // 13
+        "⚠ CURSED",       // 14
+        "⚠ TINY BALL",    // 15
+        "⚠ INVISIBALL",   // 16
+        "⚠ DRUNK PAD",    // 17
     };
 
     // Anchor position reset every coroutine run
@@ -104,7 +116,7 @@ public class PowerupNotification : MonoBehaviour
         int idx   = Mathf.Clamp((int)type, 0, TypeColors.Length - 1);
         Color col = TypeColors[idx];
         string lbl = idx < TypeLabels.Length ? TypeLabels[idx] : type.ToString().ToUpper();
-        bool bad = idx >= 8;
+        bool bad = idx >= 11;
 
         if (bad)
             col = new Color(1f, 0.3f, 0.3f);

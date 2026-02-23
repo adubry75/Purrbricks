@@ -21,6 +21,9 @@ public class PowerupManager : MonoBehaviour
     private PaddleController _paddle;
     private BallController[] _balls => FindObjectsByType<BallController>(FindObjectsSortMode.None);
 
+    // ShieldWall visual/physics object
+    private GameObject _shieldWallGO;
+
     private void Awake()
     {
         if (Instance != null && Instance != this) { Destroy(gameObject); return; }
@@ -123,7 +126,7 @@ public class PowerupManager : MonoBehaviour
         bool anyBad = false;
         foreach (var kvp in _timers)
         {
-            if ((int)kvp.Key >= 8) { anyBad = true; break; }
+            if ((int)kvp.Key >= 11) { anyBad = true; break; }
         }
         ScreenEffects.Instance?.SetBadVignette(anyBad);
     }
@@ -137,16 +140,22 @@ public class PowerupManager : MonoBehaviour
 
         switch (type)
         {
-            case PowerupType.WidePaddle:    _paddle?.SetWide(true);                             break;
-            case PowerupType.StickyBall:    foreach (var b in _balls) b.SetSticky(true);        break;
-            case PowerupType.SpeedBall:     foreach (var b in _balls) b.SetSpeedBoost(true);    break;
-            case PowerupType.Laser:         _paddle?.SetLaser(true);                            break;
-            case PowerupType.Fireball:      foreach (var b in _balls) b.SetFireball(true);      break;
-            case PowerupType.BombBrick:     foreach (var b in _balls) b.SetBomb(true);          break;
-            case PowerupType.ShrinkPaddle:  _paddle?.SetShrink(true);                          break;
-            case PowerupType.ZipBall:       foreach (var b in _balls) b.SetZipBall(true);      break;
-            case PowerupType.FlipControls:  _paddle?.SetFlipped(true);                         break;
-            case PowerupType.CursedBall:    foreach (var b in _balls) b.SetCursed(true);       break;
+            case PowerupType.WidePaddle:    _paddle?.SetWide(true);                              break;
+            case PowerupType.StickyBall:    foreach (var b in _balls) b.SetSticky(true);         break;
+            case PowerupType.SpeedBall:     foreach (var b in _balls) b.SetSpeedBoost(true);     break;
+            case PowerupType.Laser:         _paddle?.SetLaser(true);                             break;
+            case PowerupType.Fireball:      foreach (var b in _balls) b.SetFireball(true);       break;
+            case PowerupType.BombBrick:     foreach (var b in _balls) b.SetBomb(true);           break;
+            case PowerupType.ShieldWall:    SpawnShieldWall();                                    break;
+            case PowerupType.BigBall:       foreach (var b in _balls) b.SetBigBall(true);        break;
+            case PowerupType.ScoreFrenzy:   GameManager.Instance?.SetScoreFrenzy(true);          break;
+            case PowerupType.ShrinkPaddle:  _paddle?.SetShrink(true);                            break;
+            case PowerupType.ZipBall:       foreach (var b in _balls) b.SetZipBall(true);        break;
+            case PowerupType.FlipControls:  _paddle?.SetFlipped(true);                           break;
+            case PowerupType.CursedBall:    foreach (var b in _balls) b.SetCursed(true);         break;
+            case PowerupType.TinyBall:      foreach (var b in _balls) b.SetTinyBall(true);       break;
+            case PowerupType.InvisiBall:    foreach (var b in _balls) b.SetInvisiBall(true);     break;
+            case PowerupType.DrunkenPaddle: _paddle?.SetDrunk(true);                             break;
         }
     }
 
@@ -157,18 +166,69 @@ public class PowerupManager : MonoBehaviour
 
         switch (type)
         {
-            case PowerupType.WidePaddle:    _paddle?.SetWide(false);                            break;
-            case PowerupType.StickyBall:    foreach (var b in _balls) b.SetSticky(false);       break;
-            case PowerupType.SpeedBall:     foreach (var b in _balls) b.SetSpeedBoost(false);   break;
-            case PowerupType.Laser:         _paddle?.SetLaser(false);                           break;
-            case PowerupType.Fireball:      foreach (var b in _balls) b.SetFireball(false);     break;
-            case PowerupType.BombBrick:     foreach (var b in _balls) b.SetBomb(false);         break;
-            case PowerupType.ShrinkPaddle:  _paddle?.SetShrink(false);                         break;
-            case PowerupType.ZipBall:       foreach (var b in _balls) b.SetZipBall(false);     break;
-            case PowerupType.FlipControls:  _paddle?.SetFlipped(false);                        break;
-            case PowerupType.CursedBall:    foreach (var b in _balls) b.SetCursed(false);      break;
+            case PowerupType.WidePaddle:    _paddle?.SetWide(false);                              break;
+            case PowerupType.StickyBall:    foreach (var b in _balls) b.SetSticky(false);        break;
+            case PowerupType.SpeedBall:     foreach (var b in _balls) b.SetSpeedBoost(false);    break;
+            case PowerupType.Laser:         _paddle?.SetLaser(false);                            break;
+            case PowerupType.Fireball:      foreach (var b in _balls) b.SetFireball(false);      break;
+            case PowerupType.BombBrick:     foreach (var b in _balls) b.SetBomb(false);          break;
+            case PowerupType.ShieldWall:    DestroyShieldWall();                                  break;
+            case PowerupType.BigBall:       foreach (var b in _balls) b.SetBigBall(false);       break;
+            case PowerupType.ScoreFrenzy:   GameManager.Instance?.SetScoreFrenzy(false);         break;
+            case PowerupType.ShrinkPaddle:  _paddle?.SetShrink(false);                           break;
+            case PowerupType.ZipBall:       foreach (var b in _balls) b.SetZipBall(false);       break;
+            case PowerupType.FlipControls:  _paddle?.SetFlipped(false);                          break;
+            case PowerupType.CursedBall:    foreach (var b in _balls) b.SetCursed(false);        break;
+            case PowerupType.TinyBall:      foreach (var b in _balls) b.SetTinyBall(false);      break;
+            case PowerupType.InvisiBall:    foreach (var b in _balls) b.SetInvisiBall(false);    break;
+            case PowerupType.DrunkenPaddle: _paddle?.SetDrunk(false);                            break;
         }
     }
+
+    // ── ShieldWall ────────────────────────────────────────────────────────────
+
+    private void SpawnShieldWall()
+    {
+        if (_shieldWallGO != null) return;
+
+        // Find death zone position for accurate placement
+        float shieldY = -8.3f;
+        var deathZone = FindFirstObjectByType<DeathZone>();
+        if (deathZone != null)
+            shieldY = deathZone.transform.position.y + 0.5f;
+
+        _shieldWallGO = new GameObject("ShieldWall");
+
+        // Create 1×1 white texture for the sprite
+        var tex = new Texture2D(1, 1);
+        tex.SetPixel(0, 0, Color.white);
+        tex.Apply();
+        var sprite = Sprite.Create(tex, new Rect(0, 0, 1, 1), new Vector2(0.5f, 0.5f), 1f);
+
+        var sr = _shieldWallGO.AddComponent<SpriteRenderer>();
+        sr.sprite = sprite;
+        sr.color = new Color(0.0f, 0.9f, 1.0f, 0.55f); // glowing cyan
+        sr.sortingOrder = 5;
+
+        // BoxCollider so ball bounces off it
+        var col = _shieldWallGO.AddComponent<BoxCollider2D>();
+        col.size = Vector2.one;
+
+        // Scale to fill the playfield width
+        _shieldWallGO.transform.localScale = new Vector3(14f, 0.25f, 1f);
+        _shieldWallGO.transform.position = new Vector3(0f, shieldY, 0f);
+    }
+
+    private void DestroyShieldWall()
+    {
+        if (_shieldWallGO != null)
+        {
+            Destroy(_shieldWallGO);
+            _shieldWallGO = null;
+        }
+    }
+
+    // ── MultiBall ─────────────────────────────────────────────────────────────
 
     private void SpawnMultiBalls()
     {

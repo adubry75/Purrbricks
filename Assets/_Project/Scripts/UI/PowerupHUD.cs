@@ -14,40 +14,52 @@ public class PowerupHUD : MonoBehaviour
     private static readonly Color[] TypeColors = new Color[]
     {
         // ── Good ──
-        new Color(0.30f, 0.60f, 1.00f),  // WidePaddle
-        new Color(1.00f, 0.40f, 0.00f),  // MultiBall  (instant — rarely shown)
-        new Color(0.60f, 0.00f, 1.00f),  // StickyBall
-        new Color(1.00f, 0.85f, 0.00f),  // SpeedBall
-        new Color(0.10f, 1.00f, 0.30f),  // ExtraLife  (instant — rarely shown)
-        new Color(1.00f, 0.10f, 0.30f),  // Laser
-        new Color(1.00f, 0.45f, 0.00f),  // Fireball
-        new Color(0.90f, 0.20f, 0.90f),  // BombBrick
+        new Color(0.30f, 0.60f, 1.00f),  // 0  WidePaddle
+        new Color(1.00f, 0.40f, 0.00f),  // 1  MultiBall
+        new Color(0.60f, 0.00f, 1.00f),  // 2  StickyBall
+        new Color(1.00f, 0.85f, 0.00f),  // 3  SpeedBall
+        new Color(0.10f, 1.00f, 0.30f),  // 4  ExtraLife
+        new Color(1.00f, 0.10f, 0.30f),  // 5  Laser
+        new Color(1.00f, 0.45f, 0.00f),  // 6  Fireball
+        new Color(0.90f, 0.20f, 0.90f),  // 7  BombBrick
+        new Color(0.00f, 0.90f, 1.00f),  // 8  ShieldWall
+        new Color(0.60f, 0.85f, 1.00f),  // 9  BigBall
+        new Color(1.00f, 0.85f, 0.00f),  // 10 ScoreFrenzy
         // ── Bad ──
-        new Color(0.90f, 0.20f, 0.20f),  // ShrinkPaddle
-        new Color(0.40f, 0.90f, 0.10f),  // ZipBall
-        new Color(0.65f, 0.10f, 0.80f),  // FlipControls
-        new Color(0.20f, 0.75f, 0.35f),  // CursedBall
+        new Color(0.90f, 0.20f, 0.20f),  // 11 ShrinkPaddle
+        new Color(0.40f, 0.90f, 0.10f),  // 12 ZipBall
+        new Color(0.65f, 0.10f, 0.80f),  // 13 FlipControls
+        new Color(0.20f, 0.75f, 0.35f),  // 14 CursedBall
+        new Color(1.00f, 0.25f, 0.50f),  // 15 TinyBall
+        new Color(0.55f, 0.55f, 0.60f),  // 16 InvisiBall
+        new Color(1.00f, 0.55f, 0.00f),  // 17 DrunkenPaddle
     };
 
     private static readonly string[] TypeLabels = new string[]
     {
         // ── Good ──
-        "WIDE PADDLE",
-        "MULTI-BALL",
-        "STICKY BALL",
-        "SPEED BALL",
-        "+ LIFE",
-        "LASER",
-        "FIREBALL",
-        "BOMB BRICK",
+        "WIDE PADDLE",   // 0
+        "MULTI-BALL",    // 1
+        "STICKY BALL",   // 2
+        "SPEED BALL",    // 3
+        "+ LIFE",        // 4
+        "LASER",         // 5
+        "FIREBALL",      // 6
+        "BOMB BRICK",    // 7
+        "SHIELD",        // 8
+        "BIG BALL",      // 9
+        "SCORE FRENZY",  // 10
         // ── Bad ──
-        "⚠ SHRINK",
-        "⚠ ZIP BALL",
-        "⚠ FLIP CTRL",
-        "⚠ CURSED",
+        "⚠ SHRINK",      // 11
+        "⚠ ZIP BALL",    // 12
+        "⚠ FLIP CTRL",   // 13
+        "⚠ CURSED",      // 14
+        "⚠ TINY BALL",   // 15
+        "⚠ INVISIBALL",  // 16
+        "⚠ DRUNK PAD",   // 17
     };
 
-    private static bool IsBadPowerup(int idx) => idx >= 8;
+    private static bool IsBadPowerup(int idx) => idx >= 11;
 
     // Slot UI references for each active powerup
     private class Slot

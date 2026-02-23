@@ -105,9 +105,9 @@ public static class PurrbricksSetup
             gmSo.FindProperty("_levelLoader").objectReferenceValue = loader;
 
             var levelIds = gmSo.FindProperty("_levelIds");
-            // Always refresh to 50 levels
-            levelIds.arraySize = 50;
-            for (int i = 0; i < 50; i++)
+            // Always refresh to 60 levels
+            levelIds.arraySize = 60;
+            for (int i = 0; i < 60; i++)
                 levelIds.GetArrayElementAtIndex(i).stringValue = $"level_{i:D2}";
             gmSo.ApplyModifiedProperties();
         }
@@ -192,16 +192,56 @@ public static class PurrbricksSetup
         var gp1 = AssetDatabase.LoadAssetAtPath<AudioClip>("Assets/_Project/Audio/purrbricks-gameplay1.mp3");
         var gp2 = AssetDatabase.LoadAssetAtPath<AudioClip>("Assets/_Project/Audio/purrbricks-gameplay2.mp3");
         var gp3 = AssetDatabase.LoadAssetAtPath<AudioClip>("Assets/_Project/Audio/purrbricks-gameplay3.mp3");
+        var gp4 = AssetDatabase.LoadAssetAtPath<AudioClip>("Assets/_Project/Audio/purrbricks-gameplay4.mp3");
+        var gp5 = AssetDatabase.LoadAssetAtPath<AudioClip>("Assets/_Project/Audio/purrbricks-gameplay5.mp3");
+        var gp6 = AssetDatabase.LoadAssetAtPath<AudioClip>("Assets/_Project/Audio/purrbricks-gameplay6.mp3");
+        var gp7 = AssetDatabase.LoadAssetAtPath<AudioClip>("Assets/_Project/Audio/purrbricks-gameplay7.mp3");
+        var gp8 = AssetDatabase.LoadAssetAtPath<AudioClip>("Assets/_Project/Audio/purrbricks-gameplay8.mp3");
+        var gp9 = AssetDatabase.LoadAssetAtPath<AudioClip>("Assets/_Project/Audio/purrbricks-gameplay9.mp3");
+        var gp10 = AssetDatabase.LoadAssetAtPath<AudioClip>("Assets/_Project/Audio/purrbricks-gameplay10.mp3");
+        var gp11 = AssetDatabase.LoadAssetAtPath<AudioClip>("Assets/_Project/Audio/purrbricks-gameplay11.mp3");
+        var gp12 = AssetDatabase.LoadAssetAtPath<AudioClip>("Assets/_Project/Audio/purrbricks-gameplay12.mp3");
+        var gp13 = AssetDatabase.LoadAssetAtPath<AudioClip>("Assets/_Project/Audio/purrbricks-gameplay13.mp3");
+        var gp14 = AssetDatabase.LoadAssetAtPath<AudioClip>("Assets/_Project/Audio/purrbricks-gameplay14.mp3");
+        var gp15 = AssetDatabase.LoadAssetAtPath<AudioClip>("Assets/_Project/Audio/purrbricks-gameplay15.mp3");
+        var gp16 = AssetDatabase.LoadAssetAtPath<AudioClip>("Assets/_Project/Audio/purrbricks-gameplay16.mp3");
+        var gp17 = AssetDatabase.LoadAssetAtPath<AudioClip>("Assets/_Project/Audio/purrbricks-gameplay17.mp3");
+        var gp18 = AssetDatabase.LoadAssetAtPath<AudioClip>("Assets/_Project/Audio/purrbricks-gameplay18.mp3");
+        var gp19 = AssetDatabase.LoadAssetAtPath<AudioClip>("Assets/_Project/Audio/purrbricks-gameplay19.mp3");
+        var gp20 = AssetDatabase.LoadAssetAtPath<AudioClip>("Assets/_Project/Audio/purrbricks-gameplay20.mp3");
+        var gp21 = AssetDatabase.LoadAssetAtPath<AudioClip>("Assets/_Project/Audio/purrbricks-gameplay21.mp3");
+        var gp22 = AssetDatabase.LoadAssetAtPath<AudioClip>("Assets/_Project/Audio/purrbricks-gameplay22.mp3");
+        var gp23 = AssetDatabase.LoadAssetAtPath<AudioClip>("Assets/_Project/Audio/purrbricks-gameplay23.mp3");
 
         musicSo.FindProperty("_menuTrack").objectReferenceValue      = menuClip;
         musicSo.FindProperty("_gameOverTrack").objectReferenceValue  = goClip;
         musicSo.FindProperty("_levelFinishTrack").objectReferenceValue = finishClip;
 
         var gpArr = musicSo.FindProperty("_gameplayTracks");
-        gpArr.arraySize = 3;
+        gpArr.arraySize = 23;
         gpArr.GetArrayElementAtIndex(0).objectReferenceValue = gp1;
         gpArr.GetArrayElementAtIndex(1).objectReferenceValue = gp2;
         gpArr.GetArrayElementAtIndex(2).objectReferenceValue = gp3;
+        gpArr.GetArrayElementAtIndex(3).objectReferenceValue = gp4;
+        gpArr.GetArrayElementAtIndex(4).objectReferenceValue = gp5;
+        gpArr.GetArrayElementAtIndex(5).objectReferenceValue = gp6;
+        gpArr.GetArrayElementAtIndex(6).objectReferenceValue = gp7;
+        gpArr.GetArrayElementAtIndex(7).objectReferenceValue = gp8;
+        gpArr.GetArrayElementAtIndex(8).objectReferenceValue = gp9;
+        gpArr.GetArrayElementAtIndex(9).objectReferenceValue = gp10;
+        gpArr.GetArrayElementAtIndex(10).objectReferenceValue = gp11;
+        gpArr.GetArrayElementAtIndex(11).objectReferenceValue = gp12;
+        gpArr.GetArrayElementAtIndex(12).objectReferenceValue = gp13;
+        gpArr.GetArrayElementAtIndex(13).objectReferenceValue = gp14;
+        gpArr.GetArrayElementAtIndex(14).objectReferenceValue = gp15;
+        gpArr.GetArrayElementAtIndex(15).objectReferenceValue = gp16;
+        gpArr.GetArrayElementAtIndex(16).objectReferenceValue = gp17;
+        gpArr.GetArrayElementAtIndex(17).objectReferenceValue = gp18;
+        gpArr.GetArrayElementAtIndex(18).objectReferenceValue = gp19;
+        gpArr.GetArrayElementAtIndex(19).objectReferenceValue = gp20;
+        gpArr.GetArrayElementAtIndex(20).objectReferenceValue = gp21;
+        gpArr.GetArrayElementAtIndex(21).objectReferenceValue = gp22;
+        gpArr.GetArrayElementAtIndex(22).objectReferenceValue = gp23;
 
         musicSo.ApplyModifiedProperties();
         Debug.Log("Wired MusicPlayer with all audio clips.");
@@ -270,7 +310,7 @@ public static class PurrbricksSetup
         if (ballCtrl != null)
         {
             var sr = ballCtrl.GetComponent<SpriteRenderer>();
-            var ballSprite = LoadSprite("Assets/_Project/Art/ball.png");
+            var ballSprite = LoadSprite("Assets/_Project/Art/Sprites/cat-ball.png");
             if (sr != null && ballSprite != null)
             {
                 var srSo = new SerializedObject(sr);
@@ -288,8 +328,8 @@ public static class PurrbricksSetup
                     if (boxCol2 != null)
                         worldDiam = boxCol2.size.x * Mathf.Abs(ballCtrl.transform.lossyScale.x);
                 }
-                SetSpritePPU(ballSprite, worldDiam);
-                Debug.Log($"Assigned ball.png and set PPU for world diameter {worldDiam:F2}u.");
+                //SetSpritePPU(ballSprite, worldDiam);
+                Debug.Log($"Assigned cat-ball.png and world diameter {worldDiam:F2}u.");
             }
             else if (ballSprite == null)
                 Debug.LogWarning("ball.png not found in Assets/_Project/Art/ — import it into Unity first.");
@@ -300,7 +340,7 @@ public static class PurrbricksSetup
         if (paddleCtrl != null)
         {
             var sr = paddleCtrl.GetComponent<SpriteRenderer>();
-            var paddleSprite = LoadSprite("Assets/_Project/Art/paddle.png");
+            var paddleSprite = LoadSprite("Assets/_Project/Art/Sprites/cat-paddle.png");
             if (sr != null && paddleSprite != null)
             {
                 var srSo = new SerializedObject(sr);
@@ -312,8 +352,8 @@ public static class PurrbricksSetup
                 var boxCol2 = paddleCtrl.GetComponent<BoxCollider2D>();
                 if (boxCol2 != null)
                     worldWidth = boxCol2.size.x * Mathf.Abs(paddleCtrl.transform.lossyScale.x);
-                SetSpritePPU(paddleSprite, worldWidth);
-                Debug.Log($"Assigned paddle.png and set PPU for world width {worldWidth:F2}u.");
+                //SetSpritePPU(paddleSprite, worldWidth);
+                Debug.Log($"Assigned cat-paddle.png and world width {worldWidth:F2}u.");
             }
             else if (paddleSprite == null)
                 Debug.LogWarning("paddle.png not found in Assets/_Project/Art/ — import it into Unity first.");

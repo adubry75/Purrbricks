@@ -34,6 +34,8 @@ public class PaddleController : MonoBehaviour
     private bool _isLaser;
     private bool _isShrunk;
     private bool _isFlipped;
+    private bool _isDrunk;
+    private float _drunkTimer;
     private float _laserCooldown;
 
     private Vector3 _normalScale;
@@ -70,6 +72,13 @@ public class PaddleController : MonoBehaviour
             {
             float mouseX = _camera.ScreenToWorldPoint(Input.mousePosition).x;
             targetX = _isFlipped ? -mouseX : mouseX;
+        }
+
+        // DrunkenPaddle: sinusoidal sway (±2.5 units at ~0.4 Hz cycle)
+        if (_isDrunk)
+        {
+            _drunkTimer += Time.deltaTime;
+            targetX += Mathf.Sin(_drunkTimer * 2.5f) * 2.5f;
         }
 
         float halfWidth = GetHalfWidthWorld();
@@ -120,6 +129,12 @@ public class PaddleController : MonoBehaviour
     public void SetFlipped(bool on)
     {
         _isFlipped = on;
+    }
+
+    public void SetDrunk(bool on)
+    {
+        _isDrunk = on;
+        if (!on) _drunkTimer = 0f;
     }
 
     public void SetLaser(bool on)

@@ -36,7 +36,11 @@ public class BallController : MonoBehaviour
     private bool _isBomb;           // explodes 3×3 area on brick hit
     private bool _isCursed;         // ball direction drifts sinusoidally
     private bool _isZipBall;        // forced 2.5× speed (bad powerup)
+    private bool _isBigBall;        // ball scales to 2×
+    private bool _isTinyBall;       // ball scales to 0.5×
+    private bool _isInvisiBall;     // ball alpha 0.05, flashes every 3 s
     private float _curseTimer;
+    private float _invisTimer;
 
     // Fireball pierce — restore pre-bounce velocity in next FixedUpdate
     private bool _wantFireballPierce;
@@ -167,6 +171,10 @@ public class BallController : MonoBehaviour
                 ReleaseStickyHold();
         }
 
+        // InvisiBall: tick flash timer for brief visibility pulse every 3 s
+        if (_isInvisiBall)
+            _invisTimer += Time.deltaTime;
+
         UpdateBallColor();
     }
 
@@ -195,6 +203,14 @@ public class BallController : MonoBehaviour
         {
             float t = (ramp - 0.6f) / 0.4f;
             tint = Color.Lerp(Color.white, new Color(1f, 0.5f, 0.1f), t);
+        }
+
+        // InvisiBall: mostly invisible but flashes for 0.25 s every 3 s
+        if (_isInvisiBall)
+        {
+            float phase = _invisTimer % 3.0f;
+            float alpha = (phase < 0.25f) ? 0.70f : 0.05f;
+            tint = new Color(tint.r, tint.g, tint.b, alpha);
         }
 
         if (_ballSr != null)
@@ -384,6 +400,36 @@ public class BallController : MonoBehaviour
         if (!on) _curseTimer = 0f;
     }
 
+    public void SetBigBall(bool on)
+    {
+        _isBigBall = on;
+        if (on && _isTinyBall) _isTinyBall = false; // BigBall wins
+        ApplyBallScale();
+    }
+
+    public void SetTinyBall(bool on)
+    {
+        _isTinyBall = on;
+        if (on && _isBigBall) _isBigBall = false; // TinyBall wins
+        ApplyBallScale();
+    }
+
+    public void SetInvisiBall(bool on)
+    {
+        _isInvisiBall = on;
+        if (!on) _invisTimer = 0f;
+    }
+
+    private void ApplyBallScale()
+    {
+        if (_isBigBall)
+            transform.localScale = Vector3.one * 2f;
+        else if (_isTinyBall)
+            transform.localScale = Vector3.one * 0.5f;
+        else
+            transform.localScale = Vector3.one;
+    }
+
     /// <summary>Spawns a clone of this ball rotated by angleOffset degrees.</summary>
     public void SpawnClone(float angleOffset)
     {
@@ -407,6 +453,9 @@ public class BallController : MonoBehaviour
         cloneBall._isBomb = _isBomb;
         cloneBall._isCursed = _isCursed;
         cloneBall._isZipBall = _isZipBall;
+        cloneBall._isBigBall = _isBigBall;
+        cloneBall._isTinyBall = _isTinyBall;
+        cloneBall._isInvisiBall = _isInvisiBall;
         cloneBall._rampMultiplier = _rampMultiplier;
 
         var cloneRb = cloneBall.GetComponent<Rigidbody2D>();
@@ -537,10 +586,15 @@ public class BallController : MonoBehaviour
         _isBomb = false;
         _isCursed = false;
         _isZipBall = false;
+        _isBigBall = false;
+        _isTinyBall = false;
+        _isInvisiBall = false;
         _wantFireballPierce = false;
         _curseTimer = 0f;
+        _invisTimer = 0f;
         _rampMultiplier = 1.0f;
 
+        transform.localScale = Vector3.one;
         if (_ballSr != null) _ballSr.color = Color.white;
 
         if (_rb != null)

@@ -49,6 +49,7 @@ public class GameManager : MonoBehaviour
     private bool _isDemoMode;
     private bool _primaryBallOnHold; // true while primary fell but clones still active
     private int _activeClonesCount;  // explicit count — avoids deferred-Destroy false positives
+    private bool _scoreFrenzyActive;
 
     // ── Per-level score stats (reset each LoadLevel) ─────────────────────────
     private int _levelStartScore;
@@ -99,8 +100,8 @@ public class GameManager : MonoBehaviour
 
     private void Update()
     {
-        // Numpad debug: activate powerups (1-8)
-        if (_state == GameState.Playing)
+        // Numpad debug: activate powerups
+        if (_state == GameState.Playing && !(Input.GetKey(KeyCode.LeftControl) || Input.GetKey(KeyCode.RightControl)))
         {
             if (Input.GetKeyDown(KeyCode.Keypad1)) PowerupManager.Instance?.Apply(PowerupType.WidePaddle);
             if (Input.GetKeyDown(KeyCode.Keypad2)) PowerupManager.Instance?.Apply(PowerupType.MultiBall);
@@ -110,6 +111,9 @@ public class GameManager : MonoBehaviour
             if (Input.GetKeyDown(KeyCode.Keypad6)) PowerupManager.Instance?.Apply(PowerupType.Laser);
             if (Input.GetKeyDown(KeyCode.Keypad7)) PowerupManager.Instance?.Apply(PowerupType.Fireball);
             if (Input.GetKeyDown(KeyCode.Keypad8)) PowerupManager.Instance?.Apply(PowerupType.BombBrick);
+            if (Input.GetKeyDown(KeyCode.Keypad9)) PowerupManager.Instance?.Apply(PowerupType.ShieldWall);
+            if (Input.GetKeyDown(KeyCode.KeypadPlus)) PowerupManager.Instance?.Apply(PowerupType.BigBall);
+            if (Input.GetKeyDown(KeyCode.KeypadPeriod)) PowerupManager.Instance?.Apply(PowerupType.ScoreFrenzy);
         }
 
         if (_state == GameState.Playing && (Input.GetKey(KeyCode.LeftControl) || Input.GetKey(KeyCode.RightControl)))
@@ -118,6 +122,9 @@ public class GameManager : MonoBehaviour
             if (Input.GetKeyDown(KeyCode.Keypad2)) PowerupManager.Instance?.Apply(PowerupType.ZipBall);
             if (Input.GetKeyDown(KeyCode.Keypad3)) PowerupManager.Instance?.Apply(PowerupType.FlipControls);
             if (Input.GetKeyDown(KeyCode.Keypad4)) PowerupManager.Instance?.Apply(PowerupType.CursedBall);
+            if (Input.GetKeyDown(KeyCode.Keypad5)) PowerupManager.Instance?.Apply(PowerupType.TinyBall);
+            if (Input.GetKeyDown(KeyCode.Keypad6)) PowerupManager.Instance?.Apply(PowerupType.InvisiBall);
+            if (Input.GetKeyDown(KeyCode.Keypad7)) PowerupManager.Instance?.Apply(PowerupType.DrunkenPaddle);
         }
 
         // Fury Strike: ENTER when charge bar is full
@@ -177,6 +184,11 @@ public class GameManager : MonoBehaviour
         _hud?.SetLives(_lives);
     }
 
+    public void SetScoreFrenzy(bool on)
+    {
+        _scoreFrenzyActive = on;
+    }
+
     public bool IsPrimaryBall(BallController ball) => ball == _ball;
 
     /// <summary>Exposes the primary ball so HavocBar can read RampFraction.</summary>
@@ -199,6 +211,7 @@ public class GameManager : MonoBehaviour
         _comboTimer = 0f;
         _lives = _startingLives;
         _currentLevelIndex = 0;
+        _scoreFrenzyActive = false;
 
         _hud?.SetScore(_score);
         _hud?.SetLives(_lives);
@@ -251,6 +264,7 @@ public class GameManager : MonoBehaviour
         _comboTimer = 0f;
         _lives = _startingLives;
         _currentLevelIndex = 0;
+        _scoreFrenzyActive = false;
 
         _hud?.SetScore(_score);
         _hud?.SetLives(_lives);
@@ -568,6 +582,12 @@ public class GameManager : MonoBehaviour
         int multiplier = 1 + _combo;
         int points     = basePoints * multiplier;
         int comboBonus = basePoints * _combo; // extra above base
+
+        if (_scoreFrenzyActive)
+        {
+            points     *= 2;
+            comboBonus *= 2;
+        }
 
         _score           += points;
         _levelComboBonus += comboBonus;

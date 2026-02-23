@@ -1,86 +1,244 @@
 {
   "id": "level_44",
-  "displayName": "Crosshairs",
-  "ballSpeed": 15.0,
-  "grid": { "cols": 20, "rows": 12, "brickWidth": 0.75, "brickHeight": 0.30, "gapX": 0.06, "gapY": 0.10 },
+  "displayName": "Snowflake",
+  "grid": {
+    "cols": 12,
+    "rows": 8,
+    "brickWidth": 1.35,
+    "brickHeight": 0.45,
+    "gapX": 0.08,
+    "gapY": 0.16
+  },
   "bricks": [
-    { "col":  6, "row": 0, "templateId": "blue" , "powerupId": "BombBrick"}, { "col":  7, "row": 0, "templateId": "blue" , "powerupId": "WidePaddle"},
-    { "col":  8, "row": 0, "templateId": "blue" , "powerupId": "CursedBall"}, { "col":  9, "row": 0, "templateId": "blue" },
-    { "col": 10, "row": 0, "templateId": "blue" }, { "col": 11, "row": 0, "templateId": "blue" },
-    { "col": 12, "row": 0, "templateId": "blue" }, { "col": 13, "row": 0, "templateId": "blue" },
-
-    { "col":  4, "row": 1, "templateId": "blue" }, { "col":  5, "row": 1, "templateId": "blue" },
-    { "col": 14, "row": 1, "templateId": "blue" }, { "col": 15, "row": 1, "templateId": "blue" },
-
-    { "col":  3, "row": 2, "templateId": "blue" }, { "col":  4, "row": 2, "templateId": "blue" },
-    { "col":  5, "row": 2, "templateId": "cyan" }, { "col":  6, "row": 2, "templateId": "cyan" },
-    { "col":  7, "row": 2, "templateId": "cyan" }, { "col":  8, "row": 2, "templateId": "cyan" },
-    { "col":  9, "row": 2, "templateId": "cyan" }, { "col": 10, "row": 2, "templateId": "cyan" },
-    { "col": 11, "row": 2, "templateId": "cyan" }, { "col": 12, "row": 2, "templateId": "cyan" },
-    { "col": 13, "row": 2, "templateId": "cyan" }, { "col": 14, "row": 2, "templateId": "cyan" },
-    { "col": 15, "row": 2, "templateId": "blue" }, { "col": 16, "row": 2, "templateId": "blue" },
-
-    { "col":  0, "row": 3, "templateId": "blue" }, { "col":  1, "row": 3, "templateId": "blue" },
-    { "col":  2, "row": 3, "templateId": "blue" }, { "col":  3, "row": 3, "templateId": "blue" },
-    { "col":  4, "row": 3, "templateId": "blue" }, { "col":  7, "row": 3, "templateId": "cyan" },
-    { "col":  8, "row": 3, "templateId": "cyan" }, { "col":  9, "row": 3, "templateId": "cyan" },
-    { "col": 10, "row": 3, "templateId": "cyan" }, { "col": 11, "row": 3, "templateId": "cyan" },
-    { "col": 12, "row": 3, "templateId": "cyan" },
-    { "col": 15, "row": 3, "templateId": "blue" }, { "col": 16, "row": 3, "templateId": "blue" },
-    { "col": 17, "row": 3, "templateId": "blue" }, { "col": 18, "row": 3, "templateId": "blue" },
-    { "col": 19, "row": 3, "templateId": "blue" },
-
-    { "col":  0, "row": 4, "templateId": "blue" }, { "col":  1, "row": 4, "templateId": "blue" },
-    { "col":  2, "row": 4, "templateId": "blue" },
-    { "col":  8, "row": 4, "templateId": "gem", "powerupId": "Fireball" },
-    { "col":  9, "row": 4, "templateId": "steel", "hp": 3 },
-    { "col": 10, "row": 4, "templateId": "steel", "hp": 3 },
-    { "col": 11, "row": 4, "templateId": "gem", "powerupId": "MultiBall" },
-    { "col": 17, "row": 4, "templateId": "blue" }, { "col": 18, "row": 4, "templateId": "blue" },
-    { "col": 19, "row": 4, "templateId": "blue" },
-
-    { "col":  0, "row": 5, "templateId": "blue" }, { "col":  1, "row": 5, "templateId": "blue" },
-    { "col":  2, "row": 5, "templateId": "blue" },
-    { "col":  8, "row": 5, "templateId": "steel", "hp": 3 },
-    { "col":  9, "row": 5, "templateId": "gem", "powerupId": "ExtraLife" },
-    { "col": 10, "row": 5, "templateId": "gem", "powerupId": "WidePaddle" },
-    { "col": 11, "row": 5, "templateId": "steel", "hp": 3 },
-    { "col": 17, "row": 5, "templateId": "blue" }, { "col": 18, "row": 5, "templateId": "blue" },
-    { "col": 19, "row": 5, "templateId": "blue" },
-
-    { "col":  0, "row": 6, "templateId": "blue" }, { "col":  1, "row": 6, "templateId": "blue" },
-    { "col":  2, "row": 6, "templateId": "blue" },
-    { "col":  8, "row": 6, "templateId": "gem", "powerupId": "Laser" },
-    { "col":  9, "row": 6, "templateId": "steel", "hp": 3 },
-    { "col": 10, "row": 6, "templateId": "steel", "hp": 3 },
-    { "col": 11, "row": 6, "templateId": "gem", "powerupId": "BombBrick" },
-    { "col": 17, "row": 6, "templateId": "blue" }, { "col": 18, "row": 6, "templateId": "blue" },
-    { "col": 19, "row": 6, "templateId": "blue" },
-
-    { "col":  0, "row": 7, "templateId": "blue" }, { "col":  1, "row": 7, "templateId": "blue" },
-    { "col":  2, "row": 7, "templateId": "blue" }, { "col":  3, "row": 7, "templateId": "blue" },
-    { "col":  4, "row": 7, "templateId": "blue" }, { "col":  7, "row": 7, "templateId": "cyan" },
-    { "col":  8, "row": 7, "templateId": "cyan" }, { "col":  9, "row": 7, "templateId": "cyan" },
-    { "col": 10, "row": 7, "templateId": "cyan" }, { "col": 11, "row": 7, "templateId": "cyan" },
-    { "col": 12, "row": 7, "templateId": "cyan" },
-    { "col": 15, "row": 7, "templateId": "blue" }, { "col": 16, "row": 7, "templateId": "blue" },
-    { "col": 17, "row": 7, "templateId": "blue" }, { "col": 18, "row": 7, "templateId": "blue" },
-    { "col": 19, "row": 7, "templateId": "blue" },
-
-    { "col":  3, "row": 8, "templateId": "blue" }, { "col":  4, "row": 8, "templateId": "blue" },
-    { "col":  5, "row": 8, "templateId": "cyan" }, { "col":  6, "row": 8, "templateId": "cyan" },
-    { "col":  7, "row": 8, "templateId": "cyan" }, { "col":  8, "row": 8, "templateId": "cyan" },
-    { "col":  9, "row": 8, "templateId": "cyan" }, { "col": 10, "row": 8, "templateId": "cyan" },
-    { "col": 11, "row": 8, "templateId": "cyan" }, { "col": 12, "row": 8, "templateId": "cyan" },
-    { "col": 13, "row": 8, "templateId": "cyan" }, { "col": 14, "row": 8, "templateId": "cyan" },
-    { "col": 15, "row": 8, "templateId": "blue" }, { "col": 16, "row": 8, "templateId": "blue" },
-
-    { "col":  4, "row": 9, "templateId": "blue" }, { "col":  5, "row": 9, "templateId": "blue" },
-    { "col": 14, "row": 9, "templateId": "blue" }, { "col": 15, "row": 9, "templateId": "blue" },
-
-    { "col":  6, "row": 10, "templateId": "blue" }, { "col":  7, "row": 10, "templateId": "blue" },
-    { "col":  8, "row": 10, "templateId": "blue" }, { "col":  9, "row": 10, "templateId": "blue" },
-    { "col": 10, "row": 10, "templateId": "blue" }, { "col": 11, "row": 10, "templateId": "blue" },
-    { "col": 12, "row": 10, "templateId": "blue" }, { "col": 13, "row": 10, "templateId": "blue" }
+    {
+      "col": 5,
+      "row": 0,
+      "templateId": "cyan"
+    },
+    {
+      "col": 6,
+      "row": 0,
+      "templateId": "cyan"
+    },
+    {
+      "col": 5,
+      "row": 1,
+      "templateId": "cyan"
+    },
+    {
+      "col": 6,
+      "row": 1,
+      "templateId": "cyan"
+    },
+    {
+      "col": 5,
+      "row": 2,
+      "templateId": "cyan"
+    },
+    {
+      "col": 6,
+      "row": 2,
+      "templateId": "cyan"
+    },
+    {
+      "col": 5,
+      "row": 3,
+      "templateId": "cyan"
+    },
+    {
+      "col": 6,
+      "row": 3,
+      "templateId": "cyan"
+    },
+    {
+      "col": 5,
+      "row": 4,
+      "templateId": "cyan"
+    },
+    {
+      "col": 6,
+      "row": 4,
+      "templateId": "cyan"
+    },
+    {
+      "col": 5,
+      "row": 5,
+      "templateId": "cyan"
+    },
+    {
+      "col": 6,
+      "row": 5,
+      "templateId": "cyan"
+    },
+    {
+      "col": 5,
+      "row": 6,
+      "templateId": "cyan"
+    },
+    {
+      "col": 6,
+      "row": 6,
+      "templateId": "cyan"
+    },
+    {
+      "col": 5,
+      "row": 7,
+      "templateId": "cyan"
+    },
+    {
+      "col": 6,
+      "row": 7,
+      "templateId": "cyan"
+    },
+    {
+      "col": 0,
+      "row": 3,
+      "templateId": "cyan"
+    },
+    {
+      "col": 0,
+      "row": 4,
+      "templateId": "cyan"
+    },
+    {
+      "col": 1,
+      "row": 3,
+      "templateId": "cyan"
+    },
+    {
+      "col": 1,
+      "row": 4,
+      "templateId": "cyan"
+    },
+    {
+      "col": 2,
+      "row": 3,
+      "templateId": "cyan"
+    },
+    {
+      "col": 2,
+      "row": 4,
+      "templateId": "cyan"
+    },
+    {
+      "col": 3,
+      "row": 3,
+      "templateId": "cyan"
+    },
+    {
+      "col": 3,
+      "row": 4,
+      "templateId": "cyan"
+    },
+    {
+      "col": 4,
+      "row": 3,
+      "templateId": "cyan"
+    },
+    {
+      "col": 4,
+      "row": 4,
+      "templateId": "cyan"
+    },
+    {
+      "col": 7,
+      "row": 3,
+      "templateId": "cyan"
+    },
+    {
+      "col": 7,
+      "row": 4,
+      "templateId": "cyan"
+    },
+    {
+      "col": 8,
+      "row": 3,
+      "templateId": "cyan"
+    },
+    {
+      "col": 8,
+      "row": 4,
+      "templateId": "cyan"
+    },
+    {
+      "col": 9,
+      "row": 3,
+      "templateId": "cyan"
+    },
+    {
+      "col": 9,
+      "row": 4,
+      "templateId": "cyan"
+    },
+    {
+      "col": 10,
+      "row": 3,
+      "templateId": "cyan"
+    },
+    {
+      "col": 10,
+      "row": 4,
+      "templateId": "cyan"
+    },
+    {
+      "col": 11,
+      "row": 3,
+      "templateId": "cyan"
+    },
+    {
+      "col": 11,
+      "row": 4,
+      "templateId": "cyan"
+    },
+    {
+      "col": 2,
+      "row": 1,
+      "templateId": "blue"
+    },
+    {
+      "col": 3,
+      "row": 2,
+      "templateId": "blue"
+    },
+    {
+      "col": 4,
+      "row": 3,
+      "templateId": "blue"
+    },
+    {
+      "col": 3,
+      "row": 4,
+      "templateId": "blue"
+    },
+    {
+      "col": 2,
+      "row": 5,
+      "templateId": "blue"
+    },
+    {
+      "col": 9,
+      "row": 1,
+      "templateId": "blue"
+    },
+    {
+      "col": 8,
+      "row": 2,
+      "templateId": "blue"
+    },
+    {
+      "col": 7,
+      "row": 3,
+      "templateId": "blue"
+    },
+    {
+      "col": 8,
+      "row": 4,
+      "templateId": "blue"
+    },
+    {
+      "col": 9,
+      "row": 5,
+      "templateId": "blue"
+    }
   ]
 }

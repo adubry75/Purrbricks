@@ -158,6 +158,13 @@ public class LevelLoader : MonoBehaviour
             if (!string.IsNullOrEmpty(entry.powerupId))
                 brick.SetPowerupId(entry.powerupId);
 
+            // Attach movement component for animated bricks
+            if (entry.movement != null)
+            {
+                var mover = brick.gameObject.AddComponent<BrickMover>();
+                mover.Init(entry.movement);
+            }
+
             _spawnedBricks.Add(brick.gameObject);
 
             if (!indestructible) spawned++;
