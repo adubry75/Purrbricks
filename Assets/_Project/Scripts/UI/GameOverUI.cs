@@ -186,6 +186,9 @@ public class GameOverUI : MonoBehaviour
             HighScoreManager.Instance.AddScore(name, _finalScore);
         }
 
+        // Always submit to Steam global board; KeepBest ensures lower scores don't overwrite
+        SteamLeaderboardManager.Instance?.SubmitScore("Purrbricks_HighScores", _finalScore);
+
         GameManager.Instance?.ShowHighScoresAfterGameOver();
     }
 

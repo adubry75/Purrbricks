@@ -275,6 +275,13 @@ public static class PurrbricksSetup
             Debug.Log("Added HighScoresUI.");
         }
 
+        var steamLbMgrGO = EnsureGO("SteamLeaderboardManager");
+        if (steamLbMgrGO.GetComponent<SteamLeaderboardManager>() == null)
+        {
+            steamLbMgrGO.AddComponent<SteamLeaderboardManager>();
+            Debug.Log("Added SteamLeaderboardManager.");
+        }
+
         // ── 12. Main menu button sprites + ball/paddle sprites ───────────────
         // Refresh asset database so newly-added Art files are recognized
         AssetDatabase.Refresh();

@@ -198,6 +198,10 @@ public class VictoryUI : MonoBehaviour
         _currentLevelId    = levelId;
         _scoreSubmitted    = false;
 
+        // Submit to Steam per-level leaderboard immediately (KeepBest — no name needed)
+        if (levelScore > 0 && !string.IsNullOrEmpty(levelId))
+            SteamLeaderboardManager.Instance?.SubmitScore("Purrbricks_" + levelId, levelScore);
+
         gameObject.SetActive(true);
 
         if (_levelScoreText != null) _levelScoreText.text = $"Level Score:  {levelScore:N0}";

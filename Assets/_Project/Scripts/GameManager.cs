@@ -5,6 +5,7 @@ public enum GameState
 {
     MainMenu,
     HighScores,
+    GlobalHighScores,
     Ready,
     Playing,
     Cleared,
@@ -40,6 +41,7 @@ public class GameManager : MonoBehaviour
     private GameOverUI _gameOverUI;
     private VictoryUI _victoryUI;
     private HighScoresUI _highScoresUI;
+    private SteamHighScoreScreen _steamHighScoreScreen;
 
     private int _currentLevelIndex = 0;
     private Coroutine _advanceRoutine;
@@ -85,12 +87,25 @@ public class GameManager : MonoBehaviour
         _gameOverUI = FindFirstObjectByType<GameOverUI>(FindObjectsInactive.Include);
         _victoryUI = FindFirstObjectByType<VictoryUI>(FindObjectsInactive.Include);
         _highScoresUI = FindFirstObjectByType<HighScoresUI>(FindObjectsInactive.Include);
+        _steamHighScoreScreen = FindFirstObjectByType<SteamHighScoreScreen>(FindObjectsInactive.Include);
 
         if (_mainMenuUI == null) Debug.LogError("MainMenuUI not found! Run Purrbricks > Setup Scene.");
         if (_gameOverUI == null) Debug.LogError("GameOverUI not found! Run Purrbricks > Setup Scene.");
         if (_victoryUI == null) Debug.LogError("VictoryUI not found! Run Purrbricks > Setup Scene.");
         if (_highScoresUI == null) Debug.LogError("HighScoresUI not found! Run Purrbricks > Setup Scene.");
+        if (_steamHighScoreScreen == null) Debug.LogError("SteamHighScoreScreen not found! Run Purrbricks > Setup Scene.");
+
     }
+
+    private void RefreshUIRefsIfMissing()
+    {
+        // Only re-find if something is missing or has been destroyed
+        if (_mainMenuUI == null || _gameOverUI == null || _victoryUI == null || _highScoresUI == null || _steamHighScoreScreen == null)
+        {
+            FindOrCreateUIScreens();
+        }
+    }
+
 
     private void Start()
     {
@@ -232,6 +247,7 @@ public class GameManager : MonoBehaviour
         _gameOverUI?.Hide();
         _victoryUI?.Hide();
         _highScoresUI?.Hide();
+        EnsureSteamHighScoreScreen()?.Hide();
         _mainMenuUI?.Show();
 
         LoadDemoLevel();
@@ -244,9 +260,40 @@ public class GameManager : MonoBehaviour
         _paddle?.SetDemoMode(true);
         _mainMenuUI?.Hide();
         _highScoresUI?.Show();
+        EnsureSteamHighScoreScreen()?.Hide();
 
         LoadDemoLevel();
         SetState(GameState.HighScores);
+    }
+
+    public void ShowSteamLeaderboard()
+    {
+        _isDemoMode = true;
+        _paddle?.SetDemoMode(true);
+        _mainMenuUI?.Hide();
+        _gameOverUI?.Hide();
+        _victoryUI?.Hide();
+        EnsureSteamHighScoreScreen()?.Hide();
+        _highScoresUI?.ShowGlobalTab();
+
+        LoadDemoLevel();
+        SetState(GameState.GlobalHighScores);
+    }
+
+    private SteamHighScoreScreen EnsureSteamHighScoreScreen()
+    {
+        if (_steamHighScoreScreen != null)
+        {
+            return _steamHighScoreScreen;
+        }
+
+        _steamHighScoreScreen = FindFirstObjectByType<SteamHighScoreScreen>(FindObjectsInactive.Include);
+        if (_steamHighScoreScreen == null)
+        {
+            Debug.LogWarning("GameManager: SteamHighScoreScreen instance could not be found.");
+        }
+
+        return _steamHighScoreScreen;
     }
 
     /// <summary>Called by GameOverUI after name is submitted — shows high scores without changing music.</summary>
@@ -254,6 +301,7 @@ public class GameManager : MonoBehaviour
     {
         _gameOverUI?.Hide();
         _highScoresUI?.Show();
+        EnsureSteamHighScoreScreen()?.Hide();
         // Intentionally no music change — game over track keeps playing
     }
 
@@ -341,6 +389,9 @@ public class GameManager : MonoBehaviour
 
         _levelLoader.LoadLevel(_levelIds[_currentLevelIndex]);
 
+        RefreshUIRefsIfMissing();
+
+
         // Reset per-level score stats
         _levelStartScore = _score;
         _levelBestCombo  = 0;
@@ -370,6 +421,9 @@ public class GameManager : MonoBehaviour
         if (_levelIds == null || _levelIds.Length == 0) return;
 
         _levelLoader?.LoadLevel(_levelIds[0]); // always load first level for demo
+
+        RefreshUIRefsIfMissing();
+
         _ball?.ResetToPaddle();
         _paddle?.ResetPosition();
     }
@@ -395,6 +449,12 @@ public class GameManager : MonoBehaviour
                 _hud?.gameObject.SetActive(false);
                 SfxPlayer.Instance?.MuteAll(true);
                 // Menu music continues — no change needed
+                break;
+
+            case GameState.GlobalHighScores:
+                SetCursorMenuMode();
+                _hud?.gameObject.SetActive(false);
+                SfxPlayer.Instance?.MuteAll(true);
                 break;
 
             case GameState.Ready:

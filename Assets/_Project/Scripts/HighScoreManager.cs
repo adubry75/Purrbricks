@@ -16,7 +16,7 @@ public class HighScoreManager : MonoBehaviour
     private const string SAVE_KEY        = "Purrbricks_HighScores";
     private const string LEVEL_SCORES_KEY = "Purrbricks_LevelScores";
     private const int    MAX_SCORES       = 10;
-    private const int    MAX_LEVEL_SCORES = 3;
+    private const int    MAX_LEVEL_SCORES = 10;
 
     private List<ScoreEntry>                    _scores      = new List<ScoreEntry>();
     private Dictionary<string, List<ScoreEntry>> _levelScores = new Dictionary<string, List<ScoreEntry>>();
