@@ -54,9 +54,10 @@ public class GameManager : MonoBehaviour
     private bool _scoreFrenzyActive;
 
     // ── Per-level score stats (reset each LoadLevel) ─────────────────────────
-    private int _levelStartScore;
-    private int _levelBestCombo;
-    private int _levelComboBonus;   // accumulated bonus above base from combos
+    private int   _levelStartScore;
+    private int   _levelBestCombo;
+    private int   _levelComboBonus;   // accumulated bonus above base from combos
+    private float _levelStartTime;    // realtime seconds when the level was loaded
 
     /// <summary>Current game state — readable by other scripts (e.g. BallController).</summary>
     public GameState State => _state;
@@ -232,6 +233,8 @@ public class GameManager : MonoBehaviour
         _hud?.SetLives(_lives);
         _hud?.SetCombo(_combo);
 
+        AchievementManager.Instance?.OnGameStarted();
+
         LoadLevel(_currentLevelIndex);
         MusicPlayer.Instance?.PlayGameplay(0);
         SetState(GameState.Ready);
@@ -397,6 +400,9 @@ public class GameManager : MonoBehaviour
         _levelBestCombo  = 0;
         _levelComboBonus = 0;
 
+        _levelStartTime = Time.realtimeSinceStartup;
+        AchievementManager.Instance?.OnLevelStarted(_currentLevelIndex, _lives);
+
         // Reset powerups between levels
         PowerupManager.Instance?.ResetAll();
 
@@ -502,6 +508,14 @@ public class GameManager : MonoBehaviour
                     ? _levelIds[_currentLevelIndex] : "";
                 _victoryUI?.ShowVictory(_score - _levelStartScore, _levelComboBonus, _levelBestCombo, levelId);
                 MusicPlayer.Instance?.PlayLevelFinish();
+
+                float levelTime = Time.realtimeSinceStartup - _levelStartTime;
+                bool invis   = PowerupManager.Instance?.IsActive(PowerupType.InvisiBall)    ?? false;
+                bool tiny    = PowerupManager.Instance?.IsActive(PowerupType.TinyBall)      ?? false;
+                bool drunk   = PowerupManager.Instance?.IsActive(PowerupType.DrunkenPaddle) ?? false;
+                AchievementManager.Instance?.OnLevelCompleted(
+                    _currentLevelIndex, levelTime, _lives,
+                    invisiBallActive: invis, tinyBallActive: tiny, drunkenPaddleActive: drunk);
                 break;
             }
         }
@@ -581,6 +595,9 @@ public class GameManager : MonoBehaviour
         SfxPlayer.Instance?.PlayLifeLost();
         ScreenEffects.Instance?.FlashRed();
         CameraShake.Instance?.Shake(0.30f, 0.55f);
+
+        AchievementManager.Instance?.OnLifeLostOnLevel(_currentLevelIndex);
+
         _lives--;
         _hud?.SetLives(_lives);
 
@@ -588,6 +605,7 @@ public class GameManager : MonoBehaviour
 
         if (_lives <= 0)
         {
+            AchievementManager.Instance?.OnGameOver(_score, _currentLevelIndex);
             SetState(GameState.GameOver);
             return;
         }
@@ -654,6 +672,8 @@ public class GameManager : MonoBehaviour
         _hud?.SetScore(_score);
         _comboTimer = _comboResetSeconds;
 
+        AchievementManager.Instance?.OnScoreChanged(_score);
+
         return points;
     }
 
@@ -663,6 +683,8 @@ public class GameManager : MonoBehaviour
         if (_combo > _levelBestCombo) _levelBestCombo = _combo;
         _hud?.SetCombo(_combo);
         _comboTimer = _comboResetSeconds;
+
+        AchievementManager.Instance?.OnComboChanged(_combo, _scoreFrenzyActive);
 
         // Show combo feedback at milestones
         if (_combo == 2 || _combo % 5 == 0)
@@ -698,6 +720,8 @@ public class GameManager : MonoBehaviour
             if (!b.IsIndestructible) targets.Add(b);
 
         if (targets.Count == 0) { _furyRoutine = null; yield break; }
+
+        AchievementManager.Instance?.OnFuryStrikeStarted(allBalls.Length);
 
         targets.Sort((a, b2) =>
         {
@@ -780,6 +804,7 @@ public class GameManager : MonoBehaviour
 
         // Final big shake as the dust settles
         CameraShake.Instance?.Shake(0.45f, 0.55f);
+        AchievementManager.Instance?.OnFuryStrikeFinished();
         yield return new WaitForSecondsRealtime(0.22f);
 
         // Clean up laser beams

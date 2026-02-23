@@ -175,6 +175,11 @@ public class BallController : MonoBehaviour
         if (_isInvisiBall)
             _invisTimer += Time.deltaTime;
 
+        // Long Haul achievement: track how long the PRIMARY ball has been live
+        var gm2 = GameManager.Instance;
+        if (gm2 != null && gm2.IsPrimaryBall(this) && gm2.State == GameState.Playing)
+            AchievementManager.Instance?.OnBallAliveUpdate(Time.deltaTime);
+
         UpdateBallColor();
     }
 

@@ -282,6 +282,13 @@ public static class PurrbricksSetup
             Debug.Log("Added SteamLeaderboardManager.");
         }
 
+        var achMgrGO = EnsureGO("AchievementManager");
+        if (achMgrGO.GetComponent<AchievementManager>() == null)
+        {
+            achMgrGO.AddComponent<AchievementManager>();
+            Debug.Log("Added AchievementManager.");
+        }
+
         // ── 12. Main menu button sprites + ball/paddle sprites ───────────────
         // Refresh asset database so newly-added Art files are recognized
         AssetDatabase.Refresh();

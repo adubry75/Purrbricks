@@ -77,8 +77,11 @@ public class Brick : MonoBehaviour
     {
         if (_isIndestructible || _isDead) return;
         _hitPoints = 1;
+        _isFuryKill = true;
         Hit();
     }
+
+    private bool _isFuryKill;
 
     // -------- Called by BallController on collision --------
 
@@ -107,6 +110,14 @@ public class Brick : MonoBehaviour
 
         // ── Brick destroyed ──────────────────────────────────────────────────
         _isDead = true; // prevent any further hits this frame
+
+        // Achievement tracking
+        AchievementManager.Instance?.OnBrickDestroyed();
+        if (_isFuryKill)
+            AchievementManager.Instance?.OnFuryStrikeBrickDestroyed();
+        // Gem brick detection (10,000-point bricks use templateId "gem")
+        if (_points >= 10000)
+            AchievementManager.Instance?.OnGemBrickDestroyed();
 
         // If this is the last destructible brick, trigger slow-mo + zoom NOW —
         // right as the fatal hit lands, so the destruction plays in slow motion.

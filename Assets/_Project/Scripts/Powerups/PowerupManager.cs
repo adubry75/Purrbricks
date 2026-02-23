@@ -60,6 +60,7 @@ public class PowerupManager : MonoBehaviour
         if (changed)
         {
             UpdateBadVignette();
+            NotifyBadPowerupCount();
             OnPowerupsChanged?.Invoke();
         }
     }
@@ -71,6 +72,7 @@ public class PowerupManager : MonoBehaviour
         {
             GameManager.Instance?.AddLife();
             PowerupNotification.Instance?.ShowPowerup(type);
+            AchievementManager.Instance?.OnExtraLifePickup();
             return;
         }
 
@@ -78,6 +80,10 @@ public class PowerupManager : MonoBehaviour
         {
             SpawnMultiBalls();
             PowerupNotification.Instance?.ShowPowerup(type);
+            // Ball count check is deferred — SpawnClone calls GameManager.RegisterClone;
+            // we check after spawn via a one-frame delayed count.
+            // Instead we notify after spawning so the count is up to date.
+            NotifyBallCount();
             return;
         }
 
@@ -96,6 +102,7 @@ public class PowerupManager : MonoBehaviour
 
         // Bad powerup vignette
         UpdateBadVignette();
+        NotifyBadPowerupCount();
 
         OnPowerupsChanged?.Invoke();
     }
@@ -129,6 +136,21 @@ public class PowerupManager : MonoBehaviour
             if ((int)kvp.Key >= 11) { anyBad = true; break; }
         }
         ScreenEffects.Instance?.SetBadVignette(anyBad);
+    }
+
+    private void NotifyBadPowerupCount()
+    {
+        int count = 0;
+        foreach (var kvp in _timers)
+            if ((int)kvp.Key >= 11) count++;
+        AchievementManager.Instance?.OnBadPowerupCountChanged(count);
+    }
+
+    private void NotifyBallCount()
+    {
+        // Count all active BallControllers in the scene
+        int count = FindObjectsByType<BallController>(FindObjectsSortMode.None).Length;
+        AchievementManager.Instance?.OnBallCountChanged(count);
     }
 
     // ── Apply / Remove effects ────────────────────────────────────────────────
