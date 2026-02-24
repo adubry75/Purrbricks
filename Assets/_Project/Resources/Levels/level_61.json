@@ -1,0 +1,484 @@
+{
+  "id": "level_61",
+  "displayName": "Head-On",
+  "grid": {
+    "cols": 12,
+    "rows": 8,
+    "brickWidth": 1.35,
+    "brickHeight": 0.45,
+    "gapX": 0.08,
+    "gapY": 0.16
+  },
+  "bricks": [
+    {
+      "col": 0,
+      "row": 0,
+      "templateId": "blue",
+      "movement": {
+        "type": "horizontal",
+        "amplitude": 2.0,
+        "period": 2.5,
+        "phaseOffset": 0.0
+      }
+    },
+    {
+      "col": 1,
+      "row": 0,
+      "templateId": "blue",
+      "movement": {
+        "type": "horizontal",
+        "amplitude": 2.0,
+        "period": 2.5,
+        "phaseOffset": 0.0
+      }
+    },
+    {
+      "col": 2,
+      "row": 0,
+      "templateId": "blue",
+      "movement": {
+        "type": "horizontal",
+        "amplitude": 2.0,
+        "period": 2.5,
+        "phaseOffset": 0.0
+      }
+    },
+    {
+      "col": 3,
+      "row": 0,
+      "templateId": "blue",
+      "movement": {
+        "type": "horizontal",
+        "amplitude": 2.0,
+        "period": 2.5,
+        "phaseOffset": 0.0
+      }
+    },
+    {
+      "col": 4,
+      "row": 0,
+      "templateId": "blue",
+      "movement": {
+        "type": "horizontal",
+        "amplitude": 2.0,
+        "period": 2.5,
+        "phaseOffset": 0.0
+      }
+    },
+    {
+      "col": 7,
+      "row": 0,
+      "templateId": "red",
+      "movement": {
+        "type": "horizontal",
+        "amplitude": 2.0,
+        "period": 2.5,
+        "phaseOffset": 3.1416
+      }
+    },
+    {
+      "col": 8,
+      "row": 0,
+      "templateId": "red",
+      "movement": {
+        "type": "horizontal",
+        "amplitude": 2.0,
+        "period": 2.5,
+        "phaseOffset": 3.1416
+      }
+    },
+    {
+      "col": 9,
+      "row": 0,
+      "templateId": "red",
+      "movement": {
+        "type": "horizontal",
+        "amplitude": 2.0,
+        "period": 2.5,
+        "phaseOffset": 3.1416
+      }
+    },
+    {
+      "col": 10,
+      "row": 0,
+      "templateId": "red",
+      "movement": {
+        "type": "horizontal",
+        "amplitude": 2.0,
+        "period": 2.5,
+        "phaseOffset": 3.1416
+      }
+    },
+    {
+      "col": 11,
+      "row": 0,
+      "templateId": "red",
+      "movement": {
+        "type": "horizontal",
+        "amplitude": 2.0,
+        "period": 2.5,
+        "phaseOffset": 3.1416
+      }
+    },
+    {
+      "col": 0,
+      "row": 2,
+      "templateId": "blue",
+      "movement": {
+        "type": "horizontal",
+        "amplitude": 2.0,
+        "period": 2.5,
+        "phaseOffset": 0.7854
+      }
+    },
+    {
+      "col": 1,
+      "row": 2,
+      "templateId": "blue",
+      "movement": {
+        "type": "horizontal",
+        "amplitude": 2.0,
+        "period": 2.5,
+        "phaseOffset": 0.7854
+      }
+    },
+    {
+      "col": 2,
+      "row": 2,
+      "templateId": "blue",
+      "movement": {
+        "type": "horizontal",
+        "amplitude": 2.0,
+        "period": 2.5,
+        "phaseOffset": 0.7854
+      }
+    },
+    {
+      "col": 3,
+      "row": 2,
+      "templateId": "blue",
+      "movement": {
+        "type": "horizontal",
+        "amplitude": 2.0,
+        "period": 2.5,
+        "phaseOffset": 0.7854
+      }
+    },
+    {
+      "col": 4,
+      "row": 2,
+      "templateId": "blue",
+      "movement": {
+        "type": "horizontal",
+        "amplitude": 2.0,
+        "period": 2.5,
+        "phaseOffset": 0.7854
+      }
+    },
+    {
+      "col": 7,
+      "row": 2,
+      "templateId": "red",
+      "movement": {
+        "type": "horizontal",
+        "amplitude": 2.0,
+        "period": 2.5,
+        "phaseOffset": 3.927
+      }
+    },
+    {
+      "col": 8,
+      "row": 2,
+      "templateId": "red",
+      "movement": {
+        "type": "horizontal",
+        "amplitude": 2.0,
+        "period": 2.5,
+        "phaseOffset": 3.927
+      }
+    },
+    {
+      "col": 9,
+      "row": 2,
+      "templateId": "red",
+      "movement": {
+        "type": "horizontal",
+        "amplitude": 2.0,
+        "period": 2.5,
+        "phaseOffset": 3.927
+      }
+    },
+    {
+      "col": 10,
+      "row": 2,
+      "templateId": "red",
+      "movement": {
+        "type": "horizontal",
+        "amplitude": 2.0,
+        "period": 2.5,
+        "phaseOffset": 3.927
+      }
+    },
+    {
+      "col": 11,
+      "row": 2,
+      "templateId": "red",
+      "movement": {
+        "type": "horizontal",
+        "amplitude": 2.0,
+        "period": 2.5,
+        "phaseOffset": 3.927
+      }
+    },
+    {
+      "col": 0,
+      "row": 4,
+      "templateId": "blue",
+      "movement": {
+        "type": "horizontal",
+        "amplitude": 2.0,
+        "period": 2.5,
+        "phaseOffset": 1.5708
+      }
+    },
+    {
+      "col": 1,
+      "row": 4,
+      "templateId": "blue",
+      "movement": {
+        "type": "horizontal",
+        "amplitude": 2.0,
+        "period": 2.5,
+        "phaseOffset": 1.5708
+      }
+    },
+    {
+      "col": 2,
+      "row": 4,
+      "templateId": "blue",
+      "movement": {
+        "type": "horizontal",
+        "amplitude": 2.0,
+        "period": 2.5,
+        "phaseOffset": 1.5708
+      }
+    },
+    {
+      "col": 3,
+      "row": 4,
+      "templateId": "blue",
+      "movement": {
+        "type": "horizontal",
+        "amplitude": 2.0,
+        "period": 2.5,
+        "phaseOffset": 1.5708
+      }
+    },
+    {
+      "col": 4,
+      "row": 4,
+      "templateId": "blue",
+      "movement": {
+        "type": "horizontal",
+        "amplitude": 2.0,
+        "period": 2.5,
+        "phaseOffset": 1.5708
+      }
+    },
+    {
+      "col": 7,
+      "row": 4,
+      "templateId": "red",
+      "movement": {
+        "type": "horizontal",
+        "amplitude": 2.0,
+        "period": 2.5,
+        "phaseOffset": 4.7124
+      }
+    },
+    {
+      "col": 8,
+      "row": 4,
+      "templateId": "red",
+      "movement": {
+        "type": "horizontal",
+        "amplitude": 2.0,
+        "period": 2.5,
+        "phaseOffset": 4.7124
+      }
+    },
+    {
+      "col": 9,
+      "row": 4,
+      "templateId": "red",
+      "movement": {
+        "type": "horizontal",
+        "amplitude": 2.0,
+        "period": 2.5,
+        "phaseOffset": 4.7124
+      }
+    },
+    {
+      "col": 10,
+      "row": 4,
+      "templateId": "red",
+      "movement": {
+        "type": "horizontal",
+        "amplitude": 2.0,
+        "period": 2.5,
+        "phaseOffset": 4.7124
+      }
+    },
+    {
+      "col": 11,
+      "row": 4,
+      "templateId": "red",
+      "movement": {
+        "type": "horizontal",
+        "amplitude": 2.0,
+        "period": 2.5,
+        "phaseOffset": 4.7124
+      }
+    },
+    {
+      "col": 0,
+      "row": 6,
+      "templateId": "blue",
+      "movement": {
+        "type": "horizontal",
+        "amplitude": 2.0,
+        "period": 2.5,
+        "phaseOffset": 2.3562
+      }
+    },
+    {
+      "col": 1,
+      "row": 6,
+      "templateId": "blue",
+      "movement": {
+        "type": "horizontal",
+        "amplitude": 2.0,
+        "period": 2.5,
+        "phaseOffset": 2.3562
+      }
+    },
+    {
+      "col": 2,
+      "row": 6,
+      "templateId": "blue",
+      "movement": {
+        "type": "horizontal",
+        "amplitude": 2.0,
+        "period": 2.5,
+        "phaseOffset": 2.3562
+      }
+    },
+    {
+      "col": 3,
+      "row": 6,
+      "templateId": "blue",
+      "movement": {
+        "type": "horizontal",
+        "amplitude": 2.0,
+        "period": 2.5,
+        "phaseOffset": 2.3562
+      }
+    },
+    {
+      "col": 4,
+      "row": 6,
+      "templateId": "blue",
+      "movement": {
+        "type": "horizontal",
+        "amplitude": 2.0,
+        "period": 2.5,
+        "phaseOffset": 2.3562
+      }
+    },
+    {
+      "col": 7,
+      "row": 6,
+      "templateId": "red",
+      "movement": {
+        "type": "horizontal",
+        "amplitude": 2.0,
+        "period": 2.5,
+        "phaseOffset": 5.4978
+      }
+    },
+    {
+      "col": 8,
+      "row": 6,
+      "templateId": "red",
+      "movement": {
+        "type": "horizontal",
+        "amplitude": 2.0,
+        "period": 2.5,
+        "phaseOffset": 5.4978
+      }
+    },
+    {
+      "col": 9,
+      "row": 6,
+      "templateId": "red",
+      "movement": {
+        "type": "horizontal",
+        "amplitude": 2.0,
+        "period": 2.5,
+        "phaseOffset": 5.4978
+      }
+    },
+    {
+      "col": 10,
+      "row": 6,
+      "templateId": "red",
+      "movement": {
+        "type": "horizontal",
+        "amplitude": 2.0,
+        "period": 2.5,
+        "phaseOffset": 5.4978
+      }
+    },
+    {
+      "col": 11,
+      "row": 6,
+      "templateId": "red",
+      "movement": {
+        "type": "horizontal",
+        "amplitude": 2.0,
+        "period": 2.5,
+        "phaseOffset": 5.4978
+      }
+    },
+    {
+      "col": 5,
+      "row": 1,
+      "templateId": "steel"
+    },
+    {
+      "col": 6,
+      "row": 1,
+      "templateId": "steel"
+    },
+    {
+      "col": 5,
+      "row": 3,
+      "templateId": "steel"
+    },
+    {
+      "col": 6,
+      "row": 3,
+      "templateId": "steel"
+    },
+    {
+      "col": 5,
+      "row": 5,
+      "templateId": "steel"
+    },
+    {
+      "col": 6,
+      "row": 5,
+      "templateId": "steel"
+    }
+  ]
+}

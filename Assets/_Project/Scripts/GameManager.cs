@@ -37,11 +37,12 @@ public class GameManager : MonoBehaviour
     [SerializeField] private HudController _hud;
 
     [Header("UI Screens")]
-    private MainMenuUI _mainMenuUI;
-    private GameOverUI _gameOverUI;
-    private VictoryUI _victoryUI;
-    private HighScoresUI _highScoresUI;
+    private MainMenuUI       _mainMenuUI;
+    private GameOverUI       _gameOverUI;
+    private VictoryUI        _victoryUI;
+    private HighScoresUI     _highScoresUI;
     private SteamHighScoreScreen _steamHighScoreScreen;
+    private LevelCodeEntryUI _levelCodeEntryUI;
 
     private int _currentLevelIndex = 0;
     private Coroutine _advanceRoutine;
@@ -84,27 +85,28 @@ public class GameManager : MonoBehaviour
     private void FindOrCreateUIScreens()
     {
         // Include inactive objects since UI screens hide themselves in Awake()
-        _mainMenuUI = FindFirstObjectByType<MainMenuUI>(FindObjectsInactive.Include);
-        _gameOverUI = FindFirstObjectByType<GameOverUI>(FindObjectsInactive.Include);
-        _victoryUI = FindFirstObjectByType<VictoryUI>(FindObjectsInactive.Include);
-        _highScoresUI = FindFirstObjectByType<HighScoresUI>(FindObjectsInactive.Include);
+        _mainMenuUI       = FindFirstObjectByType<MainMenuUI>(FindObjectsInactive.Include);
+        _gameOverUI       = FindFirstObjectByType<GameOverUI>(FindObjectsInactive.Include);
+        _victoryUI        = FindFirstObjectByType<VictoryUI>(FindObjectsInactive.Include);
+        _highScoresUI     = FindFirstObjectByType<HighScoresUI>(FindObjectsInactive.Include);
         _steamHighScoreScreen = FindFirstObjectByType<SteamHighScoreScreen>(FindObjectsInactive.Include);
+        _levelCodeEntryUI = FindFirstObjectByType<LevelCodeEntryUI>(FindObjectsInactive.Include);
 
-        if (_mainMenuUI == null) Debug.LogError("MainMenuUI not found! Run Purrbricks > Setup Scene.");
-        if (_gameOverUI == null) Debug.LogError("GameOverUI not found! Run Purrbricks > Setup Scene.");
-        if (_victoryUI == null) Debug.LogError("VictoryUI not found! Run Purrbricks > Setup Scene.");
+        if (_mainMenuUI == null)   Debug.LogError("MainMenuUI not found! Run Purrbricks > Setup Scene.");
+        if (_gameOverUI == null)   Debug.LogError("GameOverUI not found! Run Purrbricks > Setup Scene.");
+        if (_victoryUI == null)    Debug.LogError("VictoryUI not found! Run Purrbricks > Setup Scene.");
         if (_highScoresUI == null) Debug.LogError("HighScoresUI not found! Run Purrbricks > Setup Scene.");
-        if (_steamHighScoreScreen == null) Debug.LogError("SteamHighScoreScreen not found! Run Purrbricks > Setup Scene.");
+        // LevelCodeEntryUI and SteamHighScoreScreen are optional — no error if missing
 
     }
 
     private void RefreshUIRefsIfMissing()
     {
-        // Only re-find if something is missing or has been destroyed
-        if (_mainMenuUI == null || _gameOverUI == null || _victoryUI == null || _highScoresUI == null || _steamHighScoreScreen == null)
-        {
+        if (_mainMenuUI == null || _gameOverUI == null || _victoryUI == null || _highScoresUI == null)
             FindOrCreateUIScreens();
-        }
+
+        if (_levelCodeEntryUI == null)
+            _levelCodeEntryUI = FindFirstObjectByType<LevelCodeEntryUI>(FindObjectsInactive.Include);
     }
 
 
@@ -165,6 +167,14 @@ public class GameManager : MonoBehaviour
             SetState(GameState.Paused);
         else if (_state == GameState.Paused && Input.GetKeyDown(KeyCode.Escape))
             SetState(GameState.Playing);
+
+        // G key: open level code warp dialog (Ready, Playing, or Paused)
+        if ((_state == GameState.Ready || _state == GameState.Playing || _state == GameState.Paused)
+            && Input.GetKeyDown(KeyCode.G))
+        {
+            RefreshUIRefsIfMissing();
+            _levelCodeEntryUI?.Show();
+        }
 
         // Combo timer (runs in Playing mode and demo mode)
         if (_comboTimer > 0f && (_state == GameState.Playing || _isDemoMode))
@@ -308,6 +318,29 @@ public class GameManager : MonoBehaviour
         // Intentionally no music change — game over track keeps playing
     }
 
+    /// <summary>Warps directly to a level by index (called from LevelCodeEntryUI).</summary>
+    public void WarpToLevel(int levelIndex)
+    {
+        if (_levelIds == null || levelIndex < 0 || levelIndex >= _levelIds.Length) return;
+
+        _isDemoMode = false;
+        _paddle?.SetDemoMode(false);
+        _levelCodeEntryUI?.Hide();
+        _gameOverUI?.Hide();
+        _victoryUI?.Hide();
+
+        // Reset per-level state but keep lives and cumulative score intact
+        _combo      = 0;
+        _comboTimer = 0f;
+        _scoreFrenzyActive = false;
+        _hud?.SetCombo(_combo);
+
+        PowerupManager.Instance?.ResetAll();
+
+        LoadLevel(levelIndex);
+        SetState(GameState.Ready);
+    }
+
     public void RestartGame()
     {
         _score = 0;
@@ -420,6 +453,10 @@ public class GameManager : MonoBehaviour
         // Show persistent level info (number + title) in HUD
         string levelTitle = _levelLoader?.CurrentLevel?.displayName ?? "";
         _hud?.SetLevelInfo(_currentLevelIndex + 1, levelTitle);
+
+        // Generate (or retrieve) the unique level code and show it under Lives
+        string levelCode = LevelCodeManager.Instance?.GetOrCreateCode(_currentLevelIndex) ?? "";
+        _hud?.SetLevelCode(levelCode);
     }
 
     private void LoadDemoLevel()

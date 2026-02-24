@@ -105,9 +105,9 @@ public static class PurrbricksSetup
             gmSo.FindProperty("_levelLoader").objectReferenceValue = loader;
 
             var levelIds = gmSo.FindProperty("_levelIds");
-            // Always refresh to 60 levels
-            levelIds.arraySize = 60;
-            for (int i = 0; i < 60; i++)
+            // Always refresh to 80 levels
+            levelIds.arraySize = 80;
+            for (int i = 0; i < 80; i++)
                 levelIds.GetArrayElementAtIndex(i).stringValue = $"level_{i:D2}";
             gmSo.ApplyModifiedProperties();
         }
@@ -287,6 +287,20 @@ public static class PurrbricksSetup
         {
             achMgrGO.AddComponent<AchievementManager>();
             Debug.Log("Added AchievementManager.");
+        }
+
+        var codesMgrGO = EnsureGO("LevelCodeManager");
+        if (codesMgrGO.GetComponent<LevelCodeManager>() == null)
+        {
+            codesMgrGO.AddComponent<LevelCodeManager>();
+            Debug.Log("Added LevelCodeManager.");
+        }
+
+        var codeEntryGO = EnsureGO("LevelCodeEntryUI");
+        if (codeEntryGO.GetComponent<LevelCodeEntryUI>() == null)
+        {
+            codeEntryGO.AddComponent<LevelCodeEntryUI>();
+            Debug.Log("Added LevelCodeEntryUI.");
         }
 
         // ── 12. Main menu button sprites + ball/paddle sprites ───────────────

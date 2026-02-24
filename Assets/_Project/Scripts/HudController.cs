@@ -12,6 +12,8 @@ public class HudController : MonoBehaviour
     // Persisted across SetState calls so the level name is always visible
     private string _levelInfo = "";
     private string _lastState = "";
+    private string _levelCode = "";
+    private int    _lastLives;
 
     public void SetScore(int score)
     {
@@ -20,7 +22,23 @@ public class HudController : MonoBehaviour
 
     public void SetLives(int lives)
     {
-        if (_livesText != null) _livesText.text = "Lives: " + lives;
+        _lastLives = lives;
+        RefreshLivesText();
+    }
+
+    /// <summary>Sets the level code shown under the Lives label. Pass empty string to hide.</summary>
+    public void SetLevelCode(string code)
+    {
+        _levelCode = code ?? "";
+        RefreshLivesText();
+    }
+
+    private void RefreshLivesText()
+    {
+        if (_livesText == null) return;
+        _livesText.text = string.IsNullOrEmpty(_levelCode)
+            ? $"Lives: {_lastLives}"
+            : $"Lives: {_lastLives}\n<size=70%>CODE: {_levelCode}</size>";
     }
 
     /// <summary>
