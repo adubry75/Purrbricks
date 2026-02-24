@@ -1,3 +1,4 @@
+using Steamworks;
 using System.Collections;
 using UnityEngine;
 
@@ -156,6 +157,13 @@ public class GameManager : MonoBehaviour
         // Debug hotkey: clear all but 1 brick
         if (Input.GetKeyDown(KeyCode.K) && _state == GameState.Playing)
             ClearAllButOneBrick();
+
+        // For testing achievements.
+        if (Input.GetKeyDown(KeyCode.Z) && _state == GameState.Playing)
+        {
+            SteamUserStats.ClearAchievement("ACH_FIRST_PAWS");
+            SteamUserStats.StoreStats();
+        }
 
         if (_state == GameState.Playing && Input.GetKeyDown(KeyCode.Backslash))
             DebugDropPrimaryBallIntoDeathZone();

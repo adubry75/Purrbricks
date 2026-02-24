@@ -64,6 +64,8 @@ public class AchievementManager : MonoBehaviour
     // PlayerPrefs key prefix for per-level death counts
     private const string PrefixLevelDeaths = "lb_deaths_";
 
+    private const int TotalLevels = 80;
+
     // ── Session state ──────────────────────────────────────────────────────────
 
     private int   _sessionExtraLives;         // extra lives collected this run
@@ -115,14 +117,14 @@ public class AchievementManager : MonoBehaviour
     {
         // ── Progression ─────────────────────────────────────────────────────
         Unlock(ID.FirstPaws);
-
+        
         // Human-facing "levels completed" = levelIndex + 1 (0-based index)
         int humanLevel = levelIndex + 1;
         if (humanLevel >= 10) Unlock(ID.Burglar);
         if (humanLevel >= 25) Unlock(ID.ClawMarks);
         if (humanLevel >= 30) Unlock(ID.Halfway);
         if (humanLevel >= 60) Unlock(ID.Meow);
-        if (levelIndex == 59) Unlock(ID.Purrfect); // final level
+        if (levelIndex == (TotalLevels - 1)) Unlock(ID.Purrfect); // final level
 
         // ── Speed Runner ─────────────────────────────────────────────────────
         if (levelTime <= 30f) Unlock(ID.SpeedRunner);
