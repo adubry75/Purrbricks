@@ -1,3 +1,4 @@
+using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.UI;
@@ -23,15 +24,21 @@ public class MainMenuUI : MonoBehaviour
 
     private void BuildUI()
     {
-        _canvas = gameObject.AddComponent<Canvas>();
+        _canvas = GetComponent<Canvas>();
+        if (_canvas == null)
+            _canvas = gameObject.AddComponent<Canvas>();
+
         _canvas.renderMode   = RenderMode.ScreenSpaceOverlay;
         _canvas.sortingOrder = 100;
 
-        var scaler = gameObject.AddComponent<CanvasScaler>();
+        var scaler = GetComponent<CanvasScaler>();
+        if (scaler == null)
+            scaler = gameObject.AddComponent<CanvasScaler>();
         scaler.uiScaleMode         = CanvasScaler.ScaleMode.ScaleWithScreenSize;
         scaler.referenceResolution = new Vector2(1920, 1080);
 
-        gameObject.AddComponent<GraphicRaycaster>();
+        if (GetComponent<GraphicRaycaster>() == null)
+            gameObject.AddComponent<GraphicRaycaster>();
 
         // Semi-transparent backdrop offset left (avoids powerup HUD column)
         _panel = new GameObject("Panel");

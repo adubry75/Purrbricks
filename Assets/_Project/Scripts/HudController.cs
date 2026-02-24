@@ -8,6 +8,7 @@ public class HudController : MonoBehaviour
     [SerializeField] private TMP_Text _stateText;
     [SerializeField] private TMP_Text _centerMessage;
     [SerializeField] private TMP_Text _comboText;
+    [SerializeField] private TMP_Text _levelText;
 
     // Persisted across SetState calls so the level name is always visible
     private string _levelInfo = "";
@@ -43,14 +44,13 @@ public class HudController : MonoBehaviour
 
     /// <summary>
     /// Stores the current level number and title so every subsequent
-    /// SetState call shows it persistently in the state text area.
     /// </summary>
     public void SetLevelInfo(int levelNumber, string levelTitle)
     {
         _levelInfo = string.IsNullOrEmpty(levelTitle)
             ? $"Level {levelNumber}"
             : $"Level {levelNumber}: {levelTitle}";
-        RefreshStateText();
+        _levelText.text = _levelInfo;
     }
 
     public void SetState(string state)
@@ -66,9 +66,9 @@ public class HudController : MonoBehaviour
         if (string.IsNullOrEmpty(_levelInfo))
             _stateText.text = _lastState;
         else if (string.IsNullOrEmpty(_lastState))
-            _stateText.text = _levelInfo;
+            _stateText.text = "UNKNOWN";
         else
-            _stateText.text = $"{_levelInfo}";
+            _stateText.text = $"UNKNOWN";
     }
 
     public void ShowCenter(string message)

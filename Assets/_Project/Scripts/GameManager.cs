@@ -5,7 +5,6 @@ public enum GameState
 {
     MainMenu,
     HighScores,
-    GlobalHighScores,
     Ready,
     Playing,
     Cleared,
@@ -279,20 +278,7 @@ public class GameManager : MonoBehaviour
         SetState(GameState.HighScores);
     }
 
-    public void ShowSteamLeaderboard()
-    {
-        _isDemoMode = true;
-        _paddle?.SetDemoMode(true);
-        _mainMenuUI?.Hide();
-        _gameOverUI?.Hide();
-        _victoryUI?.Hide();
-        EnsureSteamHighScoreScreen()?.Hide();
-        _highScoresUI?.ShowGlobalTab();
-
-        LoadDemoLevel();
-        SetState(GameState.GlobalHighScores);
-    }
-
+    
     private SteamHighScoreScreen EnsureSteamHighScoreScreen()
     {
         if (_steamHighScoreScreen != null)
@@ -478,6 +464,10 @@ public class GameManager : MonoBehaviour
         _state = newState;
         Time.timeScale = 1f;
 
+        _hud.SetState(_state.ToString());
+        Debug.Log($"Setting GameState to '{newState.ToString()}'");
+
+
         switch (_state)
         {
             case GameState.MainMenu:
@@ -485,19 +475,15 @@ public class GameManager : MonoBehaviour
                 _hud?.gameObject.SetActive(false);
                 SfxPlayer.Instance?.MuteAll(true);
                 MusicPlayer.Instance?.PlayMenu();
+                EnsureSteamHighScoreScreen()?.Hide();
                 break;
 
             case GameState.HighScores:
                 SetCursorMenuMode();
                 _hud?.gameObject.SetActive(false);
                 SfxPlayer.Instance?.MuteAll(true);
+                EnsureSteamHighScoreScreen()?.Hide();
                 // Menu music continues — no change needed
-                break;
-
-            case GameState.GlobalHighScores:
-                SetCursorMenuMode();
-                _hud?.gameObject.SetActive(false);
-                SfxPlayer.Instance?.MuteAll(true);
                 break;
 
             case GameState.Ready:
@@ -506,6 +492,7 @@ public class GameManager : MonoBehaviour
                 _hud?.SetState("Ready");
                 _hud?.ShowCenter("Hold Space to Aim\r\nRelease to Launch");
                 SfxPlayer.Instance?.MuteAll(false);
+                EnsureSteamHighScoreScreen()?.Hide();
                 break;
 
             case GameState.Playing:

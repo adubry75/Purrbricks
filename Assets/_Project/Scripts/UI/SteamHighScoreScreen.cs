@@ -46,8 +46,8 @@ public class SteamHighScoreScreen : MonoBehaviour
     {
         Debug.Log($"Show() called on {name} (instance {GetInstanceID()})");
 
-        if (canvas != null)
-            canvas.enabled = true;
+        //if (canvas != null)
+            //canvas.enabled = true;
 
         // If you have a root panel, enable that too
 
@@ -61,9 +61,9 @@ public class SteamHighScoreScreen : MonoBehaviour
     {
         Debug.Log("SteamHighScoreScreen: hiding leaderboard overlay.");
         gameObject.SetActive(false);
-        if (canvas != null)
-        {
-            canvas.enabled = false;
-        }
+        //if (canvas != null)
+        //{
+            //canvas.enabled = false;
+        //}
     }
 }
