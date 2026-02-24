@@ -789,7 +789,7 @@ public class GameManager : MonoBehaviour
         // Dramatic intro: flash, shake, notification, audio
         ScreenEffects.Instance?.FlashWhite(0.90f, 0.70f);
         CameraShake.Instance?.Shake(0.85f, 1.20f);
-        PowerupNotification.Instance?.Show("FURY STRIKE!", new Color(1f, 0.85f, 0.05f), isSpecial: true);
+        PowerupNotification.Instance?.Show("PURRY FURY STRIKE!", new Color(1f, 0.85f, 0.05f), isSpecial: true);
         SfxPlayer.Instance?.PlayFuryStrike();
 
         // Gold burst at each ball position

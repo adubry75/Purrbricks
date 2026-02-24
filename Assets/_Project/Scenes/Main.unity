@@ -1474,7 +1474,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &489783679
 Transform:
   m_ObjectHideFlags: 0
@@ -5341,9 +5341,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2321e605a15b49041bbc5b637c30239c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::MainMenuUI
-  _playSprite: {fileID: 1901785496931978614, guid: e8ccf9ee4fc1d484994dbfd820b627c3, type: 3}
-  _highScoresSprite: {fileID: 3786401663543500468, guid: f2c70f9834fc92e40a471190c2779052, type: 3}
-  _quitSprite: {fileID: 7915122063046066817, guid: 9d7d2b5805c6e144ab386c6ee5c63405, type: 3}
+  _titleGfx: {fileID: 21300000, guid: fe194171ed7865e49aa1cc38e6d8931c, type: 3}
+  _playSprite: {fileID: 21300000, guid: e8ccf9ee4fc1d484994dbfd820b627c3, type: 3}
+  _highScoresSprite: {fileID: 21300000, guid: f2c70f9834fc92e40a471190c2779052, type: 3}
+  _quitSprite: {fileID: 21300000, guid: 9d7d2b5805c6e144ab386c6ee5c63405, type: 3}
 --- !u!4 &1606839530
 Transform:
   m_ObjectHideFlags: 0

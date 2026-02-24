@@ -1,10 +1,22 @@
 fileFormatVersion: 2
-guid: f2c70f9834fc92e40a471190c2779052
+guid: fe194171ed7865e49aa1cc38e6d8931c
 TextureImporter:
   internalIDToNameTable:
   - first:
-      213: 3786401663543500468
-    second: highscores-button_0
+      213: -944750133377237502
+    second: purrbricks-title_0
+  - first:
+      213: -6696731615681216527
+    second: purrbricks-title_1
+  - first:
+      213: 6904348580676014419
+    second: purrbricks-title_2
+  - first:
+      213: 1086370182362068461
+    second: purrbricks-title_3
+  - first:
+      213: 8765429218900041834
+    second: purrbricks-title_4
   externalObjects: {}
   serializedVersion: 13
   mipmaps:
@@ -113,13 +125,13 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: highscores-button_0
+      name: purrbricks-title_0
       rect:
         serializedVersion: 2
-        x: 0
-        y: 0
-        width: 877
-        height: 242
+        x: 10
+        y: 433
+        width: 11
+        height: 11
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -128,8 +140,96 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: 4be557470400c8430800000000000000
-      internalID: 3786401663543500468
+      spriteID: 20efb8a52c293e2f0800000000000000
+      internalID: -944750133377237502
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: purrbricks-title_1
+      rect:
+        serializedVersion: 2
+        x: 22
+        y: 0
+        width: 1036
+        height: 566
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 1ff713b831e6013a0800000000000000
+      internalID: -6696731615681216527
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: purrbricks-title_2
+      rect:
+        serializedVersion: 2
+        x: 19
+        y: 317
+        width: 11
+        height: 9
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 3519aac047c21df50800000000000000
+      internalID: 6904348580676014419
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: purrbricks-title_3
+      rect:
+        serializedVersion: 2
+        x: 1063
+        y: 281
+        width: 18
+        height: 18
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: de5744eccef831f00800000000000000
+      internalID: 1086370182362068461
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: purrbricks-title_4
+      rect:
+        serializedVersion: 2
+        x: 0
+        y: 230
+        width: 10
+        height: 10
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: a60ed50fe6f05a970800000000000000
+      internalID: 8765429218900041834
       vertices: []
       indices: 
       edges: []
@@ -148,7 +248,11 @@ TextureImporter:
     spriteCustomMetadata:
       entries: []
     nameFileIdTable:
-      highscores-button_0: 3786401663543500468
+      purrbricks-title_0: -944750133377237502
+      purrbricks-title_1: -6696731615681216527
+      purrbricks-title_2: 6904348580676014419
+      purrbricks-title_3: 1086370182362068461
+      purrbricks-title_4: 8765429218900041834
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 
