@@ -114,10 +114,7 @@ public class HavocBar : MonoBehaviour
 
     private void Update()
     {
-        float target = 0f;
-        var primary = GameManager.Instance?.GetPrimaryBall();
-        if (primary != null)
-            target = primary.RampFraction;
+        float target = GameManager.Instance?.GetFuryChargeFraction() ?? 0f;
 
         _displayFraction = Mathf.Lerp(_displayFraction, target, Time.unscaledDeltaTime * 5f);
 

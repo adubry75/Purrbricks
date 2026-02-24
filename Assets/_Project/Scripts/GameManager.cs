@@ -52,6 +52,7 @@ public class GameManager : MonoBehaviour
     private bool _primaryBallOnHold; // true while primary fell but clones still active
     private int _activeClonesCount;  // explicit count — avoids deferred-Destroy false positives
     private bool _scoreFrenzyActive;
+    private float _cachedFuryCharge;
 
     // ── Per-level score stats (reset each LoadLevel) ─────────────────────────
     private int   _levelStartScore;
@@ -218,6 +219,32 @@ public class GameManager : MonoBehaviour
 
     /// <summary>Exposes the primary ball so HavocBar can read RampFraction.</summary>
     public BallController GetPrimaryBall() => _ball;
+
+    /// <summary>Returns the highest Fury charge fraction among every launched ball (primary or clones).</summary>
+    public float GetFuryChargeFraction()
+    {
+        float best = 0f;
+        var balls = Object.FindObjectsByType<BallController>(FindObjectsSortMode.None);
+        bool anyLaunched = false;
+        foreach (var ball in balls)
+        {
+            if (ball == null || !ball.IsLaunched()) continue;
+            anyLaunched = true;
+            best = Mathf.Max(best, ball.RampFraction);
+            if (Mathf.Approximately(best, 1f)) break;
+        }
+
+        if (anyLaunched)
+        {
+            _cachedFuryCharge = Mathf.Max(_cachedFuryCharge, best);
+            return _cachedFuryCharge;
+        }
+
+        if (_cachedFuryCharge > 0f)
+            _cachedFuryCharge = 0f;
+
+        return 0f;
+    }
 
     /// <summary>Called by BallController.SpawnClone after it creates a clone.</summary>
     public void RegisterClone() => _activeClonesCount++;
