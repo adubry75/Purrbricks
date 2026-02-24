@@ -59,9 +59,9 @@ public class MainMenuUI : MonoBehaviour
 
         if (_playSprite != null)
         {
-            CreateImageButton(_panel.transform, _playSprite, new Vector2(0f, 60f), () => GameManager.Instance?.StartGame());
-            CreateImageButton(_panel.transform, _highScoresSprite, new Vector2(0f, -60f), () => GameManager.Instance?.ShowHighScores());
-            CreateImageButton(_panel.transform, _quitSprite, new Vector2(0f, -180f), QuitGame);
+            CreateImageButton(_panel.transform, _playSprite, new Vector2(0f, -100f), () => GameManager.Instance?.StartGame());
+            CreateImageButton(_panel.transform, _highScoresSprite, new Vector2(0f, -200f), () => GameManager.Instance?.ShowHighScores());
+            CreateImageButton(_panel.transform, _quitSprite, new Vector2(0f, -300f), QuitGame);
         }
         else
         {

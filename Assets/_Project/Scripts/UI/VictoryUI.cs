@@ -11,6 +11,7 @@ public class VictoryUI : MonoBehaviour
     private Canvas _canvas;
     private GameObject panel;
     [SerializeField] private Sprite _nextLevelSprite;
+    [SerializeField] private Sprite _replayLevelSprite;
 
     // Score stat labels
     private Text _levelScoreText;
@@ -96,9 +97,7 @@ public class VictoryUI : MonoBehaviour
         }
 
         // ── Buttons (side by side) ───────────────────────────────────────────
-        UIStyle.CreateButton(panel.transform, "Replay Level",
-            new Vector2(-162f, -282f), new Vector2(300f, 70f),
-            OnReplayLevel, UIStyle.AccentBlue);
+        
 
         if (_nextLevelSprite != null)
             CreateImageButton(panel.transform, _nextLevelSprite, new Vector2(162f, -282f), OnNextLevel);
@@ -106,6 +105,13 @@ public class VictoryUI : MonoBehaviour
             UIStyle.CreateButton(panel.transform, "Next Level",
                 new Vector2(162f, -282f), new Vector2(300f, 70f),
                 OnNextLevel, UIStyle.AccentGreen);
+
+        if (_replayLevelSprite != null)
+            CreateImageButton(panel.transform, _replayLevelSprite, new Vector2(-162f, -282f), OnReplayLevel);
+        else
+            UIStyle.CreateButton(panel.transform, "zReplay Level",
+                new Vector2(-162f, -282f), new Vector2(300f, 70f),
+                OnReplayLevel, UIStyle.AccentBlue);
     }
 
     private void CreateNameEntryRow(GameObject parent)
@@ -360,7 +366,7 @@ public class VictoryUI : MonoBehaviour
         var rt = go.GetComponent<RectTransform>();
         rt.anchorMin        = new Vector2(0.5f, 0.5f);
         rt.anchorMax        = new Vector2(0.5f, 0.5f);
-        rt.sizeDelta        = new Vector2(aspect * 90f, 90f);
+        rt.sizeDelta        = new Vector2(aspect * 70f, 70f);
         rt.anchoredPosition = anchoredPos;
     }
 }
