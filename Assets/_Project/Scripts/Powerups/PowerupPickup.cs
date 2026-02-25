@@ -12,8 +12,8 @@ public class PowerupPickup : MonoBehaviour
     private SpriteRenderer _sr;
     private float _bobTimer;
 
-    // Is this a harmful powerup? (bad powerups start at index 11 in enum)
-    private static bool IsBad(PowerupType t) => (int)t >= 11;
+    private static bool IsBad(PowerupType t)
+        => t >= PowerupType.ShrinkPaddle && t <= PowerupType.DrunkenPaddle;
 
     // Color per powerup type — index matches enum value
     private static readonly Color[] TypeColors = new Color[]
@@ -39,13 +39,14 @@ public class PowerupPickup : MonoBehaviour
         new Color(0.05f, 0.25f, 0.55f),   // 15 TinyBall
         new Color(0.15f, 0.15f, 0.15f),   // 16 InvisiBall
         new Color(0.55f, 0.30f, 0.05f),   // 17 DrunkenPaddle
+        new Color(0.60f, 0.00f, 1.00f),   // 18 PermanentStickyBall
     };
 
     private static readonly string[] TypeNames = new string[]
     {
         "Wide", "Multi", "Sticky", "Fast", "+Life", "Laser", "Fire", "Bomb",
         "Shield", "Big", "2xScore",
-        "SHRINK", "ZIP!", "FLIP!", "CURSE", "TINY", "INVIS", "DRUNK",
+        "SHRINK", "ZIP!", "FLIP!", "CURSE", "TINY", "INVIS", "DRUNK", "STICKY∞",
     };
 
     public void Init(PowerupType type)

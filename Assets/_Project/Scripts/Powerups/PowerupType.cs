@@ -21,4 +21,7 @@ public enum PowerupType
     TinyBall      = 15,  // ball scales to 0.5× — terrifying
     InvisiBall    = 16,  // ball alpha drops to 0.05; flashes every 3 s
     DrunkenPaddle = 17,  // sinusoidal sway added to paddle target X
+
+    // Special
+    PermanentStickyBall = 18, // sticky ball for the rest of the level once collected
 }

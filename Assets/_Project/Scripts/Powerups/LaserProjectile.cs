@@ -40,6 +40,10 @@ public class LaserProjectile : MonoBehaviour
             var brick = col.GetComponent<Brick>();
             if (brick != null)
             {
+                // Prism-locked bricks can only be broken by a matching ball, not by lasers.
+                if (brick.RequiredBallColor != PrismColor.None)
+                    continue;
+
                 brick.Hit();
                 Destroy(gameObject);
                 return;

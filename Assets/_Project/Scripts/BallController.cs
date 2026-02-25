@@ -189,9 +189,12 @@ public class BallController : MonoBehaviour
 
     private void UpdateBallColor()
     {
-        // Determine dominant powerup tint
+        // If a prism gate has affected the ball, keep that color locked until the ball is lost.
+        // (Fury Strike ramp heat and other powerup tints shouldn't override it.)
         Color tint;
-        if (_isFireball)
+        if (_prismColor != PrismColor.None)
+            tint = PrismColorUtil.ToUnityColor(_prismColor);
+        else if (_isFireball)
             tint = new Color(1.0f, 0.45f, 0.0f);      // fire orange
         else if (_isBomb)
             tint = new Color(1.0f, 0.20f, 1.0f);      // magenta
@@ -203,14 +206,12 @@ public class BallController : MonoBehaviour
             tint = new Color(0.25f, 0.55f, 0.20f);    // murky green
         else if (_isZipBall)
             tint = new Color(0.35f, 0.90f, 0.10f);    // sickly green
-        else if (_prismColor != PrismColor.None)
-            tint = PrismColorUtil.ToUnityColor(_prismColor);
         else
             tint = Color.white;
 
-        // Blend toward ramp heat as charge builds: tinge red/orange at high ramp
+        // Blend toward ramp heat as charge builds (only when not prism-locked).
         float ramp = RampFraction;
-        if (ramp > 0.6f && tint == Color.white)
+        if (_prismColor == PrismColor.None && ramp > 0.6f && tint == Color.white)
         {
             float t = (ramp - 0.6f) / 0.4f;
             tint = Color.Lerp(Color.white, new Color(1f, 0.5f, 0.1f), t);

@@ -33,6 +33,7 @@ public class PowerupHUD : MonoBehaviour
         new Color(1.00f, 0.25f, 0.50f),  // 15 TinyBall
         new Color(0.55f, 0.55f, 0.60f),  // 16 InvisiBall
         new Color(1.00f, 0.55f, 0.00f),  // 17 DrunkenPaddle
+        new Color(0.60f, 0.00f, 1.00f),  // 18 PermanentStickyBall
     };
 
     private static readonly string[] TypeLabels = new string[]
@@ -57,9 +58,11 @@ public class PowerupHUD : MonoBehaviour
         "⚠ TINY BALL",   // 15
         "⚠ INVISIBALL",  // 16
         "⚠ DRUNK PAD",   // 17
+        "STICKY ∞",      // 18
     };
 
-    private static bool IsBadPowerup(int idx) => idx >= 11;
+    private static bool IsBadPowerup(PowerupType type)
+        => type >= PowerupType.ShrinkPaddle && type <= PowerupType.DrunkenPaddle;
 
     // Slot UI references for each active powerup
     private class Slot
@@ -96,6 +99,15 @@ public class PowerupHUD : MonoBehaviour
         foreach (var kvp in _slots)
         {
             float remaining = PowerupManager.Instance.GetRemaining(kvp.Key);
+            if (float.IsInfinity(remaining))
+            {
+                if (kvp.Value.timerBar != null)
+                    kvp.Value.timerBar.fillAmount = 1f;
+                if (kvp.Value.timerText != null)
+                    kvp.Value.timerText.text = "∞";
+                continue;
+            }
+
             float fraction  = remaining / PowerupManager.POWERUP_DURATION;
 
             if (kvp.Value.timerBar != null)
@@ -142,7 +154,7 @@ public class PowerupHUD : MonoBehaviour
         int idx = Mathf.Clamp((int)type, 0, TypeColors.Length - 1);
         Color color = TypeColors[idx];
         string label = idx < TypeLabels.Length ? TypeLabels[idx] : type.ToString().ToUpper();
-        bool bad = IsBadPowerup(idx);
+        bool bad = IsBadPowerup(type);
 
         var slotGO = new GameObject($"Slot_{type}");
         slotGO.transform.SetParent(_listRoot, false);
