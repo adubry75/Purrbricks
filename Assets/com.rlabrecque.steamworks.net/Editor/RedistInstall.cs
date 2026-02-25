@@ -25,6 +25,10 @@ public class RedistInstall {
 	}
 
 	static void WriteSteamAppIdTxtFile() {
+
+		// No don't do this, we have a real appId now with Steam!
+		return;
+		
 		string strCWDPath = Directory.GetCurrentDirectory();
 		string strSteamAppIdPath = Path.Combine(strCWDPath, "steam_appid.txt");
 

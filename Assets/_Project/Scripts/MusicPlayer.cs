@@ -101,6 +101,16 @@ public class MusicPlayer : MonoBehaviour
         Run(Stinger(_levelFinishTrack));
     }
 
+    /// <summary>Applies a new master volume to the active source immediately (0–1).</summary>
+    public void SetVolume(float volume)
+    {
+        _musicVolume = Mathf.Clamp01(volume);
+        if (_active != null && _active.isPlaying)
+            _active.volume = _musicVolume;
+    }
+
+    public float GetVolume() => _musicVolume;
+
     // ── Coroutines ────────────────────────────────────────────────────────────
 
     private void Run(IEnumerator routine)

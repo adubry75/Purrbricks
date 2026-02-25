@@ -1,6 +1,7 @@
 using Steamworks;
 using System.Collections;
 using UnityEngine;
+using UnityEngine.InputSystem;
 
 public enum GameState
 {
@@ -35,13 +36,15 @@ public class GameManager : MonoBehaviour
     [SerializeField] private BallController _ball;
     [SerializeField] private PaddleController _paddle;
     [SerializeField] private HudController _hud;
+    [SerializeField] private GameObject bottomWall;
 
     [Header("UI Screens")]
     private MainMenuUI       _mainMenuUI;
     private GameOverUI       _gameOverUI;
     private VictoryUI        _victoryUI;
     private HighScoresUI     _highScoresUI;
-    private SteamHighScoreScreen _steamHighScoreScreen;
+    private PauseMenuUI      _pauseMenuUI;
+    private SettingsUI       _settingsUI;
     private LevelCodeEntryUI _levelCodeEntryUI;
 
     private int _currentLevelIndex = 0;
@@ -90,14 +93,15 @@ public class GameManager : MonoBehaviour
         _gameOverUI       = FindFirstObjectByType<GameOverUI>(FindObjectsInactive.Include);
         _victoryUI        = FindFirstObjectByType<VictoryUI>(FindObjectsInactive.Include);
         _highScoresUI     = FindFirstObjectByType<HighScoresUI>(FindObjectsInactive.Include);
-        _steamHighScoreScreen = FindFirstObjectByType<SteamHighScoreScreen>(FindObjectsInactive.Include);
+        _pauseMenuUI      = FindFirstObjectByType<PauseMenuUI>(FindObjectsInactive.Include);
+        _settingsUI       = FindFirstObjectByType<SettingsUI>(FindObjectsInactive.Include);
         _levelCodeEntryUI = FindFirstObjectByType<LevelCodeEntryUI>(FindObjectsInactive.Include);
 
         if (_mainMenuUI == null)   Debug.LogError("MainMenuUI not found! Run Purrbricks > Setup Scene.");
         if (_gameOverUI == null)   Debug.LogError("GameOverUI not found! Run Purrbricks > Setup Scene.");
         if (_victoryUI == null)    Debug.LogError("VictoryUI not found! Run Purrbricks > Setup Scene.");
         if (_highScoresUI == null) Debug.LogError("HighScoresUI not found! Run Purrbricks > Setup Scene.");
-        // LevelCodeEntryUI and SteamHighScoreScreen are optional — no error if missing
+        // LevelCodeEntryUI is optional — no error if missing
 
     }
 
@@ -108,6 +112,10 @@ public class GameManager : MonoBehaviour
 
         if (_levelCodeEntryUI == null)
             _levelCodeEntryUI = FindFirstObjectByType<LevelCodeEntryUI>(FindObjectsInactive.Include);
+        if (_pauseMenuUI == null)
+            _pauseMenuUI = FindFirstObjectByType<PauseMenuUI>(FindObjectsInactive.Include);
+        if (_settingsUI == null)
+            _settingsUI = FindFirstObjectByType<SettingsUI>(FindObjectsInactive.Include);
     }
 
 
@@ -146,23 +154,23 @@ public class GameManager : MonoBehaviour
             if (Input.GetKeyDown(KeyCode.Keypad7)) PowerupManager.Instance?.Apply(PowerupType.DrunkenPaddle);
         }
 
-        // Fury Strike: ENTER when charge bar is full
-        if (_state == GameState.Playing &&
-            (Input.GetKeyDown(KeyCode.Return) || Input.GetKeyDown(KeyCode.KeypadEnter)))
+        // Fury Strike: both mouse buttons pressed together when charge is full
+        if (_state == GameState.Playing && _ball != null && _ball.RampFraction >= 1f &&
+            IsFuryStrikeMouseComboPressed())
         {
-            if (_ball != null && _ball.RampFraction >= 1f)
-                TriggerFuryStrike();
+            TriggerFuryStrike();
         }
 
         // Debug hotkey: clear all but 1 brick
         if (Input.GetKeyDown(KeyCode.K) && _state == GameState.Playing)
             ClearAllButOneBrick();
 
-        // For testing achievements.
-        if (Input.GetKeyDown(KeyCode.Z) && _state == GameState.Playing)
+        if (Input.GetKeyDown(KeyCode.Z))
         {
-            SteamUserStats.ClearAchievement("ACH_FIRST_PAWS");
-            SteamUserStats.StoreStats();
+            if (bottomWall != null)
+            {
+                bottomWall.SetActive(!bottomWall.activeSelf);
+            }
         }
 
         if (_state == GameState.Playing && Input.GetKeyDown(KeyCode.Backslash))
@@ -173,13 +181,14 @@ public class GameManager : MonoBehaviour
 
         if (_state == GameState.Playing && Input.GetKeyDown(KeyCode.Escape))
             SetState(GameState.Paused);
-        else if (_state == GameState.Paused && Input.GetKeyDown(KeyCode.Escape))
-            SetState(GameState.Playing);
 
         // G key: open level code warp dialog (Ready, Playing, or Paused)
+        // Guard: skip if the dialog is already open so the player can type 'G' freely
         if ((_state == GameState.Ready || _state == GameState.Playing || _state == GameState.Paused)
-            && Input.GetKeyDown(KeyCode.G))
+            && Input.GetKeyDown(KeyCode.G)
+            && (_levelCodeEntryUI == null || !_levelCodeEntryUI.IsVisible))
         {
+            SetState(GameState.Paused);
             RefreshUIRefsIfMissing();
             _levelCodeEntryUI?.Show();
         }
@@ -208,6 +217,21 @@ public class GameManager : MonoBehaviour
             _hud?.SetStatus("");
             SetState(GameState.Playing);
         }
+    }
+
+    private static bool IsFuryStrikeMouseComboPressed()
+    {
+        var mouse = Mouse.current;
+        if (mouse == null) return false;
+
+        var left = mouse.leftButton;
+        var right = mouse.rightButton;
+        if (left == null || right == null) return false;
+
+        if (left.isPressed && right.isPressed)
+            return left.wasPressedThisFrame || right.wasPressedThisFrame;
+
+        return false;
     }
 
     // ── Public API (called by UI buttons) ───────────────────────────────────
@@ -294,7 +318,8 @@ public class GameManager : MonoBehaviour
         _gameOverUI?.Hide();
         _victoryUI?.Hide();
         _highScoresUI?.Hide();
-        EnsureSteamHighScoreScreen()?.Hide();
+        _pauseMenuUI?.Hide();
+        _settingsUI?.Hide();
         _mainMenuUI?.Show();
 
         LoadDemoLevel();
@@ -307,36 +332,65 @@ public class GameManager : MonoBehaviour
         _paddle?.SetDemoMode(true);
         _mainMenuUI?.Hide();
         _highScoresUI?.Show();
-        EnsureSteamHighScoreScreen()?.Hide();
 
         LoadDemoLevel();
         SetState(GameState.HighScores);
     }
 
-    
-    private SteamHighScoreScreen EnsureSteamHighScoreScreen()
+    /// <summary>Opens the leaderboard screen on a specific level board (called from VictoryUI).</summary>
+    public void ShowLevelLeaderboard(int levelIndex)
     {
-        if (_steamHighScoreScreen != null)
-        {
-            return _steamHighScoreScreen;
-        }
+        _isDemoMode = true;
+        _paddle?.SetDemoMode(true);
+        _victoryUI?.Hide();
+        _highScoresUI?.ShowForLevel(levelIndex);
 
-        _steamHighScoreScreen = FindFirstObjectByType<SteamHighScoreScreen>(FindObjectsInactive.Include);
-        if (_steamHighScoreScreen == null)
-        {
-            Debug.LogWarning("GameManager: SteamHighScoreScreen instance could not be found.");
-        }
-
-        return _steamHighScoreScreen;
+        LoadDemoLevel();
+        SetState(GameState.HighScores);
     }
 
-    /// <summary>Called by GameOverUI after name is submitted — shows high scores without changing music.</summary>
+    /// <summary>Called by GameOverUI to show leaderboard — no music change.</summary>
     public void ShowHighScoresAfterGameOver()
     {
         _gameOverUI?.Hide();
         _highScoresUI?.Show();
-        EnsureSteamHighScoreScreen()?.Hide();
         // Intentionally no music change — game over track keeps playing
+    }
+
+    /// <summary>Resumes gameplay from the pause menu.</summary>
+    public void ResumeGame()
+    {
+        _pauseMenuUI?.Hide();
+        _settingsUI?.Hide();
+        SetState(GameState.Playing);
+    }
+
+    /// <summary>Opens the pause menu without changing game state (called internally by Paused state).</summary>
+    public void ShowPauseMenu()
+    {
+        _settingsUI?.Hide();
+        _pauseMenuUI?.Show();
+    }
+
+    /// <summary>Opens the Settings screen. Pass fromPause=true when called from the pause menu.</summary>
+    public void ShowSettings(bool fromPause)
+    {
+        if (fromPause)
+            _pauseMenuUI?.Hide();
+        else
+            _mainMenuUI?.Hide();
+
+        _settingsUI?.Show(fromPause);
+    }
+
+    /// <summary>Quits to desktop.</summary>
+    public void QuitGame()
+    {
+#if UNITY_EDITOR
+        UnityEditor.EditorApplication.isPlaying = false;
+#else
+        Application.Quit();
+#endif
     }
 
     /// <summary>Warps directly to a level by index (called from LevelCodeEntryUI).</summary>
@@ -510,14 +564,12 @@ public class GameManager : MonoBehaviour
                 _hud?.gameObject.SetActive(false);
                 SfxPlayer.Instance?.MuteAll(true);
                 MusicPlayer.Instance?.PlayMenu();
-                EnsureSteamHighScoreScreen()?.Hide();
                 break;
 
             case GameState.HighScores:
                 SetCursorMenuMode();
                 _hud?.gameObject.SetActive(false);
                 SfxPlayer.Instance?.MuteAll(true);
-                EnsureSteamHighScoreScreen()?.Hide();
                 // Menu music continues — no change needed
                 break;
 
@@ -525,22 +577,24 @@ public class GameManager : MonoBehaviour
                 SetCursorPlayMode();
                 _hud?.gameObject.SetActive(true);
                 _hud?.SetState("Ready");
-                _hud?.ShowCenter("Hold Space to Aim\r\nRelease to Launch");
+                _hud?.ShowCenter("Hold Left Click to Aim\r\nRelease to Launch");
                 SfxPlayer.Instance?.MuteAll(false);
-                EnsureSteamHighScoreScreen()?.Hide();
                 break;
 
             case GameState.Playing:
                 SetCursorPlayMode();
                 _hud?.SetState("Playing");
                 _hud?.HideCenter();
+                _pauseMenuUI?.Hide();
+                _settingsUI?.Hide();
                 break;
 
             case GameState.Paused:
                 SetCursorMenuMode();
                 Time.timeScale = 0f;
                 _hud?.SetState("Paused");
-                _hud?.ShowCenter("Paused (Esc to resume)");
+                _hud?.HideCenter();
+                ShowPauseMenu();
                 break;
 
             case GameState.GameOver:
@@ -565,7 +619,7 @@ public class GameManager : MonoBehaviour
                 Time.timeScale = 0f;
                 string levelId = (_levelIds != null && _currentLevelIndex < _levelIds.Length)
                     ? _levelIds[_currentLevelIndex] : "";
-                _victoryUI?.ShowVictory(_score - _levelStartScore, _levelComboBonus, _levelBestCombo, levelId);
+                _victoryUI?.ShowVictory(_score - _levelStartScore, _levelComboBonus, _levelBestCombo, levelId, _currentLevelIndex);
                 MusicPlayer.Instance?.PlayLevelFinish();
 
                 float levelTime = Time.realtimeSinceStartup - _levelStartTime;
@@ -953,4 +1007,5 @@ public class GameManager : MonoBehaviour
             Destroy(ps.gameObject);
         }
     }
+
 }

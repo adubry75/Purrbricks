@@ -3,13 +3,13 @@ using UnityEngine.Events;
 using UnityEngine.UI;
 
 /// <summary>
-/// Victory screen: level complete, score stats, per-level top-3 leaderboard,
-/// optional name entry when a new level best is achieved, and Replay / Next Level buttons.
+/// Victory screen: shows level score stats, an optional "New Personal Best" banner,
+/// and buttons for Level Board / Next Level / Replay.
 /// </summary>
 public class VictoryUI : MonoBehaviour
 {
     private Canvas _canvas;
-    private GameObject panel;
+    private GameObject _panel;
     [SerializeField] private Sprite _nextLevelSprite;
     [SerializeField] private Sprite _replayLevelSprite;
 
@@ -18,21 +18,21 @@ public class VictoryUI : MonoBehaviour
     private Text _comboBonusText;
     private Text _bestComboText;
 
-    // New-best entry section (hidden unless score qualifies)
-    private GameObject _newBestSection;
-    private InputField _nameInput;
+    // Personal best banner (hidden unless score beats previous best)
+    private GameObject _newBestBanner;
 
-    // Leaderboard rows
-    private Text[] _rowTexts = new Text[3];
+    // Star rating
+    private readonly Text[] _starGlyphs = new Text[5];
+    private int _currentRating;
 
     // Per-call state
     private int    _currentLevelScore;
     private string _currentLevelId;
-    private bool   _scoreSubmitted;
+    private int    _currentLevelIndex;
 
-    private static readonly Color ColorGold   = new Color(1.00f, 0.84f, 0.10f);
-    private static readonly Color ColorSilver = new Color(0.75f, 0.75f, 0.80f);
-    private static readonly Color ColorBronze = new Color(0.80f, 0.50f, 0.30f);
+    private static readonly Color ColorGold  = new Color(1.00f, 0.84f, 0.10f);
+    private static readonly Color ColorGreen = new Color(0.20f, 1f, 0.45f);
+    private static readonly Color ColorStarEmpty = new Color(0.45f, 0.45f, 0.50f);
 
     private void Awake()
     {
@@ -52,123 +52,203 @@ public class VictoryUI : MonoBehaviour
 
         gameObject.AddComponent<GraphicRaycaster>();
 
-        panel = new GameObject("Panel");
-        panel.transform.SetParent(transform, false);
+        _panel = new GameObject("Panel");
+        _panel.transform.SetParent(transform, false);
 
-        var panelImg = panel.AddComponent<Image>();
+        var panelImg = _panel.AddComponent<Image>();
         panelImg.color = new Color(0f, 0f, 0f, 0.68f);
 
-        var panelRt = panel.GetComponent<RectTransform>();
+        var panelRt = _panel.GetComponent<RectTransform>();
         panelRt.anchorMin        = Vector2.zero;
         panelRt.anchorMax        = Vector2.one;
         panelRt.sizeDelta        = Vector2.zero;
         panelRt.anchoredPosition = new Vector2(-160f, 0f);
 
         // ── Title ────────────────────────────────────────────────────────────
-        CreateText(panel, "LEVEL COMPLETE!", new Vector2(0f, 200f), 80, new Color(0.20f, 1f, 0.45f));
+        CreateText(_panel, "LEVEL COMPLETE!", new Vector2(0f, 230f), 80, ColorGreen);
 
         // ── Score stats ──────────────────────────────────────────────────────
-        _levelScoreText = CreateTextGO(panel, "Level Score:  0",   new Vector2(0f, 125f), 50, Color.white,                    "LevelScoreText").GetComponent<Text>();
-        _comboBonusText = CreateTextGO(panel, "Combo Bonus:  —",   new Vector2(0f,  68f), 36, new Color(1f, 0.85f, 0.15f),   "ComboBonusText").GetComponent<Text>();
-        _bestComboText  = CreateTextGO(panel, "Best Combo:  —",    new Vector2(0f,  20f), 36, new Color(0.45f, 0.85f, 1f),   "BestComboText").GetComponent<Text>();
+        _levelScoreText = CreateTextGO(_panel, "Level Score:  0",  new Vector2(0f, 148f), 50, Color.white,                  "LevelScoreText").GetComponent<Text>();
+        _comboBonusText = CreateTextGO(_panel, "Combo Bonus:  —",  new Vector2(0f,  90f), 36, new Color(1f, 0.85f, 0.15f), "ComboBonusText").GetComponent<Text>();
+        _bestComboText  = CreateTextGO(_panel, "Best Combo:  —",   new Vector2(0f,  42f), 36, new Color(0.45f, 0.85f, 1f), "BestComboText").GetComponent<Text>();
 
-        // ── New-best section (hidden by default) ─────────────────────────────
-        _newBestSection = new GameObject("NewBestSection");
-        _newBestSection.transform.SetParent(panel.transform, false);
-        var nbRt = _newBestSection.AddComponent<RectTransform>();
+        // ── Personal best banner (hidden by default) ──────────────────────────
+        _newBestBanner = new GameObject("NewBestBanner");
+        _newBestBanner.transform.SetParent(_panel.transform, false);
+        var nbRt = _newBestBanner.AddComponent<RectTransform>();
         nbRt.anchorMin        = new Vector2(0.5f, 0.5f);
         nbRt.anchorMax        = new Vector2(0.5f, 0.5f);
-        nbRt.sizeDelta        = new Vector2(820f, 105f);
-        nbRt.anchoredPosition = new Vector2(0f, -50f);
+        nbRt.sizeDelta        = new Vector2(820f, 55f);
+        nbRt.anchoredPosition = new Vector2(0f, -20f);
+        CreateText(_newBestBanner, "★  NEW PERSONAL BEST!  ★", new Vector2(0f, 0f), 40, ColorGold);
+        _newBestBanner.SetActive(false);
 
-        CreateText(_newBestSection, "★  NEW LEVEL BEST!  ★", new Vector2(0f, 30f), 40, ColorGold);
-        CreateNameEntryRow(_newBestSection);
-        _newBestSection.SetActive(false);
+        // ── Buttons ───────────────────────────────────────────────────────────
+        // Level Board button (top center)
+        UIStyle.CreateButton(_panel.transform, "Level Board",
+            new Vector2(0f, -110f), new Vector2(300f, 65f),
+            OnLevelBoard, UIStyle.AccentBlue);
 
-        // ── Leaderboard ──────────────────────────────────────────────────────
-        CreateText(panel, "── LEVEL TOP 3 ──", new Vector2(0f, -118f), 26, new Color(0.55f, 0.55f, 0.62f));
-
-        Color[] rankColors = { ColorGold, ColorSilver, ColorBronze };
-        float[] rowY       = { -153f, -188f, -223f };
-
-        for (int i = 0; i < 3; i++)
-        {
-            _rowTexts[i] = CreateTextGO(panel, $"#{i + 1}   —", new Vector2(0f, rowY[i]), 31, rankColors[i], $"LeaderRow{i + 1}").GetComponent<Text>();
-        }
-
-        // ── Buttons (side by side) ───────────────────────────────────────────
-        
-
+        // Next Level / Replay (side by side below)
         if (_nextLevelSprite != null)
-            CreateImageButton(panel.transform, _nextLevelSprite, new Vector2(162f, -282f), OnNextLevel);
+            CreateImageButton(_panel.transform, _nextLevelSprite, new Vector2(162f, -210f), OnNextLevel);
         else
-            UIStyle.CreateButton(panel.transform, "Next Level",
-                new Vector2(162f, -282f), new Vector2(300f, 70f),
+            UIStyle.CreateButton(_panel.transform, "Next Level",
+                new Vector2(162f, -210f), new Vector2(300f, 70f),
                 OnNextLevel, UIStyle.AccentGreen);
 
         if (_replayLevelSprite != null)
-            CreateImageButton(panel.transform, _replayLevelSprite, new Vector2(-162f, -282f), OnReplayLevel);
+            CreateImageButton(_panel.transform, _replayLevelSprite, new Vector2(-162f, -210f), OnReplayLevel);
         else
-            UIStyle.CreateButton(panel.transform, "zReplay Level",
-                new Vector2(-162f, -282f), new Vector2(300f, 70f),
+            UIStyle.CreateButton(_panel.transform, "Replay Level",
+                new Vector2(-162f, -210f), new Vector2(300f, 70f),
                 OnReplayLevel, UIStyle.AccentBlue);
+
+        BuildRatingSection();
     }
 
-    private void CreateNameEntryRow(GameObject parent)
+    private void BuildRatingSection()
     {
-        // Input field
-        var inputGO = new GameObject("NameInput");
-        inputGO.transform.SetParent(parent.transform, false);
+        // "Rate This Level" label
+        var labelGO = CreateTextGO(_panel, "Rate This Level", new Vector2(0f, -285f), 26,
+            new Color(0.65f, 0.65f, 0.80f, 0.85f), "RateLabel");
+        labelGO.GetComponent<Text>().raycastTarget = false;
 
-        var inputImg = inputGO.AddComponent<Image>();
-        inputImg.color = new Color(0.07f, 0.12f, 0.22f, 0.95f);
+        // 5 star buttons centred horizontally, 80 px apart
+        const float spacing   = 80f;
+        const float startX    = -spacing * 2f; // -160, -80, 0, 80, 160
 
-        var inputOl = inputGO.AddComponent<Outline>();
-        inputOl.effectColor    = new Color(0.35f, 0.70f, 1f, 0.6f);
-        inputOl.effectDistance = new Vector2(1f, -1f);
+        for (int i = 0; i < 5; i++)
+        {
+            int starNum = i + 1;   // capture for lambda
 
-        _nameInput                  = inputGO.AddComponent<InputField>();
-        _nameInput.textComponent    = CreateInputText(inputGO);
-        _nameInput.text             = "PLAYER";
-        _nameInput.characterLimit   = 12;
+            var go = new GameObject($"Star_{starNum}");
+            go.transform.SetParent(_panel.transform, false);
 
-        var inputRt = inputGO.GetComponent<RectTransform>();
-        inputRt.anchorMin        = new Vector2(0.5f, 0.5f);
-        inputRt.anchorMax        = new Vector2(0.5f, 0.5f);
-        inputRt.sizeDelta        = new Vector2(280f, 50f);
-        inputRt.anchoredPosition = new Vector2(-90f, -20f);
+            var bg = go.AddComponent<Image>();
+            bg.color = new Color(0f, 0f, 0f, 0f);  // transparent hit-area
 
-        // Submit button to the right of the input
-        UIStyle.CreateButton(parent.transform, "SUBMIT",
-            new Vector2(120f, -20f), new Vector2(140f, 50f),
-            OnSubmitScore, UIStyle.AccentGreen);
+            var rt = go.GetComponent<RectTransform>();
+            rt.anchorMin        = new Vector2(0.5f, 0.5f);
+            rt.anchorMax        = new Vector2(0.5f, 0.5f);
+            rt.sizeDelta        = new Vector2(72f, 90f);
+            rt.anchoredPosition = new Vector2(startX + i * spacing, -355f);
+
+            var btn = go.AddComponent<Button>();
+            btn.targetGraphic = bg;
+            var cols = btn.colors;
+            cols.normalColor      = Color.white;
+            cols.highlightedColor = new Color(1.2f, 1.2f, 1.2f);
+            cols.pressedColor     = new Color(0.8f, 0.8f, 0.8f);
+            btn.colors = cols;
+            btn.onClick.AddListener(() => OnStarClicked(starNum));
+
+            // Star glyph (large ☆/★)
+            var glyphGO = new GameObject("Glyph");
+            glyphGO.transform.SetParent(go.transform, false);
+            var glyphTxt = glyphGO.AddComponent<Text>();
+            glyphTxt.text          = "\u2606";  // ☆ hollow star
+            glyphTxt.font          = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
+            glyphTxt.fontSize      = 62;
+            glyphTxt.alignment     = TextAnchor.UpperCenter;
+            glyphTxt.color         = ColorStarEmpty;
+            glyphTxt.raycastTarget = false;
+            var glyphRt = glyphGO.GetComponent<RectTransform>();
+            glyphRt.anchorMin = Vector2.zero;
+            glyphRt.anchorMax = Vector2.one;
+            glyphRt.sizeDelta = Vector2.zero;
+            _starGlyphs[i] = glyphTxt;
+
+            // Number label inside the star (small, centred)
+            var numGO = new GameObject("Num");
+            numGO.transform.SetParent(go.transform, false);
+            var numTxt = numGO.AddComponent<Text>();
+            numTxt.text          = starNum.ToString();
+            numTxt.font          = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
+            numTxt.fontSize      = 20;
+            numTxt.fontStyle     = FontStyle.Bold;
+            numTxt.alignment     = TextAnchor.MiddleCenter;
+            numTxt.color         = new Color(1f, 1f, 1f, 0.75f);
+            numTxt.raycastTarget = false;
+            var numRt = numGO.GetComponent<RectTransform>();
+            numRt.anchorMin        = Vector2.zero;
+            numRt.anchorMax        = Vector2.one;
+            numRt.sizeDelta        = Vector2.zero;
+            numRt.anchoredPosition = new Vector2(0f, -6f);  // nudge into the lower body of the star
+        }
     }
 
-    private Text CreateInputText(GameObject parent)
+    // ── Public API ───────────────────────────────────────────────────────────
+
+    public void ShowVictory(int levelScore, int comboBonus, int bestCombo, string levelId, int levelIndex)
     {
-        var textGO = new GameObject("Text");
-        textGO.transform.SetParent(parent.transform, false);
+        _currentLevelScore = levelScore;
+        _currentLevelId    = levelId;
+        _currentLevelIndex = levelIndex;
 
-        var txt = textGO.AddComponent<Text>();
-        txt.font      = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
-        txt.fontSize  = 28;
-        txt.alignment = TextAnchor.MiddleCenter;
-        txt.color     = Color.white;
+        // Submit to Steam per-level leaderboard immediately (KeepBest)
+        if (levelScore > 0 && !string.IsNullOrEmpty(levelId))
+            SteamLeaderboardManager.Instance?.SubmitScore("Purrbricks_" + levelId, levelScore);
 
-        var rt = txt.GetComponent<RectTransform>();
-        rt.anchorMin = Vector2.zero;
-        rt.anchorMax = Vector2.one;
-        rt.offsetMin = new Vector2(8f, 0f);
-        rt.offsetMax = new Vector2(-8f, 0f);
+        gameObject.SetActive(true);
 
-        return txt;
+        if (_levelScoreText != null) _levelScoreText.text = $"Level Score:  {levelScore:N0}";
+        if (_comboBonusText != null) _comboBonusText.text = comboBonus > 0
+            ? $"Combo Bonus:  +{comboBonus:N0}"
+            : "Combo Bonus:  —";
+        if (_bestComboText != null) _bestComboText.text = bestCombo > 0
+            ? $"Best Combo:  ×{bestCombo + 1}"
+            : "Best Combo:  —";
+
+        // Personal best check — save locally if new best
+        bool isNewBest = false;
+        if (HighScoreManager.Instance != null && !string.IsNullOrEmpty(levelId))
+        {
+            isNewBest = levelScore > HighScoreManager.Instance.GetPersonalBest(levelId);
+            if (isNewBest)
+                HighScoreManager.Instance.UpdatePersonalBest(levelId, levelScore);
+        }
+        if (_newBestBanner != null) _newBestBanner.SetActive(isNewBest);
+
+        // Pre-load saved rating for this level
+        _currentRating = LevelRatingService.Instance != null
+            ? LevelRatingService.Instance.GetRating(levelId)
+            : 0;
+        UpdateStars(_currentRating);
+
+        SpawnConfetti();
     }
 
-    // Convenience overload that discards the returned GO
+    private void OnNextLevel()   => GameManager.Instance?.LoadNextLevel();
+    private void OnReplayLevel() => GameManager.Instance?.ReplayCurrentLevel();
+    private void OnLevelBoard()  => GameManager.Instance?.ShowLevelLeaderboard(_currentLevelIndex);
+
+    private void OnStarClicked(int starNum)
+    {
+        // Click the already-active star → clear the rating
+        _currentRating = (_currentRating == starNum) ? 0 : starNum;
+        LevelRatingService.Instance?.SetRating(_currentLevelId, _currentLevelIndex, _currentRating);
+        UpdateStars(_currentRating);
+    }
+
+    private void UpdateStars(int rating)
+    {
+        for (int i = 0; i < 5; i++)
+        {
+            if (_starGlyphs[i] == null) continue;
+            bool filled         = i < rating;
+            _starGlyphs[i].text  = filled ? "\u2605" : "\u2606";   // ★ / ☆
+            _starGlyphs[i].color = filled ? ColorGold : ColorStarEmpty;
+        }
+    }
+
+    public void Show() { gameObject.SetActive(true); }
+    public void Hide() { gameObject.SetActive(false); }
+
+    // ── Text helpers ──────────────────────────────────────────────────────────
+
     private void CreateText(GameObject parent, string text, Vector2 pos, int fontSize, Color color, string objName = null)
-    {
-        CreateTextGO(parent, text, pos, fontSize, color, objName);
-    }
+        => CreateTextGO(parent, text, pos, fontSize, color, objName);
 
     private GameObject CreateTextGO(GameObject parent, string text, Vector2 pos, int fontSize, Color color, string objName = null)
     {
@@ -196,94 +276,36 @@ public class VictoryUI : MonoBehaviour
         return go;
     }
 
-    // ── Public API ───────────────────────────────────────────────────────────
-
-    public void ShowVictory(int levelScore, int comboBonus, int bestCombo, string levelId)
+    private void CreateImageButton(Transform parent, Sprite sprite, Vector2 anchoredPos, UnityAction onClick)
     {
-        _currentLevelScore = levelScore;
-        _currentLevelId    = levelId;
-        _scoreSubmitted    = false;
+        if (sprite == null) return;
 
-        // Submit to Steam per-level leaderboard immediately (KeepBest — no name needed)
-        if (levelScore > 0 && !string.IsNullOrEmpty(levelId))
-            SteamLeaderboardManager.Instance?.SubmitScore("Purrbricks_" + levelId, levelScore);
+        var go  = new GameObject("ImageButton");
+        go.transform.SetParent(parent, false);
+        var img = go.AddComponent<Image>();
+        img.sprite         = sprite;
+        img.type           = Image.Type.Simple;
+        img.preserveAspect = true;
 
-        gameObject.SetActive(true);
+        var btn = go.AddComponent<Button>();
+        btn.targetGraphic = img;
+        btn.onClick.AddListener(onClick);
 
-        if (_levelScoreText != null) _levelScoreText.text = $"Level Score:  {levelScore:N0}";
-        if (_comboBonusText != null) _comboBonusText.text = comboBonus > 0
-            ? $"Combo Bonus:  +{comboBonus:N0}"
-            : "Combo Bonus:  —";
-        if (_bestComboText != null) _bestComboText.text = bestCombo > 0
-            ? $"Best Combo:  ×{bestCombo + 1}"
-            : "Best Combo:  —";
+        var colors              = btn.colors;
+        colors.normalColor      = Color.white;
+        colors.highlightedColor = new Color(1.15f, 1.15f, 1.15f);
+        colors.pressedColor     = new Color(0.80f, 0.80f, 0.80f);
+        btn.colors              = colors;
 
-        // Show name-entry section only if it's a new level best
-        bool isNewBest = HighScoreManager.Instance != null
-            && !string.IsNullOrEmpty(levelId)
-            && HighScoreManager.Instance.IsLevelHighScore(levelId, levelScore);
-
-        if (_newBestSection != null) _newBestSection.SetActive(isNewBest);
-        if (isNewBest && _nameInput != null)
-        {
-            _nameInput.text = "PLAYER";
-            _nameInput.Select();
-        }
-
-        RefreshLeaderboard();
-        SpawnConfetti();
+        float aspect        = (float)sprite.texture.width / sprite.texture.height;
+        var rt              = go.GetComponent<RectTransform>();
+        rt.anchorMin        = new Vector2(0.5f, 0.5f);
+        rt.anchorMax        = new Vector2(0.5f, 0.5f);
+        rt.sizeDelta        = new Vector2(aspect * 70f, 70f);
+        rt.anchoredPosition = anchoredPos;
     }
 
-    private void RefreshLeaderboard()
-    {
-        if (string.IsNullOrEmpty(_currentLevelId) || HighScoreManager.Instance == null)
-        {
-            for (int i = 0; i < 3; i++)
-                if (_rowTexts[i] != null) _rowTexts[i].text = $"#{i + 1}   —";
-            return;
-        }
-
-        var scores = HighScoreManager.Instance.GetTopLevelScores(_currentLevelId);
-        for (int i = 0; i < 3; i++)
-        {
-            if (_rowTexts[i] == null) continue;
-            _rowTexts[i].text = i < scores.Count
-                ? $"#{i + 1}   {scores[i].playerName}   {scores[i].score:N0}"
-                : $"#{i + 1}   —";
-        }
-    }
-
-    private void Update()
-    {
-        if (!gameObject.activeSelf || _scoreSubmitted) return;
-        if (_newBestSection == null || !_newBestSection.activeSelf) return;
-
-        if (Input.GetKeyDown(KeyCode.Return) || Input.GetKeyDown(KeyCode.KeypadEnter))
-            OnSubmitScore();
-    }
-
-    private void OnSubmitScore()
-    {
-        if (_scoreSubmitted) return;
-        _scoreSubmitted = true;
-
-        if (HighScoreManager.Instance != null && !string.IsNullOrEmpty(_currentLevelId))
-        {
-            string name = string.IsNullOrWhiteSpace(_nameInput?.text) ? "PLAYER" : _nameInput.text.Trim();
-            HighScoreManager.Instance.AddLevelScore(_currentLevelId, name, _currentLevelScore);
-        }
-
-        if (_newBestSection != null) _newBestSection.SetActive(false);
-        RefreshLeaderboard();
-    }
-
-    private void OnNextLevel()   => GameManager.Instance?.LoadNextLevel();
-    private void OnReplayLevel() => GameManager.Instance?.ReplayCurrentLevel();
-
-    public void Show() { gameObject.SetActive(true); }
-    public void Hide() { gameObject.SetActive(false); }
-
-    // ── Confetti ─────────────────────────────────────────────────────────────
+    // ── Confetti ──────────────────────────────────────────────────────────────
 
     private void SpawnConfetti()
     {
@@ -293,17 +315,16 @@ public class VictoryUI : MonoBehaviour
 
     private void SpawnConfettiEmitter(Vector3 position)
     {
-        var go = new GameObject("Confetti");
+        var go   = new GameObject("Confetti");
         go.transform.position = position;
-
         var ps   = go.AddComponent<ParticleSystem>();
         var main = ps.main;
-        main.startLifetime  = new ParticleSystem.MinMaxCurve(2f, 3f);
-        main.startSpeed     = new ParticleSystem.MinMaxCurve(8f, 12f);
-        main.startSize      = new ParticleSystem.MinMaxCurve(0.10f, 0.25f);
-        main.startColor     = new ParticleSystem.MinMaxGradient(Color.white);
+        main.startLifetime   = new ParticleSystem.MinMaxCurve(2f, 3f);
+        main.startSpeed      = new ParticleSystem.MinMaxCurve(8f, 12f);
+        main.startSize       = new ParticleSystem.MinMaxCurve(0.10f, 0.25f);
+        main.startColor      = new ParticleSystem.MinMaxGradient(Color.white);
         main.gravityModifier = 0.5f;
-        main.loop           = false;
+        main.loop            = false;
         main.useUnscaledTime = true;
 
         var emission = ps.emission;
@@ -336,37 +357,5 @@ public class VictoryUI : MonoBehaviour
         renderer.sortingOrder = 250;
 
         Destroy(go, 4f);
-    }
-
-    // ── Image button (for optional Next Level sprite) ─────────────────────────
-
-    private void CreateImageButton(Transform parent, Sprite sprite, Vector2 anchoredPos, UnityAction onClick)
-    {
-        if (sprite == null) return;
-
-        var go = new GameObject("ImageButton");
-        go.transform.SetParent(parent, false);
-
-        var img = go.AddComponent<Image>();
-        img.sprite        = sprite;
-        img.type          = Image.Type.Simple;
-        img.preserveAspect = true;
-
-        var btn = go.AddComponent<Button>();
-        btn.targetGraphic = img;
-        btn.onClick.AddListener(onClick);
-
-        var colors = btn.colors;
-        colors.normalColor      = Color.white;
-        colors.highlightedColor = new Color(1.15f, 1.15f, 1.15f);
-        colors.pressedColor     = new Color(0.80f, 0.80f, 0.80f);
-        btn.colors = colors;
-
-        float aspect = (float)sprite.texture.width / sprite.texture.height;
-        var rt = go.GetComponent<RectTransform>();
-        rt.anchorMin        = new Vector2(0.5f, 0.5f);
-        rt.anchorMax        = new Vector2(0.5f, 0.5f);
-        rt.sizeDelta        = new Vector2(aspect * 70f, 70f);
-        rt.anchoredPosition = anchoredPos;
     }
 }

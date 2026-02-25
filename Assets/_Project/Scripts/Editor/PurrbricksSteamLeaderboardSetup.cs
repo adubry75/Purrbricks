@@ -22,7 +22,6 @@ public static class PurrbricksSteamLeaderboardSetup
 
         var uiRoot = EnsureGameObject("SteamHighScoreUI", () => new GameObject("SteamHighScoreUI"));
         var uiDemo = EnsureComponent<LeaderboardUIDemo>(uiRoot);
-        var highScoreScreen = EnsureComponent<SteamHighScoreScreen>(uiRoot);
 
         var canvasGO = EnsureGameObject("SteamLeaderboardCanvas", () =>
         {
@@ -69,7 +68,6 @@ public static class PurrbricksSteamLeaderboardSetup
         AssignSerializedField(uiDemo, "steamUnavailablePanel", unavailablePanel);
         AssignSerializedField(uiDemo, "steamUnavailableText", unavailableText);
 
-        highScoreScreen.Hide();
         uiRoot.SetActive(false);
 
         EditorSceneManager.MarkSceneDirty(UnityEngine.SceneManagement.SceneManager.GetActiveScene());

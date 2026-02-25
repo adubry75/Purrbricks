@@ -303,6 +303,34 @@ public static class PurrbricksSetup
             Debug.Log("Added LevelCodeEntryUI.");
         }
 
+        var settingsMgrGO = EnsureGO("SettingsManager");
+        if (settingsMgrGO.GetComponent<SettingsManager>() == null)
+        {
+            settingsMgrGO.AddComponent<SettingsManager>();
+            Debug.Log("Added SettingsManager.");
+        }
+
+        var settingsUIGO = EnsureGO("SettingsUI");
+        if (settingsUIGO.GetComponent<SettingsUI>() == null)
+        {
+            settingsUIGO.AddComponent<SettingsUI>();
+            Debug.Log("Added SettingsUI.");
+        }
+
+        var pauseMenuGO = EnsureGO("PauseMenuUI");
+        if (pauseMenuGO.GetComponent<PauseMenuUI>() == null)
+        {
+            pauseMenuGO.AddComponent<PauseMenuUI>();
+            Debug.Log("Added PauseMenuUI.");
+        }
+
+        var levelRatingGO = EnsureGO("LevelRatingService");
+        if (levelRatingGO.GetComponent<LevelRatingService>() == null)
+        {
+            levelRatingGO.AddComponent<LevelRatingService>();
+            Debug.Log("Added LevelRatingService.");
+        }
+
         // ── 12. Main menu button sprites + ball/paddle sprites ───────────────
         // Refresh asset database so newly-added Art files are recognized
         AssetDatabase.Refresh();

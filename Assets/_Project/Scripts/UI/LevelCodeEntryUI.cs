@@ -74,7 +74,7 @@ public class LevelCodeEntryUI : MonoBehaviour
 
         _input = inputGO.AddComponent<InputField>();
         _input.textComponent  = CreateInputText(inputGO);
-        _input.characterLimit = 4;
+        _input.characterLimit = 5;
         _input.text           = "";
 
         var inputRt = inputGO.GetComponent<RectTransform>();
@@ -160,6 +160,18 @@ public class LevelCodeEntryUI : MonoBehaviour
     {
         string code = _input?.text?.Trim().ToUpperInvariant() ?? "";
 
+        // Dev cheat: GO## warps directly to a level by number (1-based, 1–80)
+        if (code.StartsWith("GO") && code.Length >= 3)
+        {
+            if (int.TryParse(code.Substring(2), out int levelNum))
+            {
+                int levelClamped = Mathf.Clamp(levelNum - 1, 0, 79);
+                Hide();
+                GameManager.Instance?.WarpToLevel(levelClamped);
+                return;
+            }
+        }
+
         if (code.Length != 4)
         {
             ShowError("Code must be exactly 4 letters.");
@@ -184,6 +196,8 @@ public class LevelCodeEntryUI : MonoBehaviour
     }
 
     // ── Public API ─────────────────────────────────────────────────────────────
+
+    public bool IsVisible => _visible;
 
     public void Show()
     {

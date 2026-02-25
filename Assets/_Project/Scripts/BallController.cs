@@ -27,7 +27,7 @@ public class BallController : MonoBehaviour
 
     private bool _launched;
     private bool _isSticky;
-    private bool _isStickyHeld;     // caught by paddle, waiting for space
+    private bool _isStickyHeld;     // caught by paddle, waiting for left click
     private Vector2 _stickyHoldOffset; // offset from paddle center when caught
 
     // ── Powerup flags ─────────────────────────────────────────────────────────
@@ -167,7 +167,7 @@ public class BallController : MonoBehaviour
             if (_paddle != null)
                 transform.position = (Vector2)_paddle.position + _stickyHoldOffset;
 
-            if (Input.GetKeyDown(KeyCode.Space))
+            if (WasLeftMousePressedThisFrame())
                 ReleaseStickyHold();
         }
 
@@ -291,22 +291,47 @@ public class BallController : MonoBehaviour
 
     private void HandleAimInput()
     {
-        if (Input.GetKey(KeyCode.Space))
+        var mouse = Mouse.current;
+        if (mouse == null)
         {
+            if (_aimLineGO != null && _aimLineGO.activeSelf)
+                _aimLineGO.SetActive(false);
+            return;
+        }
+
+        var leftButton = mouse.leftButton;
+        if (leftButton == null)
+        {
+            if (_aimLineGO != null && _aimLineGO.activeSelf)
+                _aimLineGO.SetActive(false);
+            return;
+        }
+
+        // Only begin aiming on a fresh press while we're in Ready.
+        // This avoids a menu/UI click that is still being held during the scene/state
+        // transition from "carrying" into aiming/launching.
+        if (!_isAiming)
+        {
+            if (!leftButton.wasPressedThisFrame)
+            {
+                if (_aimLineGO != null && _aimLineGO.activeSelf)
+                    _aimLineGO.SetActive(false);
+                return;
+            }
+
             // Freeze paddle so mouse can aim freely
             if (_paddleCtrl == null && _paddle != null)
                 _paddleCtrl = _paddle.GetComponent<PaddleController>();
             _paddleCtrl?.SetFrozen(true);
 
-            if (!_isAiming)
-            {
-                _aimAngleDegrees = 0f;
-                _aimDir = Vector2.up;
-                _isAiming = true;
-            }
+            _aimAngleDegrees = 0f;
+            _aimDir = Vector2.up;
+            _isAiming = true;
+        }
 
-            var mouse = Mouse.current;
-            float deltaX = mouse?.delta.ReadValue().x ?? 0f;
+        if (leftButton.isPressed)
+        {
+            float deltaX = mouse.delta.ReadValue().x;
             float deltaDegrees = deltaX / Screen.width * 180f;
             _aimAngleDegrees = Mathf.Clamp(_aimAngleDegrees + deltaDegrees, -60f, 60f);
             float rad = _aimAngleDegrees * Mathf.Deg2Rad;
@@ -320,7 +345,7 @@ public class BallController : MonoBehaviour
                 _aimLine.SetPosition(1, origin + _aimDir * 2.8f);
             }
         }
-        else if (Input.GetKeyUp(KeyCode.Space))
+        else if (leftButton.wasReleasedThisFrame)
         {
             if (_aimLineGO != null) _aimLineGO.SetActive(false);
             _launchDirection = _aimDir;
@@ -334,6 +359,11 @@ public class BallController : MonoBehaviour
             if (_aimLineGO != null && _aimLineGO.activeSelf)
                 _aimLineGO.SetActive(false);
         }
+    }
+
+    private static bool WasLeftMousePressedThisFrame()
+    {
+        return Mouse.current?.leftButton?.wasPressedThisFrame ?? false;
     }
 
     private void WarpMouseToPaddleX()

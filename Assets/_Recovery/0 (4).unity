@@ -5975,7 +5975,6 @@ MonoBehaviour:
   _ball: {fileID: 1374096748}
   _paddle: {fileID: 842519041}
   _hud: {fileID: 1313978739}
-  bottomWall: {fileID: 489783678}
   _state: 0
 --- !u!4 &1682921468
 Transform:

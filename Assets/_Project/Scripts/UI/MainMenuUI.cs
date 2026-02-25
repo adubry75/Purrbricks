@@ -59,15 +59,17 @@ public class MainMenuUI : MonoBehaviour
 
         if (_playSprite != null)
         {
-            CreateImageButton(_panel.transform, _playSprite, new Vector2(0f, -100f), () => GameManager.Instance?.StartGame());
-            CreateImageButton(_panel.transform, _highScoresSprite, new Vector2(0f, -200f), () => GameManager.Instance?.ShowHighScores());
-            CreateImageButton(_panel.transform, _quitSprite, new Vector2(0f, -300f), QuitGame);
+            CreateImageButton(_panel.transform, _playSprite,       new Vector2(0f, -80f),  () => GameManager.Instance?.StartGame());
+            CreateImageButton(_panel.transform, _highScoresSprite, new Vector2(0f, -170f), () => GameManager.Instance?.ShowHighScores());
+            UIStyle.CreateButton(_panel.transform, "Settings",     new Vector2(0f, -255f), new Vector2(320f, 70f), () => GameManager.Instance?.ShowSettings(fromPause: false), UIStyle.AccentBlue);
+            CreateImageButton(_panel.transform, _quitSprite,       new Vector2(0f, -340f), QuitGame);
         }
         else
         {
-            UIStyle.CreateButton(_panel.transform, "Play", new Vector2(0f, 50f), new Vector2(320f, 80f), () => GameManager.Instance?.StartGame(), UIStyle.AccentMagenta);
-            UIStyle.CreateButton(_panel.transform, "High Scores", new Vector2(0f, -50f), new Vector2(320f, 80f), () => GameManager.Instance?.ShowHighScores(), UIStyle.AccentBlue);
-            UIStyle.CreateButton(_panel.transform, "Quit", new Vector2(0f, -150f), new Vector2(320f, 80f), QuitGame, UIStyle.AccentRed);
+            UIStyle.CreateButton(_panel.transform, "Play",        new Vector2(0f,   30f), new Vector2(320f, 80f), () => GameManager.Instance?.StartGame(),                      UIStyle.AccentMagenta);
+            UIStyle.CreateButton(_panel.transform, "High Scores", new Vector2(0f,  -65f), new Vector2(320f, 80f), () => GameManager.Instance?.ShowHighScores(),                 UIStyle.AccentBlue);
+            UIStyle.CreateButton(_panel.transform, "Settings",    new Vector2(0f, -160f), new Vector2(320f, 80f), () => GameManager.Instance?.ShowSettings(fromPause: false),   UIStyle.AccentBlue);
+            UIStyle.CreateButton(_panel.transform, "Quit",        new Vector2(0f, -255f), new Vector2(320f, 80f), QuitGame,                                                     UIStyle.AccentRed);
         }
 
         

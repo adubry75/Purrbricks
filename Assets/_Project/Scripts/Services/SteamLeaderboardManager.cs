@@ -20,9 +20,19 @@ public class SteamLeaderboardManager : MonoBehaviour
     {
         public SteamLeaderboard_t Handle;
         public bool IsReady;
-        public readonly Queue<int> PendingUploads = new Queue<int>();
-        public readonly Queue<(int count, Action<List<LeaderboardEntryModel>> cb)> PendingFetches
-            = new Queue<(int, Action<List<LeaderboardEntryModel>>)>();
+        public readonly Queue<(int score, ELeaderboardUploadScoreMethod method)> PendingUploads
+            = new Queue<(int, ELeaderboardUploadScoreMethod)>();
+        public readonly Queue<(ELeaderboardDataRequest reqType, int rangeStart, int rangeEnd, Action<List<LeaderboardEntryModel>> cb)> PendingFetches
+            = new Queue<(ELeaderboardDataRequest, int, int, Action<List<LeaderboardEntryModel>>)>();
+    }
+
+    private struct DownloadRequest
+    {
+        public SteamLeaderboard_t Handle;
+        public ELeaderboardDataRequest RequestType;
+        public int RangeStart;
+        public int RangeEnd;
+        public Action<List<LeaderboardEntryModel>> Callback;
     }
 
     private readonly Dictionary<string, BoardEntry> _boards = new Dictionary<string, BoardEntry>();
@@ -36,15 +46,14 @@ public class SteamLeaderboardManager : MonoBehaviour
 
     // ── Upload queue (serialized) ─────────────────────────────────────────────
 
-    private readonly Queue<(SteamLeaderboard_t handle, int score)> _uploadQueue
-        = new Queue<(SteamLeaderboard_t, int)>();
+    private readonly Queue<(SteamLeaderboard_t handle, int score, ELeaderboardUploadScoreMethod method)> _uploadQueue
+        = new Queue<(SteamLeaderboard_t, int, ELeaderboardUploadScoreMethod)>();
     private bool _uploading;
     private CallResult<LeaderboardScoreUploaded_t> _uploadResult;
 
     // ── Download queue (serialized) ───────────────────────────────────────────
 
-    private readonly Queue<(SteamLeaderboard_t handle, int count, Action<List<LeaderboardEntryModel>> cb)> _downloadQueue
-        = new Queue<(SteamLeaderboard_t, int, Action<List<LeaderboardEntryModel>>)>();
+    private readonly Queue<DownloadRequest> _downloadQueue = new Queue<DownloadRequest>();
     private bool _downloading;
     private Action<List<LeaderboardEntryModel>> _downloadCallback;
     private CallResult<LeaderboardScoresDownloaded_t> _downloadResult;
@@ -70,38 +79,65 @@ public class SteamLeaderboardManager : MonoBehaviour
     /// Safe to call before the board is initialized (queued automatically).
     /// </summary>
     public void SubmitScore(string boardName, int score)
+        => SubmitScoreInternal(boardName, score, ELeaderboardUploadScoreMethod.k_ELeaderboardUploadScoreMethodKeepBest);
+
+    /// <summary>
+    /// Submit a score using ForceUpdate — always overwrites the existing entry even if lower.
+    /// Used for ratings where the value can go up or down.
+    /// Safe to call before the board is initialized (queued automatically).
+    /// </summary>
+    public void SubmitScoreForce(string boardName, int score)
+        => SubmitScoreInternal(boardName, score, ELeaderboardUploadScoreMethod.k_ELeaderboardUploadScoreMethodForceUpdate);
+
+    private void SubmitScoreInternal(string boardName, int score, ELeaderboardUploadScoreMethod method)
     {
         if (!IsSteamReady()) return;
 
         var entry = GetOrCreate(boardName);
         if (entry.IsReady)
-            EnqueueUpload(entry.Handle, score);
+            EnqueueUpload(entry.Handle, score, method);
         else
         {
-            entry.PendingUploads.Enqueue(score);
+            entry.PendingUploads.Enqueue((score, method));
             EnsureInit(boardName);
         }
     }
 
-    /// <summary>
-    /// Fetch the top <paramref name="count"/> scores from the named leaderboard.
-    /// <paramref name="callback"/> is invoked with the result list, or <c>null</c> on error.
-    /// Safe to call before the board is initialized (queued automatically).
-    /// </summary>
+    /// <summary>Fetch top <paramref name="count"/> scores (ranks 1…count). Kept for compatibility.</summary>
     public void FetchTopScores(string boardName, int count, Action<List<LeaderboardEntryModel>> callback)
-    {
-        if (!IsSteamReady())
-        {
-            callback?.Invoke(null);
-            return;
-        }
+        => FetchRange(boardName, 1, count, callback);
 
+    /// <summary>
+    /// Fetch a specific rank range from the named leaderboard (1-based, global order).
+    /// <paramref name="callback"/> is invoked with the result list, or <c>null</c> on error.
+    /// Safe to call before the board is initialized.
+    /// </summary>
+    public void FetchRange(string boardName, int start, int end, Action<List<LeaderboardEntryModel>> callback)
+    {
+        if (!IsSteamReady()) { callback?.Invoke(null); return; }
+        EnqueueOrPend(boardName, ELeaderboardDataRequest.k_ELeaderboardDataRequestGlobal, start, end, callback);
+    }
+
+    /// <summary>
+    /// Fetch entries surrounding the current user (±<paramref name="range"/> ranks).
+    /// Returns up to 2×range+1 entries with the user's entry centred.
+    /// Falls back to an empty list (not null) when the user has no score on this board.
+    /// </summary>
+    public void FetchAroundMe(string boardName, int range, Action<List<LeaderboardEntryModel>> callback)
+    {
+        if (!IsSteamReady()) { callback?.Invoke(null); return; }
+        EnqueueOrPend(boardName, ELeaderboardDataRequest.k_ELeaderboardDataRequestGlobalAroundUser, -range, range, callback);
+    }
+
+    private void EnqueueOrPend(string boardName, ELeaderboardDataRequest reqType,
+        int rangeStart, int rangeEnd, Action<List<LeaderboardEntryModel>> callback)
+    {
         var entry = GetOrCreate(boardName);
         if (entry.IsReady)
-            EnqueueDownload(entry.Handle, count, callback);
+            EnqueueDownload(entry.Handle, reqType, rangeStart, rangeEnd, callback);
         else
         {
-            entry.PendingFetches.Enqueue((count, callback));
+            entry.PendingFetches.Enqueue((reqType, rangeStart, rangeEnd, callback));
             EnsureInit(boardName);
         }
     }
@@ -160,12 +196,15 @@ public class SteamLeaderboardManager : MonoBehaviour
         Debug.Log($"SteamLeaderboardManager: '{name}' ready");
 
         while (entry.PendingUploads.Count > 0)
-            EnqueueUpload(entry.Handle, entry.PendingUploads.Dequeue());
+        {
+            var (score, method) = entry.PendingUploads.Dequeue();
+            EnqueueUpload(entry.Handle, score, method);
+        }
 
         while (entry.PendingFetches.Count > 0)
         {
-            var (cnt, cb) = entry.PendingFetches.Dequeue();
-            EnqueueDownload(entry.Handle, cnt, cb);
+            var (reqType, rangeStart, rangeEnd, cb) = entry.PendingFetches.Dequeue();
+            EnqueueDownload(entry.Handle, reqType, rangeStart, rangeEnd, cb);
         }
 
         TryStartNextInit();
@@ -173,9 +212,9 @@ public class SteamLeaderboardManager : MonoBehaviour
 
     // ── Uploads ───────────────────────────────────────────────────────────────
 
-    private void EnqueueUpload(SteamLeaderboard_t handle, int score)
+    private void EnqueueUpload(SteamLeaderboard_t handle, int score, ELeaderboardUploadScoreMethod method)
     {
-        _uploadQueue.Enqueue((handle, score));
+        _uploadQueue.Enqueue((handle, score, method));
         TryStartNextUpload();
     }
 
@@ -183,13 +222,10 @@ public class SteamLeaderboardManager : MonoBehaviour
     {
         if (_uploading || _uploadQueue.Count == 0) return;
         _uploading = true;
-        var (handle, score) = _uploadQueue.Dequeue();
-        var call = SteamUserStats.UploadLeaderboardScore(
-            handle,
-            ELeaderboardUploadScoreMethod.k_ELeaderboardUploadScoreMethodKeepBest,
-            score, null, 0);
+        var (handle, score, method) = _uploadQueue.Dequeue();
+        var call = SteamUserStats.UploadLeaderboardScore(handle, method, score, null, 0);
         _uploadResult.Set(call);
-        Debug.Log($"SteamLeaderboardManager: Uploading score {score}");
+        Debug.Log($"SteamLeaderboardManager: Uploading score {score} ({method})");
     }
 
     private void OnScoreUploaded(LeaderboardScoreUploaded_t result, bool failure)
@@ -204,9 +240,17 @@ public class SteamLeaderboardManager : MonoBehaviour
 
     // ── Downloads ─────────────────────────────────────────────────────────────
 
-    private void EnqueueDownload(SteamLeaderboard_t handle, int count, Action<List<LeaderboardEntryModel>> cb)
+    private void EnqueueDownload(SteamLeaderboard_t handle, ELeaderboardDataRequest reqType,
+        int rangeStart, int rangeEnd, Action<List<LeaderboardEntryModel>> cb)
     {
-        _downloadQueue.Enqueue((handle, count, cb));
+        _downloadQueue.Enqueue(new DownloadRequest
+        {
+            Handle      = handle,
+            RequestType = reqType,
+            RangeStart  = rangeStart,
+            RangeEnd    = rangeEnd,
+            Callback    = cb,
+        });
         TryStartNextDownload();
     }
 
@@ -214,14 +258,12 @@ public class SteamLeaderboardManager : MonoBehaviour
     {
         if (_downloading || _downloadQueue.Count == 0) return;
         _downloading = true;
-        var (handle, count, cb) = _downloadQueue.Dequeue();
-        _downloadCallback = cb;
+        var req = _downloadQueue.Dequeue();
+        _downloadCallback = req.Callback;
         var call = SteamUserStats.DownloadLeaderboardEntries(
-            handle,
-            ELeaderboardDataRequest.k_ELeaderboardDataRequestGlobal,
-            1, count);
+            req.Handle, req.RequestType, req.RangeStart, req.RangeEnd);
         _downloadResult.Set(call);
-        Debug.Log($"SteamLeaderboardManager: Downloading top {count} entries");
+        Debug.Log($"SteamLeaderboardManager: Downloading {req.RequestType} [{req.RangeStart},{req.RangeEnd}]");
     }
 
     private void OnScoresDownloaded(LeaderboardScoresDownloaded_t result, bool failure)

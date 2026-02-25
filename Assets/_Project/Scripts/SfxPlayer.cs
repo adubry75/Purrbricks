@@ -50,10 +50,12 @@ public class SfxPlayer : MonoBehaviour
     public void PlayPowerupPickup() => PlayOne(_powerupPickup);
     public void PlayFuryStrike() => PlayOne(_furyStrike != null ? _furyStrike : _powerupPickup);
 
-    public void MuteAll(bool mute)
-    {
-        _isMuted = mute;
-    }
+    public void MuteAll(bool mute) { _isMuted = mute; }
+
+    /// <summary>Sets the master SFX volume (0–1). Does not affect the mute toggle.</summary>
+    public void SetVolume(float volume) { _volume = Mathf.Clamp01(volume); }
+
+    public float GetVolume() => _volume;
 
     private void PlayOne(AudioClip clip)
     {
