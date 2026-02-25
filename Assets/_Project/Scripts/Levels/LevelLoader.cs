@@ -57,6 +57,12 @@ public class LevelLoader : MonoBehaviour
         SpawnPrismGates(data);
     }
 
+    public void ClearLevel()
+    {
+        CurrentLevel = null;
+        ClearBricks();
+    }
+
     private void ClearBricks()
     {
         foreach (var go in _spawnedBricks)

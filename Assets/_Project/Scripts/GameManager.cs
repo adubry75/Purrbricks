@@ -57,6 +57,13 @@ public class GameManager : MonoBehaviour
     private int _activeClonesCount;  // explicit count — avoids deferred-Destroy false positives
     private bool _scoreFrenzyActive;
     private float _cachedFuryCharge;
+    private bool _hidGameplayForHighScores;
+    private bool _cachedHudActive;
+    private bool _cachedBallActive;
+    private bool _cachedPaddleActive;
+    private bool _cachedIsDemoMode;
+    private GameState _cachedStateBeforeHighScores;
+    private float _cachedTimeScaleBeforeHighScores;
 
     // ── Per-level score stats (reset each LoadLevel) ─────────────────────────
     private int   _levelStartScore;
@@ -283,6 +290,7 @@ public class GameManager : MonoBehaviour
 
     public void StartGame()
     {
+        RestoreGameplayAfterHighScores();
         _isDemoMode = false;
         _paddle?.SetDemoMode(false);
 
@@ -313,6 +321,7 @@ public class GameManager : MonoBehaviour
 
     public void ShowMainMenu()
     {
+        RestoreGameplayAfterHighScores();
         _isDemoMode = true;
         _paddle?.SetDemoMode(true);
         _gameOverUI?.Hide();
@@ -328,33 +337,81 @@ public class GameManager : MonoBehaviour
 
     public void ShowHighScores()
     {
+        RestoreGameplayAfterHighScores();
         _isDemoMode = true;
         _paddle?.SetDemoMode(true);
         _mainMenuUI?.Hide();
         _highScoresUI?.Show();
 
-        LoadDemoLevel();
+        HideGameplayForHighScores();
         SetState(GameState.HighScores);
     }
 
     /// <summary>Opens the leaderboard screen on a specific level board (called from VictoryUI).</summary>
     public void ShowLevelLeaderboard(int levelIndex)
     {
-        _isDemoMode = true;
-        _paddle?.SetDemoMode(true);
+        RestoreGameplayAfterHighScores();
         _victoryUI?.Hide();
-        _highScoresUI?.ShowForLevel(levelIndex);
+        _highScoresUI?.ShowForLevel(levelIndex, returnToVictory: true);
 
-        LoadDemoLevel();
+        HideGameplayForHighScores();
         SetState(GameState.HighScores);
+    }
+
+    public void ReturnToVictoryFromLevelBoard()
+    {
+        _highScoresUI?.Hide();
+        RestoreGameplayAfterHighScores();
+        _victoryUI?.Show();
+
+        // Restore state/timeScale without re-running SetState(Victory) side effects
+        // (Victory state triggers OnLevelCompleted, music, etc.).
+        _state = _cachedStateBeforeHighScores;
+        Time.timeScale = _cachedTimeScaleBeforeHighScores;
+        SetCursorMenuMode();
     }
 
     /// <summary>Called by GameOverUI to show leaderboard — no music change.</summary>
     public void ShowHighScoresAfterGameOver()
     {
+        RestoreGameplayAfterHighScores();
         _gameOverUI?.Hide();
         _highScoresUI?.Show();
         // Intentionally no music change — game over track keeps playing
+        HideGameplayForHighScores();
+        SetState(GameState.HighScores);
+    }
+
+    private void HideGameplayForHighScores()
+    {
+        if (_hidGameplayForHighScores) return;
+        _hidGameplayForHighScores = true;
+
+        _cachedStateBeforeHighScores = _state;
+        _cachedTimeScaleBeforeHighScores = Time.timeScale;
+        _cachedIsDemoMode = _isDemoMode;
+        _cachedHudActive = _hud != null && _hud.gameObject.activeSelf;
+        _cachedBallActive = _ball != null && _ball.gameObject.activeSelf;
+        _cachedPaddleActive = _paddle != null && _paddle.gameObject.activeSelf;
+
+        _levelLoader?.ClearLevel();
+
+        if (_hud != null) _hud.gameObject.SetActive(false);
+        if (_ball != null) _ball.gameObject.SetActive(false);
+        if (_paddle != null) _paddle.gameObject.SetActive(false);
+    }
+
+    private void RestoreGameplayAfterHighScores()
+    {
+        if (!_hidGameplayForHighScores) return;
+        _hidGameplayForHighScores = false;
+
+        _isDemoMode = _cachedIsDemoMode;
+        _paddle?.SetDemoMode(_isDemoMode);
+
+        if (_hud != null) _hud.gameObject.SetActive(_cachedHudActive);
+        if (_ball != null) _ball.gameObject.SetActive(_cachedBallActive);
+        if (_paddle != null) _paddle.gameObject.SetActive(_cachedPaddleActive);
     }
 
     /// <summary>Resumes gameplay from the pause menu.</summary>

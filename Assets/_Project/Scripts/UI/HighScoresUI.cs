@@ -31,6 +31,9 @@ public class HighScoresUI : MonoBehaviour
     private Button     _prevPageBtn;
     private Button     _nextPageBtn;
     private Text       _pageLabel;
+    private Button     _mainMenuBtn;
+    private Button     _backToGameBtn;
+    private bool       _returnToVictory;
 
     // State
     private int  _boardIndex; // 0 = OVERALL, 1..N = level 00..(N-1)
@@ -152,10 +155,23 @@ public class HighScoresUI : MonoBehaviour
         pageRt.sizeDelta        = new Vector2(200f, 40f);
         pageRt.anchoredPosition = new Vector2(0f, -388f);
 
-        // ── Main Menu button ───────────────────────────────────────────────────
-        UIStyle.CreateButton(panel.transform, "Main Menu",
+        // ── Exit buttons ──────────────────────────────────────────────────────
+        _mainMenuBtn = UIStyle.CreateButton(panel.transform, "Main Menu",
             new Vector2(0f, -455f), new Vector2(280f, 70f),
             () => GameManager.Instance?.ShowMainMenu(), UIStyle.AccentBlue);
+
+        _backToGameBtn = UIStyle.CreateButton(panel.transform, "Back To Game",
+            new Vector2(0f, -455f), new Vector2(280f, 70f),
+            () => GameManager.Instance?.ReturnToVictoryFromLevelBoard(), UIStyle.AccentGreen);
+
+        SetReturnToVictory(false);
+    }
+
+    private void SetReturnToVictory(bool on)
+    {
+        _returnToVictory = on;
+        if (_mainMenuBtn != null) _mainMenuBtn.gameObject.SetActive(!on);
+        if (_backToGameBtn != null) _backToGameBtn.gameObject.SetActive(on);
     }
 
     // ── Event handlers ────────────────────────────────────────────────────────
@@ -535,6 +551,7 @@ public class HighScoresUI : MonoBehaviour
     /// <summary>Opens on the OVERALL board in NEARBY mode.</summary>
     public void Show()
     {
+        SetReturnToVictory(false);
         gameObject.SetActive(true);
         _boardIndex = 0;
         ResetToNearby();
@@ -544,8 +561,9 @@ public class HighScoresUI : MonoBehaviour
     public void ShowGlobalTab() => Show();
 
     /// <summary>Opens directly on a specific level's board in NEARBY mode.</summary>
-    public void ShowForLevel(int levelIndex)
+    public void ShowForLevel(int levelIndex, bool returnToVictory = false)
     {
+        SetReturnToVictory(returnToVictory);
         gameObject.SetActive(true);
         _boardIndex = Mathf.Clamp(levelIndex + 1, 0, TOTAL_BOARDS - 1);
         ResetToNearby();
