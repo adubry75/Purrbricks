@@ -11,6 +11,10 @@ public class GameOverUI : MonoBehaviour
     private Text   _titleText;
     private Text   _scoreText;
 
+    [Header("Button Sprites")]
+    [SerializeField] private Sprite _leaderboardSprite;
+    [SerializeField] private Sprite _mainMenuSprite;
+
     private void Awake()
     {
         BuildUI();
@@ -39,7 +43,7 @@ public class GameOverUI : MonoBehaviour
         panelRt.anchorMin        = Vector2.zero;
         panelRt.anchorMax        = Vector2.one;
         panelRt.sizeDelta        = Vector2.zero;
-        panelRt.anchoredPosition = new Vector2(-160f, 0f);
+        panelRt.anchoredPosition = new Vector2(-200f, 0f);
 
         // Title
         var titleGO = new GameObject("Title");
@@ -80,13 +84,19 @@ public class GameOverUI : MonoBehaviour
         scoreOl.effectDistance = new Vector2(3f, -3f);
 
         // Buttons (side by side)
-        UIStyle.CreateButton(panel.transform, "Leaderboard",
-            new Vector2(-160f, -60f), new Vector2(280f, 70f),
-            OnLeaderboard, UIStyle.AccentBlue);
+        if (_leaderboardSprite != null)
+            UIStyle.CreateImageButton(panel.transform, _leaderboardSprite, new Vector2(-200f, -60f), OnLeaderboard);
+        else
+            UIStyle.CreateButton(panel.transform, "Leaderboard",
+                new Vector2(-200f, -60f), new Vector2(280f, 70f),
+                OnLeaderboard, UIStyle.AccentBlue);
 
-        UIStyle.CreateButton(panel.transform, "Main Menu",
-            new Vector2(160f, -60f), new Vector2(280f, 70f),
-            OnMainMenu, UIStyle.AccentGold);
+        if (_mainMenuSprite != null)
+            UIStyle.CreateImageButton(panel.transform, _mainMenuSprite, new Vector2(200f, -60f), OnMainMenu);
+        else
+            UIStyle.CreateButton(panel.transform, "Main Menu",
+                new Vector2(200f, -60f), new Vector2(280f, 70f),
+                OnMainMenu, UIStyle.AccentGold);
     }
 
     // ── Public API ────────────────────────────────────────────────────────────

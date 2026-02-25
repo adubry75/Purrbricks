@@ -11,6 +11,7 @@ public class VictoryUI : MonoBehaviour
     private GameObject _panel;
     [SerializeField] private Sprite _nextLevelSprite;
     [SerializeField] private Sprite _replayLevelSprite;
+    [SerializeField] private Sprite _levelRankingsSprite;
 
     // Score stat labels
     private Text _levelScoreText;
@@ -83,10 +84,13 @@ public class VictoryUI : MonoBehaviour
         _newBestBanner.SetActive(false);
 
         // ── Buttons ───────────────────────────────────────────────────────────
-        // Level Board button (top center)
-        UIStyle.CreateButton(_panel.transform, "Level Board",
-            new Vector2(0f, -110f), new Vector2(300f, 65f),
-            OnLevelBoard, UIStyle.AccentBlue);
+        // Level Rankings button (top center)
+        if (_levelRankingsSprite != null)
+            UIStyle.CreateImageButton(_panel.transform, _levelRankingsSprite, new Vector2(0f, -110f), OnLevelBoard);
+        else
+            UIStyle.CreateButton(_panel.transform, "Level Board",
+                new Vector2(0f, -110f), new Vector2(300f, 65f),
+                OnLevelBoard, UIStyle.AccentBlue);
 
         // Next Level / Replay (side by side below)
         if (_nextLevelSprite != null)

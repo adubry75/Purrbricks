@@ -92,8 +92,10 @@ public class PaddleController : MonoBehaviour
 
         transform.position = new Vector3(newX, _yLocked, transform.position.z);
 
-        // Laser: fire on left mouse button click (with cooldown to prevent spam)
-        if (_isLaser && !_isDemoMode)
+        // Laser: only fire during active gameplay (prevents UI clicks like "Next Level"
+        // from spawning lasers on the next level).
+        bool canShoot = GameManager.Instance != null && GameManager.Instance.State == GameState.Playing;
+        if (_isLaser && !_isDemoMode && canShoot)
         {
             _laserCooldown -= Time.deltaTime;
             if (_laserCooldown <= 0f && Input.GetMouseButtonDown(0))

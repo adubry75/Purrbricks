@@ -18,6 +18,9 @@ public class HighScoresUI : MonoBehaviour
 
     private Canvas _canvas;
 
+    [Header("Button Sprites")]
+    [SerializeField] private Sprite _mainMenuSprite;
+
     // Dynamic content
     private Text       _boardLabel;
     private Button     _prevBoardBtn;
@@ -156,9 +159,12 @@ public class HighScoresUI : MonoBehaviour
         pageRt.anchoredPosition = new Vector2(0f, -388f);
 
         // ── Exit buttons ──────────────────────────────────────────────────────
-        _mainMenuBtn = UIStyle.CreateButton(panel.transform, "Main Menu",
-            new Vector2(0f, -455f), new Vector2(280f, 70f),
-            () => GameManager.Instance?.ShowMainMenu(), UIStyle.AccentBlue);
+        if (_mainMenuSprite != null)
+            _mainMenuBtn = UIStyle.CreateImageButton(panel.transform, _mainMenuSprite, new Vector2(0f, -455f), () => GameManager.Instance?.ShowMainMenu());
+        else
+            _mainMenuBtn = UIStyle.CreateButton(panel.transform, "Main Menu",
+                new Vector2(0f, -455f), new Vector2(280f, 70f),
+                () => GameManager.Instance?.ShowMainMenu(), UIStyle.AccentBlue);
 
         _backToGameBtn = UIStyle.CreateButton(panel.transform, "Back To Game",
             new Vector2(0f, -455f), new Vector2(280f, 70f),

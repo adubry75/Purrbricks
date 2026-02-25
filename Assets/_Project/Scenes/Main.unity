@@ -3477,6 +3477,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c4d26f335aa692b4ba3a122e1dba3374, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::HighScoresUI
+  _mainMenuSprite: {fileID: 3431955587499001540, guid: 43680d8529a0d3b4c90942d122ea6ab9, type: 3}
 --- !u!4 &874544252
 Transform:
   m_ObjectHideFlags: 0
@@ -4330,6 +4331,51 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls: []
+--- !u!1 &1113029537
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1113029539}
+  - component: {fileID: 1113029538}
+  m_Layer: 0
+  m_Name: LevelRatingService
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &1113029538
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1113029537}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a8e83df13f30c05498482040fa316eca, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::LevelRatingService
+  _firebaseBaseUrl: 
+--- !u!4 &1113029539
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1113029537}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1133823278
 GameObject:
   m_ObjectHideFlags: 0
@@ -4359,6 +4405,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5dc138d3c3f4cc84db89975f2d987cb1, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::GameOverUI
+  _leaderboardSprite: {fileID: -3578025878461359141, guid: a95304639dea66742824605aae3142fb, type: 3}
+  _mainMenuSprite: {fileID: 3431955587499001540, guid: 43680d8529a0d3b4c90942d122ea6ab9, type: 3}
 --- !u!4 &1133823280
 Transform:
   m_ObjectHideFlags: 0
@@ -5526,6 +5574,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::VictoryUI
   _nextLevelSprite: {fileID: 21300000, guid: 1f469fb366c95924ab73450ccd4c18f4, type: 3}
   _replayLevelSprite: {fileID: 21300000, guid: 5daf22514a09b6244a4b453eaea74375, type: 3}
+  _levelRankingsSprite: {fileID: -435092469602210517, guid: bf385fcd1ae13a04db6deef8d89c8cf3, type: 3}
 --- !u!4 &1601206119
 Transform:
   m_ObjectHideFlags: 0
@@ -5974,10 +6023,6 @@ MonoBehaviour:
   - level_77
   - level_78
   - level_79
-  - level_80
-  - level_81
-  - level_82
-  - level_83
   _levelClearDelay: 3
   _levelLoader: {fileID: 1184986102}
   _ball: {fileID: 1374096748}
@@ -6301,6 +6346,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5e40ed358d3a6f940b4c925f81fa452d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PauseMenuUI
+  _resumeSprite: {fileID: 6090171506988809764, guid: 8756dc3c4868072498f3944b42cb4bdf, type: 3}
+  _mainMenuSprite: {fileID: 3431955587499001540, guid: 43680d8529a0d3b4c90942d122ea6ab9, type: 3}
 --- !u!4 &1837778262
 Transform:
   m_ObjectHideFlags: 0
@@ -7143,3 +7190,4 @@ SceneRoots:
   - {fileID: 1005980698}
   - {fileID: 1175767425}
   - {fileID: 1837778262}
+  - {fileID: 1113029539}

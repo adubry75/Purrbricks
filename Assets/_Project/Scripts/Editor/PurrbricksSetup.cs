@@ -343,14 +343,21 @@ public static class PurrbricksSetup
             return null;
         }
 
+        Sprite LoadButton(string file)
+        {
+            // Prefer the new folder, but keep legacy fallback.
+            return LoadSprite("Assets/_Project/Art/Buttons/" + file)
+                ?? LoadSprite("Assets/_Project/Art/" + file);
+        }
+
         var mainMenuUI = Object.FindFirstObjectByType<MainMenuUI>(FindObjectsInactive.Include);
         if (mainMenuUI != null)
         {
             var mmSo = new SerializedObject(mainMenuUI);
 
-            var sp1 = LoadSprite("Assets/_Project/Art/play-button.png");
-            var sp2 = LoadSprite("Assets/_Project/Art/highscores-button.png");
-            var sp3 = LoadSprite("Assets/_Project/Art/quit-button.png");
+            var sp1 = LoadButton("play-button.png");
+            var sp2 = LoadButton("highscores-button.png");
+            var sp3 = LoadButton("quit-button.png");
 
             if (sp1 != null) mmSo.FindProperty("_playSprite").objectReferenceValue        = sp1;
             if (sp2 != null) mmSo.FindProperty("_highScoresSprite").objectReferenceValue  = sp2;
@@ -358,7 +365,52 @@ public static class PurrbricksSetup
             mmSo.ApplyModifiedProperties();
 
             if (sp1 != null) Debug.Log("Assigned main menu button sprites.");
-            else Debug.LogWarning("Could not find button sprites in Assets/_Project/Art/");
+            else Debug.LogWarning("Could not find button sprites in Assets/_Project/Art/Buttons/ (or legacy Assets/_Project/Art/).");
+        }
+
+        // Assign other UI button sprites (new art in Art/Buttons)
+        var victoryUI = Object.FindFirstObjectByType<VictoryUI>(FindObjectsInactive.Include);
+        if (victoryUI != null)
+        {
+            var so = new SerializedObject(victoryUI);
+            var next = LoadButton("nextlevel-button.png");
+            var replay = LoadButton("replaylevel-button.png");
+            var rankings = LoadButton("levelrankings-button.png");
+            if (next != null) so.FindProperty("_nextLevelSprite").objectReferenceValue = next;
+            if (replay != null) so.FindProperty("_replayLevelSprite").objectReferenceValue = replay;
+            if (rankings != null) so.FindProperty("_levelRankingsSprite").objectReferenceValue = rankings;
+            so.ApplyModifiedProperties();
+        }
+
+        var pauseUI = Object.FindFirstObjectByType<PauseMenuUI>(FindObjectsInactive.Include);
+        if (pauseUI != null)
+        {
+            var so = new SerializedObject(pauseUI);
+            var resume = LoadButton("resume-button.png");
+            var mm = LoadButton("mainmenu-button.png");
+            if (resume != null) so.FindProperty("_resumeSprite").objectReferenceValue = resume;
+            if (mm != null) so.FindProperty("_mainMenuSprite").objectReferenceValue = mm;
+            so.ApplyModifiedProperties();
+        }
+
+        var gameOverUI = Object.FindFirstObjectByType<GameOverUI>(FindObjectsInactive.Include);
+        if (gameOverUI != null)
+        {
+            var so = new SerializedObject(gameOverUI);
+            var lb = LoadButton("leaderboard-button.png");
+            var mm = LoadButton("mainmenu-button.png");
+            if (lb != null) so.FindProperty("_leaderboardSprite").objectReferenceValue = lb;
+            if (mm != null) so.FindProperty("_mainMenuSprite").objectReferenceValue = mm;
+            so.ApplyModifiedProperties();
+        }
+
+        var highScoresUI = Object.FindFirstObjectByType<HighScoresUI>(FindObjectsInactive.Include);
+        if (highScoresUI != null)
+        {
+            var so = new SerializedObject(highScoresUI);
+            var mm = LoadButton("mainmenu-button.png");
+            if (mm != null) so.FindProperty("_mainMenuSprite").objectReferenceValue = mm;
+            so.ApplyModifiedProperties();
         }
 
         // Ball sprite — assign + auto-fix PPU to match collider

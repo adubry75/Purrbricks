@@ -10,6 +10,10 @@ public class PauseMenuUI : MonoBehaviour
 {
     private Canvas _canvas;
 
+    [Header("Button Sprites")]
+    [SerializeField] private Sprite _resumeSprite;
+    [SerializeField] private Sprite _mainMenuSprite;
+
     private void Awake()
     {
         BuildUI();
@@ -77,17 +81,23 @@ public class PauseMenuUI : MonoBehaviour
         float step  = 96f;
         const float W = 360f, H = 74f;
 
-        UIStyle.CreateButton(card.transform, "Resume",
-            new Vector2(0f, btnY),          new Vector2(W, H),
-            () => GameManager.Instance?.ResumeGame(), UIStyle.AccentGreen);
+        if (_resumeSprite != null)
+            UIStyle.CreateImageButton(card.transform, _resumeSprite, new Vector2(0f, btnY), () => GameManager.Instance?.ResumeGame());
+        else
+            UIStyle.CreateButton(card.transform, "Resume",
+                new Vector2(0f, btnY),          new Vector2(W, H),
+                () => GameManager.Instance?.ResumeGame(), UIStyle.AccentGreen);
 
         UIStyle.CreateButton(card.transform, "Settings",
             new Vector2(0f, btnY - step),   new Vector2(W, H),
             () => GameManager.Instance?.ShowSettings(fromPause: true), UIStyle.AccentBlue);
 
-        UIStyle.CreateButton(card.transform, "Main Menu",
-            new Vector2(0f, btnY - step*2), new Vector2(W, H),
-            () => GameManager.Instance?.ShowMainMenu(), UIStyle.AccentMagenta);
+        if (_mainMenuSprite != null)
+            UIStyle.CreateImageButton(card.transform, _mainMenuSprite, new Vector2(0f, btnY - step*2), () => GameManager.Instance?.ShowMainMenu());
+        else
+            UIStyle.CreateButton(card.transform, "Main Menu",
+                new Vector2(0f, btnY - step*2), new Vector2(W, H),
+                () => GameManager.Instance?.ShowMainMenu(), UIStyle.AccentMagenta);
 
         UIStyle.CreateButton(card.transform, "Quit Game",
             new Vector2(0f, btnY - step*3), new Vector2(W, H),
