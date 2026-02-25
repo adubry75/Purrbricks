@@ -1,0 +1,33 @@
+{
+  "id": "level_83",
+  "displayName": "Prism Quartet",
+  "ballSpeed": 10.2,
+  "prismGates": [
+    { "x": -10.0, "y": -4.2, "width": 3.2, "height": 0.35, "color": "red" },
+    { "x": -5.0, "y": -4.2, "width": 3.2, "height": 0.35, "color": "green" },
+    { "x":  1.0, "y": -4.2, "width": 3.2, "height": 0.35, "color": "blue" },
+    { "x":  6.0, "y": -4.2, "width": 3.2, "height": 0.35, "color": "pink" }
+  ],
+  "grid": { "cols": 12, "rows": 6, "brickWidth": 1.35, "brickHeight": 0.45, "gapX": 0.08, "gapY": 0.16 },
+  "bricks": [
+    { "col": 5, "row": 1, "templateId": "standard", "points": 20000, "tint": "#FFF3A0" },
+
+    { "col": 4, "row": 1, "templateId": "standard", "requiredBallColor": "red"   },
+    { "col": 6, "row": 1, "templateId": "standard", "requiredBallColor": "blue"  },
+    { "col": 5, "row": 0, "templateId": "standard", "requiredBallColor": "green" },
+    { "col": 5, "row": 2, "templateId": "standard", "requiredBallColor": "pink"  },
+
+    { "col": 4, "row": 0, "templateId": "standard", "requiredBallColor": "green" },
+    { "col": 6, "row": 0, "templateId": "standard", "requiredBallColor": "green" },
+    { "col": 4, "row": 2, "templateId": "standard", "requiredBallColor": "pink"  },
+    { "col": 6, "row": 2, "templateId": "standard", "requiredBallColor": "pink"  },
+
+    { "col": 3, "row": 1, "templateId": "standard", "requiredBallColor": "red"   },
+    { "col": 7, "row": 1, "templateId": "standard", "requiredBallColor": "blue"  },
+
+    { "col": 2, "row": 4, "templateId": "gold" }, { "col": 3, "row": 4, "templateId": "gold" },
+    { "col": 4, "row": 4, "templateId": "gold" }, { "col": 5, "row": 4, "templateId": "gold" },
+    { "col": 6, "row": 4, "templateId": "gold" }, { "col": 7, "row": 4, "templateId": "gold" },
+    { "col": 8, "row": 4, "templateId": "gold" }, { "col": 9, "row": 4, "templateId": "gold" }
+  ]
+}

@@ -33,12 +33,13 @@ public class HighScoresUI : MonoBehaviour
     private Text       _pageLabel;
 
     // State
-    private int  _boardIndex; // 0 = OVERALL, 1–80 = level 01–80
+    private int  _boardIndex; // 0 = OVERALL, 1..N = level 00..(N-1)
     private Mode _mode;
     private int  _page;       // 1-based, TOP mode only
     private bool _fetching;
 
-    private const int TOTAL_BOARDS = 81;   // 0=overall + 80 levels
+    // 0 = overall + one board per level_XX
+    private const int TOTAL_BOARDS = 85;
     private const int PAGE_SIZE    = 10;
     private const int AROUND_RANGE = 5;    // 5 above + you + 5 below = 11 entries
 
@@ -421,7 +422,8 @@ public class HighScoresUI : MonoBehaviour
         if (ta == null) return $"Level {levelIndex + 1:D2}";
         try
         {
-            var token = JObject.Parse(ta.text)["title"];
+            var obj = JObject.Parse(ta.text);
+            var token = obj["displayName"] ?? obj["title"]; // legacy fallback
             return token?.ToString() ?? $"Level {levelIndex + 1:D2}";
         }
         catch { return $"Level {levelIndex + 1:D2}"; }

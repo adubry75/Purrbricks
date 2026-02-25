@@ -42,6 +42,10 @@ public class BallController : MonoBehaviour
     private float _curseTimer;
     private float _invisTimer;
 
+    // Prism gate tint (gameplay color for locked bricks). This is separate from powerup visuals.
+    private PrismColor _prismColor = PrismColor.None;
+    public PrismColor PrismColor => _prismColor;
+
     // Fireball pierce — restore pre-bounce velocity in next FixedUpdate
     private bool _wantFireballPierce;
     private Vector2 _savedVelocity;
@@ -199,6 +203,8 @@ public class BallController : MonoBehaviour
             tint = new Color(0.25f, 0.55f, 0.20f);    // murky green
         else if (_isZipBall)
             tint = new Color(0.35f, 0.90f, 0.10f);    // sickly green
+        else if (_prismColor != PrismColor.None)
+            tint = PrismColorUtil.ToUnityColor(_prismColor);
         else
             tint = Color.white;
 
@@ -455,6 +461,12 @@ public class BallController : MonoBehaviour
         if (!on) _invisTimer = 0f;
     }
 
+    public void SetPrismColor(PrismColor color)
+    {
+        _prismColor = color;
+        UpdateBallColor();
+    }
+
     private void ApplyBallScale()
     {
         if (_isBigBall)
@@ -492,6 +504,7 @@ public class BallController : MonoBehaviour
         cloneBall._isTinyBall = _isTinyBall;
         cloneBall._isInvisiBall = _isInvisiBall;
         cloneBall._rampMultiplier = _rampMultiplier;
+        cloneBall._prismColor = PrismColor.None;
 
         var cloneRb = cloneBall.GetComponent<Rigidbody2D>();
         if (cloneRb != null)
@@ -561,6 +574,12 @@ public class BallController : MonoBehaviour
         var brick = collision.collider.GetComponent<Brick>();
         if (brick != null)
         {
+            if (!brick.CanBeHitByBall(this))
+            {
+                SfxPlayer.Instance?.PlayWallHit();
+                return;
+            }
+
             // Fireball: pierce through bricks with < 5 HP
             if (_isFireball && brick.CurrentHitPoints < 5 && !brick.IsIndestructible)
             {
@@ -628,6 +647,7 @@ public class BallController : MonoBehaviour
         _curseTimer = 0f;
         _invisTimer = 0f;
         _rampMultiplier = 1.0f;
+        _prismColor = PrismColor.None;
 
         transform.localScale = Vector3.one;
         if (_ballSr != null) _ballSr.color = Color.white;

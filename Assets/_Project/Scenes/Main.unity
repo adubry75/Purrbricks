@@ -4447,6 +4447,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 477d4902fa5b50044b4fdd87ec776720, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::SettingsUI
+  _applySprite: {fileID: 21300000, guid: be97f10c9b1f7404da696e81ce241356, type: 3}
+  _backSprite: {fileID: 21300000, guid: ca5950faa1d235b47869ce1d4d151d4b, type: 3}
 --- !u!4 &1175767425
 Transform:
   m_ObjectHideFlags: 0
@@ -5974,6 +5976,8 @@ MonoBehaviour:
   - level_79
   - level_80
   - level_81
+  - level_82
+  - level_83
   _levelClearDelay: 3
   _levelLoader: {fileID: 1184986102}
   _ball: {fileID: 1374096748}

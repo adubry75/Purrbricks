@@ -9,6 +9,7 @@ public class LevelData
     public float ballSpeed = 8.5f;
     public GridConfig grid = new GridConfig();
     public List<BrickEntryData> bricks = new List<BrickEntryData>();
+    public List<PrismGateData> prismGates = new List<PrismGateData>();
 }
 
 [Serializable]
@@ -40,8 +41,20 @@ public class BrickEntryData
     public string skinId;
     public string powerupId;
     public string tint;
+    public string requiredBallColor;
     public int? hp;
     public int? points;
     public bool isIndestructible;
     public BrickMovement movement; // null = static brick
+}
+
+[Serializable]
+public class PrismGateData
+{
+    public float x;
+    public float y;
+    public float width = 4.0f;
+    public float height = 0.35f;
+    public float postThickness = 0.35f;
+    public string color = "blue";
 }

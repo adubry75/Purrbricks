@@ -13,6 +13,7 @@ public class Brick : MonoBehaviour
 
     private BrickVisualController _visual;
     private string _powerupId;
+    private PrismColor _requiredBallColor;
     private bool _isDead; // guard against multiple hits in the same frame
 
     private void Reset()
@@ -55,6 +56,22 @@ public class Brick : MonoBehaviour
     public int  CurrentHitPoints  => _hitPoints;
     public bool IsIndestructible  => _isIndestructible;
     public int  MaxHitPoints      => _maxHitPoints;
+    public PrismColor RequiredBallColor => _requiredBallColor;
+
+    public void SetRequiredBallColor(string color)
+    {
+        if (PrismColorUtil.TryParse(color, out var c))
+            _requiredBallColor = c;
+        else
+            _requiredBallColor = PrismColor.None;
+    }
+
+    public bool CanBeHitByBall(BallController ball)
+    {
+        if (_requiredBallColor == PrismColor.None) return true;
+        if (ball == null) return false;
+        return ball.PrismColor == _requiredBallColor;
+    }
 
     public void SetTemplate(BrickTemplate template, BrickSkin skin, Color tint)
     {

@@ -18,6 +18,9 @@ public static class UIStyle
     private static readonly Color BgHighlight  = new Color(0.10f, 0.20f, 0.36f, 0.98f);
     private static readonly Color BgPressed    = new Color(0.02f, 0.04f, 0.09f, 1.00f);
 
+    // ── Global Variables TODO MOVE SOMEONE ELSE THIS DOESNT BELONG IN UI ───────────────────────────────────────────────────────────────
+    public static readonly int TotalLevels = 84;
+
     // ── Factory ───────────────────────────────────────────────────────────────
 
     /// <summary>

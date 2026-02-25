@@ -14,6 +14,7 @@ public class LevelLoader : MonoBehaviour
     [SerializeField] private PowerupPickup _powerupPickupPrefab;
 
     private List<GameObject> _spawnedBricks = new List<GameObject>();
+    private List<GameObject> _spawnedGates = new List<GameObject>();
 
     private void Awake()
     {
@@ -53,6 +54,7 @@ public class LevelLoader : MonoBehaviour
 
         CurrentLevel = data;
         SpawnBricks(data);
+        SpawnPrismGates(data);
     }
 
     private void ClearBricks()
@@ -63,9 +65,37 @@ public class LevelLoader : MonoBehaviour
         }
         _spawnedBricks.Clear();
 
+        foreach (var go in _spawnedGates)
+        {
+            if (go != null) Destroy(go);
+        }
+        _spawnedGates.Clear();
+
         // Also clear any remaining children (e.g. from editor tests)
         for (int i = transform.childCount - 1; i >= 0; i--)
             Destroy(transform.GetChild(i).gameObject);
+    }
+
+    private void SpawnPrismGates(LevelData data)
+    {
+        if (data == null || data.prismGates == null) return;
+
+        foreach (var g in data.prismGates)
+        {
+            if (g == null) continue;
+
+            if (!PrismColorUtil.TryParse(g.color, out var color))
+                color = PrismColor.Blue;
+
+            var go = new GameObject("PrismGate_" + color.ToString());
+            go.transform.SetParent(transform, false);
+            go.transform.position = new Vector3(g.x, g.y, 0f);
+
+            var gate = go.AddComponent<PrismGate>();
+            gate.Init(color, new Vector2(g.width, g.height), g.postThickness);
+
+            _spawnedGates.Add(go);
+        }
     }
 
     private void SpawnBricks(LevelData data)
@@ -143,6 +173,9 @@ public class LevelLoader : MonoBehaviour
             brick.SetPoints(pts);
             brick.SetIndestructible(indestructible);
 
+            if (!string.IsNullOrEmpty(entry.requiredBallColor))
+                brick.SetRequiredBallColor(entry.requiredBallColor);
+
             // Resolve skin and tint — priority: JSON tint > skin > template > white
             string skinId = entry.skinId ?? template?.defaultSkinId;
             BrickSkin skin = null;
@@ -159,6 +192,9 @@ public class LevelLoader : MonoBehaviour
                 tint = skin.defaultTint;
             else if (template != null)
                 tint = template.defaultTint;
+
+            if (string.IsNullOrEmpty(entry.tint) && brick.RequiredBallColor != PrismColor.None)
+                tint = PrismColorUtil.ToUnityColor(brick.RequiredBallColor);
 
             brick.SetTemplate(template, skin, tint);
 

@@ -165,7 +165,7 @@ public class LevelCodeEntryUI : MonoBehaviour
         {
             if (int.TryParse(code.Substring(2), out int levelNum))
             {
-                int levelClamped = Mathf.Clamp(levelNum - 1, 0, 79);
+                int levelClamped = Mathf.Clamp(levelNum - 1, 0, UIStyle.TotalLevels - 1);
                 Hide();
                 GameManager.Instance?.WarpToLevel(levelClamped);
                 return;

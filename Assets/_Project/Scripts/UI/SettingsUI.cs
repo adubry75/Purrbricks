@@ -9,6 +9,9 @@ using UnityEngine.UI;
 /// </summary>
 public class SettingsUI : MonoBehaviour
 {
+    [SerializeField] private Sprite _applySprite;
+    [SerializeField] private Sprite _backSprite;
+
     private Canvas _canvas;
     private bool   _fromPause;
 
@@ -136,16 +139,30 @@ public class SettingsUI : MonoBehaviour
             if (_sfxPct != null) _sfxPct.text = $"{Mathf.RoundToInt(v * 100f)}%";
             SfxPlayer.Instance?.SetVolume(v);
         });
-        y -= 90f;
+        y -= 190f;
 
         // ── Buttons ───────────────────────────────────────────────────────────
-        UIStyle.CreateButton(panel.transform, "Apply",
-            new Vector2(-145f, y), new Vector2(260f, 68f),
-            OnApply, UIStyle.AccentGreen);
-
-        UIStyle.CreateButton(panel.transform, "Back",
-            new Vector2( 145f, y), new Vector2(260f, 68f),
-            OnBack, UIStyle.AccentBlue);
+        if (_applySprite != null)
+        {
+            UIStyle.CreateImageButton(panel.transform, _applySprite, new Vector2(-200f, y), OnApply);
+        }
+        else
+        {
+            UIStyle.CreateButton(panel.transform, "Apply",
+                new Vector2(-145f, y), new Vector2(260f, 68f),
+                OnApply, UIStyle.AccentGreen);
+        }
+        if (_applySprite != null)
+        {
+            UIStyle.CreateImageButton(panel.transform, _backSprite, new Vector2(200f, y), OnBack);
+        }
+        else
+        {
+            UIStyle.CreateButton(panel.transform, "Back",
+                new Vector2(145f, y), new Vector2(260f, 68f),
+                OnBack, UIStyle.AccentBlue);
+        }
+        
     }
 
     // ── Public API ────────────────────────────────────────────────────────────
