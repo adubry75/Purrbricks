@@ -25,4 +25,11 @@ public class LevelManager : MonoBehaviour
         if (_bricksRemaining <= 0)
             GameManager.Instance?.OnLevelCleared();
     }
+
+    public void OnBrickRevived()
+    {
+        // If the level is already cleared, don't resurrect bricks into the cleared state.
+        if (_bricksRemaining <= 0) return;
+        _bricksRemaining++;
+    }
 }

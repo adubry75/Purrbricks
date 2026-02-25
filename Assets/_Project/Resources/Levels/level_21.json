@@ -48,6 +48,11 @@
     { "col":  4, "row": 9, "templateId": "blue" },
     { "col":  5, "row": 9, "templateId": "gem", "powerupId": "Laser" },
     { "col":  6, "row": 9, "templateId": "gem" },
-    { "col":  7, "row": 9, "templateId": "blue" }
+    {
+      "col": 7,
+      "row": 9,
+      "templateId": "blue",
+      "powerupId": "ShieldWall"
+    }
   ]
 }

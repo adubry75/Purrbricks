@@ -54,6 +54,7 @@ public class Brick : MonoBehaviour
 
     public int  CurrentHitPoints  => _hitPoints;
     public bool IsIndestructible  => _isIndestructible;
+    public int  MaxHitPoints      => _maxHitPoints;
 
     public void SetTemplate(BrickTemplate template, BrickSkin skin, Color tint)
     {
@@ -144,14 +145,35 @@ public class Brick : MonoBehaviour
 
         if (!string.IsNullOrEmpty(_powerupId))
         {
+            // Ghost bricks can be destroyed repeatedly; avoid infinite powerup farming.
+            if (GetComponent<GhostBrick>() == null)
+            {
             // Spawn the powerup orb at this brick's location
             var go = new GameObject("PowerupPickup");
             go.transform.position = transform.position;
             var pickup = go.AddComponent<PowerupPickup>();
             pickup.Init(_powerupId);
+            }
         }
 
         LevelManager.Instance?.OnBrickDestroyed();
+
+        // GhostBrick: stays in the level and revives later instead of being destroyed.
+        var ghost = GetComponent<GhostBrick>();
+        if (ghost != null)
+        {
+            ghost.OnKilled();
+            return;
+        }
+
         Destroy(gameObject);
+    }
+
+    public void Revive()
+    {
+        _hitPoints = Mathf.Clamp(_maxHitPoints, 1, 99);
+        _isDead = false;
+        _isFuryKill = false;
+        _visual?.UpdateDamageState(_hitPoints, _maxHitPoints);
     }
 }

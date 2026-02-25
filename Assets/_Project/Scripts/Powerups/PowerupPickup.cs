@@ -12,38 +12,40 @@ public class PowerupPickup : MonoBehaviour
     private SpriteRenderer _sr;
     private float _bobTimer;
 
-    // Is this a harmful powerup? (index >= 8 in enum)
-    private static bool IsBad(PowerupType t) => (int)t >= 8;
+    // Is this a harmful powerup? (bad powerups start at index 11 in enum)
+    private static bool IsBad(PowerupType t) => (int)t >= 11;
 
     // Color per powerup type — index matches enum value
     private static readonly Color[] TypeColors = new Color[]
     {
         // ── Good ──────────────────────────────────────────────────────
-        new Color(0.30f, 0.60f, 1.00f),   // 0  WidePaddle   sky-blue
-        new Color(1.00f, 0.40f, 0.00f),   // 1  MultiBall    orange
-        new Color(0.60f, 0.00f, 1.00f),   // 2  StickyBall   purple
-        new Color(1.00f, 0.85f, 0.00f),   // 3  SpeedBall    gold
-        new Color(0.10f, 1.00f, 0.30f),   // 4  ExtraLife    green
-        new Color(1.00f, 0.10f, 0.30f),   // 5  Laser        crimson
-        new Color(1.00f, 0.45f, 0.00f),   // 6  Fireball     fire-orange
-        new Color(0.90f, 0.20f, 0.90f),   // 7  BombBrick    magenta
-        // ── Bad ───────────────────────────────────────────────────────
-        new Color(0.55f, 0.05f, 0.05f),   // 8  ShrinkPaddle dark-red
-        new Color(0.20f, 0.65f, 0.05f),   // 9  ZipBall      sickly-green
-        new Color(0.40f, 0.00f, 0.50f),   // 10 FlipControls dark-purple
-        new Color(0.10f, 0.35f, 0.10f),   // 11 CursedBall   murky-green
-    };
+        new Color(0.30f, 0.60f, 1.00f),   // 0  WidePaddle
+        new Color(1.00f, 0.40f, 0.00f),   // 1  MultiBall
+        new Color(0.60f, 0.00f, 1.00f),   // 2  StickyBall
+        new Color(1.00f, 0.85f, 0.00f),   // 3  SpeedBall
+        new Color(0.10f, 1.00f, 0.30f),   // 4  ExtraLife
+        new Color(1.00f, 0.10f, 0.30f),   // 5  Laser
+        new Color(1.00f, 0.45f, 0.00f),   // 6  Fireball
+        new Color(0.90f, 0.20f, 0.90f),   // 7  BombBrick
+        new Color(0.00f, 0.90f, 1.00f),   // 8  ShieldWall
+        new Color(0.55f, 0.85f, 1.00f),   // 9  BigBall
+        new Color(1.00f, 0.90f, 0.20f),   // 10 ScoreFrenzy
 
-    private static readonly string[] TypeIcons = new string[]
-    {
-        "↔", "⊛", "⊕", "⚡", "♥", "|", "F!", "B!",
-        "↕", "!!", "↩", "☠",
+        // ── Bad ───────────────────────────────────────────────────────
+        new Color(0.55f, 0.05f, 0.05f),   // 11 ShrinkPaddle
+        new Color(0.20f, 0.65f, 0.05f),   // 12 ZipBall
+        new Color(0.40f, 0.00f, 0.50f),   // 13 FlipControls
+        new Color(0.10f, 0.35f, 0.10f),   // 14 CursedBall
+        new Color(0.05f, 0.25f, 0.55f),   // 15 TinyBall
+        new Color(0.15f, 0.15f, 0.15f),   // 16 InvisiBall
+        new Color(0.55f, 0.30f, 0.05f),   // 17 DrunkenPaddle
     };
 
     private static readonly string[] TypeNames = new string[]
     {
         "Wide", "Multi", "Sticky", "Fast", "+Life", "Laser", "Fire", "Bomb",
-        "SHRINK", "ZIP!", "FLIP!", "CURSE",
+        "Shield", "Big", "2xScore",
+        "SHRINK", "ZIP!", "FLIP!", "CURSE", "TINY", "INVIS", "DRUNK",
     };
 
     public void Init(PowerupType type)

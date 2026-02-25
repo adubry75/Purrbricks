@@ -1,6 +1,4 @@
-using Unity.VisualScripting;
 using UnityEngine;
-using UnityEngine.Events;
 using UnityEngine.U2D;
 using UnityEngine.UI;
 
@@ -14,6 +12,7 @@ public class MainMenuUI : MonoBehaviour
     [SerializeField] private Sprite _titleGfx;
     [SerializeField] private Sprite _playSprite;
     [SerializeField] private Sprite _highScoresSprite;
+    [SerializeField] private Sprite _settingsSprite;
     [SerializeField] private Sprite _quitSprite;
 
     private Canvas _canvas;
@@ -59,10 +58,10 @@ public class MainMenuUI : MonoBehaviour
 
         if (_playSprite != null)
         {
-            CreateImageButton(_panel.transform, _playSprite,       new Vector2(0f, -80f),  () => GameManager.Instance?.StartGame());
-            CreateImageButton(_panel.transform, _highScoresSprite, new Vector2(0f, -170f), () => GameManager.Instance?.ShowHighScores());
-            UIStyle.CreateButton(_panel.transform, "Settings",     new Vector2(0f, -255f), new Vector2(320f, 70f), () => GameManager.Instance?.ShowSettings(fromPause: false), UIStyle.AccentBlue);
-            CreateImageButton(_panel.transform, _quitSprite,       new Vector2(0f, -340f), QuitGame);
+            UIStyle.CreateImageButton(_panel.transform, _playSprite,       new Vector2(0f, -80f),  () => GameManager.Instance?.StartGame());
+            UIStyle.CreateImageButton(_panel.transform, _highScoresSprite, new Vector2(0f, -170f), () => GameManager.Instance?.ShowHighScores());
+            UIStyle.CreateImageButton(_panel.transform, _settingsSprite, new Vector2(0f, -255f), () => GameManager.Instance?.ShowSettings(fromPause:false));
+            UIStyle.CreateImageButton(_panel.transform, _quitSprite,       new Vector2(0f, -340f), QuitGame);
         }
         else
         {
@@ -145,37 +144,6 @@ public class MainMenuUI : MonoBehaviour
         rt.anchorMax = new Vector2(0.5f, 0.5f);
         rt.sizeDelta = new Vector2(800f, 40f);
         rt.anchoredPosition = new Vector2(0f, 190f);
-    }
-
-    private void CreateImageButton(Transform parent, Sprite sprite, Vector2 anchoredPos, UnityAction onClick)
-    {
-        if (sprite == null) return;
-
-        var go = new GameObject("ImageButton");
-        go.transform.SetParent(parent, false);
-
-        var img = go.AddComponent<Image>();
-        img.sprite = sprite;
-        img.type = Image.Type.Simple;
-        img.preserveAspect = true;
-
-        var btn = go.AddComponent<Button>();
-        btn.targetGraphic = img;
-        btn.onClick.AddListener(onClick);
-
-        var colors = btn.colors;
-        colors.normalColor = Color.white;
-        colors.highlightedColor = new Color(1.15f, 1.15f, 1.15f);
-        colors.pressedColor = new Color(0.80f, 0.80f, 0.80f);
-        btn.colors = colors;
-
-        // Size: fixed height 90, width from sprite aspect ratio
-        float aspect = (float)sprite.texture.width / sprite.texture.height;
-        var rt = go.GetComponent<RectTransform>();
-        rt.anchorMin = new Vector2(0.5f, 0.5f);
-        rt.anchorMax = new Vector2(0.5f, 0.5f);
-        rt.sizeDelta = new Vector2(aspect * 70f, 70f);
-        rt.anchoredPosition = anchoredPos;
     }
 
     private void QuitGame()

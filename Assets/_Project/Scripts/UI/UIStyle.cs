@@ -107,4 +107,44 @@ public static class UIStyle
 
         return button;
     }
+
+    /// <summary>
+    /// Creates a simple image-only button parented to <paramref name="parent"/>.
+    /// </summary>
+    public static Button CreateImageButton(
+        Transform parent,
+        Sprite sprite,
+        Vector2 anchoredPos,
+        System.Action onClick)
+    {
+        if (sprite == null) return null;
+
+        var go = new GameObject("ImageButton");
+        go.transform.SetParent(parent, false);
+
+        var img = go.AddComponent<Image>();
+        img.sprite = sprite;
+        img.type = Image.Type.Simple;
+        img.preserveAspect = true;
+
+        var btn = go.AddComponent<Button>();
+        btn.targetGraphic = img;
+        btn.onClick.AddListener(() => onClick?.Invoke());
+
+        var colors = btn.colors;
+        colors.normalColor = Color.white;
+        colors.highlightedColor = new Color(1.15f, 1.15f, 1.15f);
+        colors.pressedColor = new Color(0.80f, 0.80f, 0.80f);
+        btn.colors = colors;
+
+        // Fixed height; width from sprite aspect ratio (use rect so atlased sprites behave correctly).
+        float aspect = sprite.rect.height > 0f ? (sprite.rect.width / sprite.rect.height) : 1f;
+        var rt = go.GetComponent<RectTransform>();
+        rt.anchorMin = new Vector2(0.5f, 0.5f);
+        rt.anchorMax = new Vector2(0.5f, 0.5f);
+        rt.sizeDelta = new Vector2(aspect * 70f, 70f);
+        rt.anchoredPosition = anchoredPos;
+
+        return btn;
+    }
 }

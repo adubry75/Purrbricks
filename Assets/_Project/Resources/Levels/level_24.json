@@ -10,7 +10,7 @@
     { "col":  5, "row": 1, "templateId": "dark" , "powerupId": "SpeedBall"}, { "col":  6, "row": 1, "templateId": "dark" , "powerupId": "ExtraLife"},
 
     { "col":  4, "row": 2, "templateId": "steel" , "powerupId": "CursedBall"}, { "col":  5, "row": 2, "templateId": "steel" },
-    { "col":  6, "row": 2, "templateId": "steel" }, { "col":  7, "row": 2, "templateId": "steel" },
+    { "col":  6, "row": 2, "templateId": "steel", "powerupId": "ShieldWall" }, { "col":  7, "row": 2, "templateId": "steel" },
 
     { "col":  4, "row": 3, "templateId": "cyan" }, { "col":  5, "row": 3, "templateId": "cyan" },
     { "col":  6, "row": 3, "templateId": "cyan" }, { "col":  7, "row": 3, "templateId": "cyan" },

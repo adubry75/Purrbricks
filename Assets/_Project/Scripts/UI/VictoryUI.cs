@@ -1,5 +1,4 @@
 using UnityEngine;
-using UnityEngine.Events;
 using UnityEngine.UI;
 
 /// <summary>
@@ -91,14 +90,14 @@ public class VictoryUI : MonoBehaviour
 
         // Next Level / Replay (side by side below)
         if (_nextLevelSprite != null)
-            CreateImageButton(_panel.transform, _nextLevelSprite, new Vector2(162f, -210f), OnNextLevel);
+            UIStyle.CreateImageButton(_panel.transform, _nextLevelSprite, new Vector2(162f, -210f), OnNextLevel);
         else
             UIStyle.CreateButton(_panel.transform, "Next Level",
                 new Vector2(162f, -210f), new Vector2(300f, 70f),
                 OnNextLevel, UIStyle.AccentGreen);
 
         if (_replayLevelSprite != null)
-            CreateImageButton(_panel.transform, _replayLevelSprite, new Vector2(-162f, -210f), OnReplayLevel);
+            UIStyle.CreateImageButton(_panel.transform, _replayLevelSprite, new Vector2(-162f, -210f), OnReplayLevel);
         else
             UIStyle.CreateButton(_panel.transform, "Replay Level",
                 new Vector2(-162f, -210f), new Vector2(300f, 70f),
@@ -274,35 +273,6 @@ public class VictoryUI : MonoBehaviour
         ol.effectDistance = new Vector2(4f, -4f);
 
         return go;
-    }
-
-    private void CreateImageButton(Transform parent, Sprite sprite, Vector2 anchoredPos, UnityAction onClick)
-    {
-        if (sprite == null) return;
-
-        var go  = new GameObject("ImageButton");
-        go.transform.SetParent(parent, false);
-        var img = go.AddComponent<Image>();
-        img.sprite         = sprite;
-        img.type           = Image.Type.Simple;
-        img.preserveAspect = true;
-
-        var btn = go.AddComponent<Button>();
-        btn.targetGraphic = img;
-        btn.onClick.AddListener(onClick);
-
-        var colors              = btn.colors;
-        colors.normalColor      = Color.white;
-        colors.highlightedColor = new Color(1.15f, 1.15f, 1.15f);
-        colors.pressedColor     = new Color(0.80f, 0.80f, 0.80f);
-        btn.colors              = colors;
-
-        float aspect        = (float)sprite.texture.width / sprite.texture.height;
-        var rt              = go.GetComponent<RectTransform>();
-        rt.anchorMin        = new Vector2(0.5f, 0.5f);
-        rt.anchorMax        = new Vector2(0.5f, 0.5f);
-        rt.sizeDelta        = new Vector2(aspect * 70f, 70f);
-        rt.anchoredPosition = anchoredPos;
     }
 
     // ── Confetti ──────────────────────────────────────────────────────────────

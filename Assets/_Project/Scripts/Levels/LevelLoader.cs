@@ -106,6 +106,19 @@ public class LevelLoader : MonoBehaviour
             Brick brick = Instantiate(_brickPrefab, new Vector3(x, y, 0f), Quaternion.identity, transform);
             brick.transform.localScale = Vector3.one;
 
+            // Special behaviors keyed off templateId (works even if no ScriptableObject template exists).
+            if (!string.IsNullOrEmpty(entry.templateId))
+            {
+                string tid = entry.templateId.Trim();
+                if (tid.Equals("ghost", System.StringComparison.OrdinalIgnoreCase) ||
+                    tid.Equals("ghostbrick", System.StringComparison.OrdinalIgnoreCase) ||
+                    tid.Equals("ghost_brick", System.StringComparison.OrdinalIgnoreCase))
+                {
+                    if (brick.GetComponent<GhostBrick>() == null)
+                        brick.gameObject.AddComponent<GhostBrick>();
+                }
+            }
+
             // Size the collider and sprite renderer
             var box = brick.GetComponent<BoxCollider2D>();
             if (box != null) box.size = new Vector2(g.brickWidth, g.brickHeight);

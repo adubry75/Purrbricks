@@ -3783,6 +3783,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ab18068ac58b98a4c8104ee4d527fd8f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PowerupManager
+  _wallBottom: {fileID: 489783678}
 --- !u!4 &1002204267
 Transform:
   m_ObjectHideFlags: 0
@@ -5570,6 +5571,7 @@ MonoBehaviour:
   _titleGfx: {fileID: 21300000, guid: fe194171ed7865e49aa1cc38e6d8931c, type: 3}
   _playSprite: {fileID: 21300000, guid: e8ccf9ee4fc1d484994dbfd820b627c3, type: 3}
   _highScoresSprite: {fileID: 21300000, guid: f2c70f9834fc92e40a471190c2779052, type: 3}
+  _settingsSprite: {fileID: 1857805116173471359, guid: 072e2aad497b7464787ce48236d289dd, type: 3}
   _quitSprite: {fileID: 21300000, guid: 9d7d2b5805c6e144ab386c6ee5c63405, type: 3}
 --- !u!4 &1606839530
 Transform:
@@ -5970,6 +5972,8 @@ MonoBehaviour:
   - level_77
   - level_78
   - level_79
+  - level_80
+  - level_81
   _levelClearDelay: 3
   _levelLoader: {fileID: 1184986102}
   _ball: {fileID: 1374096748}

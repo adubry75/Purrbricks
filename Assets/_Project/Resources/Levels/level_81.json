@@ -1,0 +1,22 @@
+{
+  "id": "level_81",
+  "displayName": "Ghosts In The Gaps",
+  "ballSpeed": 10.0,
+  "grid": { "cols": 12, "rows": 6, "brickWidth": 1.35, "brickHeight": 0.45, "gapX": 0.08, "gapY": 0.16 },
+  "bricks": [
+    { "col": 2, "row": 0, "templateId": "gold" }, { "col": 3, "row": 0, "templateId": "gold" },
+    { "col": 4, "row": 0, "templateId": "ghost", "tint": "#99EAFF", "hp": 1, "points": 300 },
+    { "col": 5, "row": 0, "templateId": "gold" }, { "col": 6, "row": 0, "templateId": "gold" },
+    { "col": 7, "row": 0, "templateId": "ghost", "tint": "#99EAFF", "hp": 1, "points": 300 },
+    { "col": 8, "row": 0, "templateId": "gold" }, { "col": 9, "row": 0, "templateId": "gold" },
+
+    { "col": 3, "row": 1, "templateId": "gold" }, { "col": 4, "row": 1, "templateId": "gold" },
+    { "col": 5, "row": 1, "templateId": "gold" }, { "col": 6, "row": 1, "templateId": "gold" },
+    { "col": 7, "row": 1, "templateId": "gold" }, { "col": 8, "row": 1, "templateId": "gold" },
+
+    { "col": 4, "row": 2, "templateId": "ghost", "tint": "#99EAFF", "hp": 1, "points": 300 },
+    { "col": 5, "row": 2, "templateId": "gold" }, { "col": 6, "row": 2, "templateId": "gold" },
+    { "col": 7, "row": 2, "templateId": "ghost", "tint": "#99EAFF", "hp": 1, "points": 300 }
+  ]
+}
+

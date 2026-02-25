@@ -8,6 +8,8 @@ using UnityEngine;
 /// </summary>
 public class PowerupManager : MonoBehaviour
 {
+    [SerializeField] private GameObject _wallBottom;
+
     public static PowerupManager Instance { get; private set; }
 
     public const float POWERUP_DURATION = 10f;
@@ -23,6 +25,8 @@ public class PowerupManager : MonoBehaviour
 
     // ShieldWall visual/physics object
     private GameObject _shieldWallGO;
+    private bool _shieldWallWasActive;
+    private ShieldWallFx _shieldWallFx;
 
     private void Awake()
     {
@@ -213,41 +217,31 @@ public class PowerupManager : MonoBehaviour
     {
         if (_shieldWallGO != null) return;
 
-        // Find death zone position for accurate placement
-        float shieldY = -8.3f;
-        var deathZone = FindFirstObjectByType<DeathZone>();
-        if (deathZone != null)
-            shieldY = deathZone.transform.position.y + 0.5f;
+        // Use the existing scene wall (requested) so collisions match the level setup.
+        
 
-        _shieldWallGO = new GameObject("ShieldWall");
+        _shieldWallGO = _wallBottom;
+        _shieldWallWasActive = _wallBottom.activeSelf;
+        _wallBottom.SetActive(true);
 
-        // Create 1×1 white texture for the sprite
-        var tex = new Texture2D(1, 1);
-        tex.SetPixel(0, 0, Color.white);
-        tex.Apply();
-        var sprite = Sprite.Create(tex, new Rect(0, 0, 1, 1), new Vector2(0.5f, 0.5f), 1f);
-
-        var sr = _shieldWallGO.AddComponent<SpriteRenderer>();
-        sr.sprite = sprite;
-        sr.color = new Color(0.0f, 0.9f, 1.0f, 0.55f); // glowing cyan
-        sr.sortingOrder = 5;
-
-        // BoxCollider so ball bounces off it
-        var col = _shieldWallGO.AddComponent<BoxCollider2D>();
-        col.size = Vector2.one;
-
-        // Scale to fill the playfield width
-        _shieldWallGO.transform.localScale = new Vector3(14f, 0.25f, 1f);
-        _shieldWallGO.transform.position = new Vector3(0f, shieldY, 0f);
+        _shieldWallFx = _wallBottom.GetComponent<ShieldWallFx>();
+        if (_shieldWallFx == null)
+            _shieldWallFx = _wallBottom.AddComponent<ShieldWallFx>();
+        _shieldWallFx.enabled = true;
     }
 
     private void DestroyShieldWall()
     {
-        if (_shieldWallGO != null)
-        {
-            Destroy(_shieldWallGO);
-            _shieldWallGO = null;
-        }
+        if (_shieldWallGO == null) return;
+
+        if (_shieldWallFx != null)
+            _shieldWallFx.enabled = false;
+
+        // Restore whatever active state the wall had before the powerup.
+        _shieldWallGO.SetActive(_shieldWallWasActive);
+
+        _shieldWallGO = null;
+        _shieldWallFx = null;
     }
 
     // ── MultiBall ─────────────────────────────────────────────────────────────

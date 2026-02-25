@@ -9,7 +9,7 @@
     { "col":  9, "row": 0, "templateId": "red" , "powerupId": "Fireball"},
 
     { "col":  0, "row": 1, "templateId": "red" , "powerupId": "ZipBall"}, { "col":  1, "row": 1, "templateId": "red" },
-    { "col":  2, "row": 1, "templateId": "red" },
+    { "col":  2, "row": 1, "templateId": "red", "powerupId": "ShieldWall" },
     { "col":  4, "row": 1, "templateId": "blue" }, { "col":  5, "row": 1, "templateId": "blue" },
     { "col":  6, "row": 1, "templateId": "blue" },
     { "col":  8, "row": 1, "templateId": "red" }, { "col":  9, "row": 1, "templateId": "red" },
