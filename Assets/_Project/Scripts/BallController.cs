@@ -56,6 +56,17 @@ public class BallController : MonoBehaviour
     private const float SPEED_MULTIPLIER = 2f;
     private const float ZIP_MULTIPLIER = 2.5f;
 
+    // ── Pinball bumper speed burst ────────────────────────────────────────────
+    // Multiplies the ball's current speed, then smoothly decays back to pre-hit speed.
+    private const float BUMPER_MAX_MULTIPLIER = 2.0f;   // cap relative to normal EffectiveSpeed
+    private const float BUMPER_DEFAULT_DURATION = 5.0f; // seconds to decay back
+    private float _bumperMultiplier = 1.0f;       // current multiplier (>= 1)
+    private float _bumperStartMultiplier = 1.0f;  // multiplier right after the latest bumper hit
+    private float _bumperEndMultiplier = 1.0f;    // multiplier to decay back to (speed before the bumper hit)
+    private float _bumperTimer = 0.0f;
+    private float _bumperDuration = BUMPER_DEFAULT_DURATION;
+    private bool _bumperActive;
+
     // ── Speed ramp (Fury Strike charge) ───────────────────────────────────────
     private const float RAMP_MAX = 2.0f;   // maximum speed multiplier
     private const float RAMP_RATE = 0.015f; // multiplier gained per second while live
@@ -94,6 +105,31 @@ public class BallController : MonoBehaviour
             if (_isZipBall) s *= ZIP_MULTIPLIER;
             return s;
         }
+    }
+
+    private float CurrentSpeed => EffectiveSpeed * _bumperMultiplier;
+
+    /// <summary>
+    /// Pinball bumper effect: doubles current ball speed (clamped to 2x normal EffectiveSpeed),
+    /// then smoothly decays back to the speed it had immediately before this bumper hit.
+    /// </summary>
+    public void TriggerBumperBoost(float durationSeconds = BUMPER_DEFAULT_DURATION)
+    {
+        if (!_launched || _rb == null) return;
+
+        float pre = _bumperMultiplier;
+        float boosted = Mathf.Min(pre * 2.0f, BUMPER_MAX_MULTIPLIER);
+
+        _bumperDuration = Mathf.Max(0.05f, durationSeconds);
+        _bumperStartMultiplier = boosted;
+        _bumperEndMultiplier = pre;
+        _bumperTimer = 0.0f;
+        _bumperActive = true;
+        _bumperMultiplier = boosted;
+
+        // Apply immediately so the hit feels snappy.
+        if (_rb.linearVelocity.sqrMagnitude > 0.0001f)
+            _rb.linearVelocity = _rb.linearVelocity.normalized * CurrentSpeed;
     }
 
     private void Reset()
@@ -254,10 +290,25 @@ public class BallController : MonoBehaviour
         if (_wantFireballPierce)
         {
             _wantFireballPierce = false;
-            _rb.linearVelocity = _savedVelocity.normalized * EffectiveSpeed;
+            _rb.linearVelocity = _savedVelocity.normalized * CurrentSpeed;
         }
 
-        float currentSpeed = EffectiveSpeed;
+        // Bumper boost: decay multiplier toward the pre-hit speed over time.
+        if (_bumperActive)
+        {
+            _bumperTimer += Time.fixedDeltaTime;
+            float t = Mathf.Clamp01(_bumperTimer / _bumperDuration);
+            float s = t * t * (3f - 2f * t); // SmoothStep
+            _bumperMultiplier = Mathf.Lerp(_bumperStartMultiplier, _bumperEndMultiplier, s);
+
+            if (t >= 1f)
+            {
+                _bumperMultiplier = _bumperEndMultiplier;
+                _bumperActive = false;
+            }
+        }
+
+        float currentSpeed = CurrentSpeed;
 
         // Keep speed constant
         _rb.linearVelocity = _rb.linearVelocity.normalized * currentSpeed;
@@ -404,7 +455,7 @@ public class BallController : MonoBehaviour
         _launched = true;
         _isStickyHeld = false;
         _rb.simulated = true;
-        _rb.linearVelocity = _launchDirection * EffectiveSpeed;
+        _rb.linearVelocity = _launchDirection * CurrentSpeed;
     }
 
     public bool IsLaunched() => _launched;
@@ -422,14 +473,14 @@ public class BallController : MonoBehaviour
     {
         _isSpeedBoost = on;
         if (_launched && !_isStickyHeld && _rb != null)
-            _rb.linearVelocity = _rb.linearVelocity.normalized * EffectiveSpeed;
+            _rb.linearVelocity = _rb.linearVelocity.normalized * CurrentSpeed;
     }
 
     public void SetZipBall(bool on)
     {
         _isZipBall = on;
         if (_launched && !_isStickyHeld && _rb != null)
-            _rb.linearVelocity = _rb.linearVelocity.normalized * EffectiveSpeed;
+            _rb.linearVelocity = _rb.linearVelocity.normalized * CurrentSpeed;
     }
 
     public void SetFireball(bool on) => _isFireball = on;
@@ -505,13 +556,19 @@ public class BallController : MonoBehaviour
         cloneBall._isTinyBall = _isTinyBall;
         cloneBall._isInvisiBall = _isInvisiBall;
         cloneBall._rampMultiplier = _rampMultiplier;
+        cloneBall._bumperMultiplier = _bumperMultiplier;
+        cloneBall._bumperStartMultiplier = _bumperStartMultiplier;
+        cloneBall._bumperEndMultiplier = _bumperEndMultiplier;
+        cloneBall._bumperTimer = _bumperTimer;
+        cloneBall._bumperDuration = _bumperDuration;
+        cloneBall._bumperActive = _bumperActive;
         cloneBall._prismColor = PrismColor.None;
 
         var cloneRb = cloneBall.GetComponent<Rigidbody2D>();
         if (cloneRb != null)
         {
             cloneRb.simulated = true;
-            cloneRb.linearVelocity = newDir * cloneBall.EffectiveSpeed;
+            cloneRb.linearVelocity = newDir * cloneBall.CurrentSpeed;
         }
 
         GameManager.Instance?.RegisterClone();
@@ -533,7 +590,7 @@ public class BallController : MonoBehaviour
             float angle = t * _maxBounceAngleDegrees;
             float rad = angle * Mathf.Deg2Rad;
             Vector2 dir = new Vector2(Mathf.Sin(rad), Mathf.Cos(rad)).normalized;
-            _rb.linearVelocity = dir * EffectiveSpeed;
+            _rb.linearVelocity = dir * CurrentSpeed;
         }
     }
 
@@ -623,7 +680,7 @@ public class BallController : MonoBehaviour
         float rad = angle * Mathf.Deg2Rad;
         Vector2 dir = new Vector2(Mathf.Sin(rad), Mathf.Cos(rad)).normalized;
 
-        _rb.linearVelocity = dir * EffectiveSpeed;
+        _rb.linearVelocity = dir * CurrentSpeed;
     }
 
     public void ResetToPaddle()
@@ -649,6 +706,12 @@ public class BallController : MonoBehaviour
         _invisTimer = 0f;
         _rampMultiplier = 1.0f;
         _prismColor = PrismColor.None;
+        _bumperMultiplier = 1.0f;
+        _bumperStartMultiplier = 1.0f;
+        _bumperEndMultiplier = 1.0f;
+        _bumperTimer = 0.0f;
+        _bumperDuration = BUMPER_DEFAULT_DURATION;
+        _bumperActive = false;
 
         transform.localScale = Vector3.one;
         if (_ballSr != null) _ballSr.color = Color.white;

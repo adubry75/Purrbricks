@@ -16,6 +16,7 @@ public class SfxPlayer : MonoBehaviour
     [SerializeField] private AudioClip _laser;
     [SerializeField] private AudioClip _powerupPickup;
     [SerializeField] private AudioClip _furyStrike;       // Fury Strike activation fanfare
+    [SerializeField] private AudioClip _bumperDing;      // pinball bumper "ding"
 
     [Header("Tuning")]
     [SerializeField] private float _volume = 0.7f;
@@ -49,6 +50,7 @@ public class SfxPlayer : MonoBehaviour
     public void PlayLaser() => PlayOne(_laser);
     public void PlayPowerupPickup() => PlayOne(_powerupPickup);
     public void PlayFuryStrike() => PlayOne(_furyStrike != null ? _furyStrike : _powerupPickup);
+    public void PlayBumperDing() => PlayOne(_bumperDing != null ? _bumperDing : _wallHit);
 
     public void MuteAll(bool mute) { _isMuted = mute; }
 

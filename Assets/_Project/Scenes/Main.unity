@@ -2201,6 +2201,7 @@ MonoBehaviour:
   _laser: {fileID: 8300000, guid: 126f315c59d563f4a934a3f44fd2246b, type: 3}
   _powerupPickup: {fileID: 8300000, guid: 8e51de29b15a0c64ab7d71ea7a072d74, type: 3}
   _furyStrike: {fileID: 8300000, guid: 4cb0ec94c0e3a2d48a96397413cbf041, type: 3}
+  _bumperDing: {fileID: 0}
   _volume: 0.7
   _pitchMin: 0.97
   _pitchMax: 1.03
@@ -6023,6 +6024,15 @@ MonoBehaviour:
   - level_77
   - level_78
   - level_79
+  - level_80
+  - level_81
+  - level_82
+  - level_83
+  - level_84
+  - level_85
+  - level_86
+  - level_87
+  - level_88
   _levelClearDelay: 3
   _levelLoader: {fileID: 1184986102}
   _ball: {fileID: 1374096748}

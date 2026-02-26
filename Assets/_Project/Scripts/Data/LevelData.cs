@@ -33,6 +33,21 @@ public class BrickMovement
 }
 
 [Serializable]
+public class BrickRotation
+{
+    // Degrees per second. Use negative values to spin the opposite direction.
+    public float speed = 180f;
+
+    // Optional pivot offset in world units, relative to the brick's initial position.
+    // (0,0) = rotate around the brick center.
+    public float pivotOffsetX = 0f;
+    public float pivotOffsetY = 0f;
+
+    // Optional starting angle (degrees) applied when the brick spawns.
+    public float startAngle = 0f;
+}
+
+[Serializable]
 public class BrickEntryData
 {
     public int col;
@@ -46,6 +61,7 @@ public class BrickEntryData
     public int? points;
     public bool isIndestructible;
     public BrickMovement movement; // null = static brick
+    public BrickRotation rotation; // null = not rotating
 }
 
 [Serializable]

@@ -1,0 +1,31 @@
+{
+  "id": "level_85",
+  "displayName": "Spinny Guardians",
+  "ballSpeed": 10.4,
+  "grid": { "cols": 12, "rows": 6, "brickWidth": 1.35, "brickHeight": 0.45, "gapX": 0.08, "gapY": 0.16 },
+  "bricks": [
+    { "col": 5, "row": 0, "templateId": "gem", "points": 20000, "tint": "#FFF3A0" },
+
+    { "col": 4, "row": 1, "templateId": "steel", "hp": 4, "points": 800,
+      "movement": { "type": "circular", "amplitude": 0.55, "period": 2.6, "phaseOffset": 0.0 },
+      "rotation": { "speed": 260, "startAngle": 0 } },
+    { "col": 6, "row": 1, "templateId": "steel", "hp": 4, "points": 800,
+      "movement": { "type": "circular", "amplitude": 0.55, "period": 2.6, "phaseOffset": 1.3 },
+      "rotation": { "speed": -260, "startAngle": 20 } },
+
+    { "col": 3, "row": 2, "templateId": "steel", "hp": 3, "points": 650,
+      "movement": { "type": "circular", "amplitude": 0.45, "period": 2.2, "phaseOffset": 0.7 },
+      "rotation": { "speed": 220, "startAngle": 45 } },
+    { "col": 7, "row": 2, "templateId": "steel", "hp": 3, "points": 650,
+      "movement": { "type": "circular", "amplitude": 0.45, "period": 2.2, "phaseOffset": 2.1 },
+      "rotation": { "speed": -220, "startAngle": -30 } },
+
+    { "col": 4, "row": 3, "templateId": "gold", "hp": 2, "points": 500,
+      "movement": { "type": "horizontal", "amplitude": 0.8, "period": 3.0, "phaseOffset": 0.2 },
+      "rotation": { "speed": 180, "startAngle": 0 } },
+    { "col": 6, "row": 3, "templateId": "gold", "hp": 2, "points": 500,
+      "movement": { "type": "horizontal", "amplitude": 0.8, "period": 3.0, "phaseOffset": 1.7 },
+      "rotation": { "speed": -180, "startAngle": 90 } }
+  ]
+}
+

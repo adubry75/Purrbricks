@@ -1,0 +1,18 @@
+{
+  "id": "level_84",
+  "displayName": "Spinny Windmills",
+  "ballSpeed": 9.8,
+  "grid": { "cols": 12, "rows": 6, "brickWidth": 1.35, "brickHeight": 0.45, "gapX": 0.08, "gapY": 0.16 },
+  "bricks": [
+    { "col": 3, "row": 1, "templateId": "standard", "rotation": { "speed": 210, "startAngle": 0 } },
+    { "col": 8, "row": 1, "templateId": "standard", "rotation": { "speed": -180, "startAngle": 25 } },
+
+    { "col": 5, "row": 2, "templateId": "steel",    "hp": 2, "rotation": { "speed": 260, "startAngle": 45 } },
+
+    { "col": 4, "row": 3, "templateId": "standard", "rotation": { "speed": -220, "startAngle": 10 } },
+    { "col": 6, "row": 3, "templateId": "standard", "rotation": { "speed": 160, "startAngle": -15 } },
+
+    { "col": 5, "row": 4, "templateId": "gold",     "hp": 2, "rotation": { "speed": 120, "startAngle": 90 } }
+  ]
+}
+

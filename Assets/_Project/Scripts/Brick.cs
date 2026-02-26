@@ -111,7 +111,11 @@ public class Brick : MonoBehaviour
         _hitPoints--;
 
         int totalPoints = GameManager.Instance?.AddScore(_points) ?? 0;
-        GameManager.Instance?.IncrementCombo();
+
+        // Fury Strike destroys many bricks in a sweep; it should award points using the
+        // current combo multiplier but must NOT increase the combo for each brick.
+        if (!_isFuryKill)
+            GameManager.Instance?.IncrementCombo();
 
         // Spawn score popup showing points gained (use brick's current color)
         Color popupColor = _sr != null ? _sr.color : Color.white;
@@ -183,7 +187,13 @@ public class Brick : MonoBehaviour
             return;
         }
 
-        Destroy(gameObject);
+        // If this brick is under a rotation root/pivot (created at runtime), destroy the root
+        // so we don't leave an empty "spinner" GameObject behind.
+        var rotRoot = GetComponentInParent<BrickRotator>();
+        if (rotRoot != null && rotRoot.gameObject != gameObject)
+            Destroy(rotRoot.gameObject);
+        else
+            Destroy(gameObject);
     }
 
     public void Revive()

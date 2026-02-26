@@ -142,7 +142,34 @@ public class LevelLoader : MonoBehaviour
             Brick brick = Instantiate(_brickPrefab, new Vector3(x, y, 0f), Quaternion.identity, transform);
             brick.transform.localScale = Vector3.one;
 
+            // Optional rotation: add BrickRotator to either the brick itself (center pivot),
+            // or a pivot/root object (offset pivot). This keeps rotation composable with movement.
+            Transform motionRoot = brick.transform;
+            if (entry.rotation != null)
+            {
+                Vector2 pivotOffset = new Vector2(entry.rotation.pivotOffsetX, entry.rotation.pivotOffsetY);
+                if (pivotOffset.sqrMagnitude > 0.000001f)
+                {
+                    var pivotGO = new GameObject("BrickPivot");
+                    pivotGO.transform.SetParent(transform, false);
+                    pivotGO.transform.position = brick.transform.position + (Vector3)pivotOffset;
+
+                    // Parent the brick under the pivot, preserving its world position.
+                    brick.transform.SetParent(pivotGO.transform, true);
+                    motionRoot = pivotGO.transform;
+
+                    var rot = pivotGO.AddComponent<BrickRotator>();
+                    rot.Init(entry.rotation);
+                }
+                else
+                {
+                    var rot = brick.gameObject.AddComponent<BrickRotator>();
+                    rot.Init(entry.rotation);
+                }
+            }
+
             // Special behaviors keyed off templateId (works even if no ScriptableObject template exists).
+            bool isBumper = false;
             if (!string.IsNullOrEmpty(entry.templateId))
             {
                 string tid = entry.templateId.Trim();
@@ -152,6 +179,14 @@ public class LevelLoader : MonoBehaviour
                 {
                     if (brick.GetComponent<GhostBrick>() == null)
                         brick.gameObject.AddComponent<GhostBrick>();
+                }
+                else if (tid.Equals("bumper", System.StringComparison.OrdinalIgnoreCase) ||
+                         tid.Equals("bumperbrick", System.StringComparison.OrdinalIgnoreCase) ||
+                         tid.Equals("bumper_brick", System.StringComparison.OrdinalIgnoreCase))
+                {
+                    isBumper = true;
+                    if (brick.GetComponent<BumperBrick>() == null)
+                        brick.gameObject.AddComponent<BumperBrick>();
                 }
             }
 
@@ -166,6 +201,21 @@ public class LevelLoader : MonoBehaviour
                 sr.size = new Vector2(g.brickWidth, g.brickHeight);
             }
 
+            // Bumper brick: make it round + indestructible.
+            if (isBumper)
+            {
+                brick.SetIndestructible(true);
+                brick.SetPoints(0);
+
+                // Use a diameter that visually reads as "round bumper" inside a grid cell.
+                float diameter = Mathf.Max(0.45f, g.brickHeight * 1.6f);
+                brick.GetComponent<BumperBrick>()?.Configure(diameter);
+
+                // Prevent the standard brick visual controller from overriding the bumper sprite/color.
+                var bumperVisual = brick.GetComponent<BrickVisualController>();
+                if (bumperVisual != null) bumperVisual.enabled = false;
+            }
+
             // Resolve template
             BrickTemplate template = null;
             if (!string.IsNullOrEmpty(entry.templateId) && BrickTemplateRegistry.Instance != null)
@@ -173,10 +223,12 @@ public class LevelLoader : MonoBehaviour
 
             int hp = entry.hp ?? (template != null ? template.defaultHp : 1);
             int pts = entry.points ?? (template != null ? template.defaultPoints : 100);
-            bool indestructible = entry.isIndestructible || (template != null && template.isIndestructible);
+            bool indestructible = isBumper || entry.isIndestructible || (template != null && template.isIndestructible);
 
             brick.SetHitPoints(hp);
-            brick.SetPoints(pts);
+            // If this is a bumper, keep it indestructible/0 points regardless of template/json.
+            if (!isBumper)
+                brick.SetPoints(pts);
             brick.SetIndestructible(indestructible);
 
             if (!string.IsNullOrEmpty(entry.requiredBallColor))
@@ -202,25 +254,26 @@ public class LevelLoader : MonoBehaviour
             if (string.IsNullOrEmpty(entry.tint) && brick.RequiredBallColor != PrismColor.None)
                 tint = PrismColorUtil.ToUnityColor(brick.RequiredBallColor);
 
-            brick.SetTemplate(template, skin, tint);
+            if (!isBumper)
+                brick.SetTemplate(template, skin, tint);
 
             // Multi-hit bricks shimmer faster and more intensely so they stand out
             var visual = brick.GetComponent<BrickVisualController>();
-            if (visual != null && hp > 1)
+            if (!isBumper && visual != null && hp > 1)
                 visual.SetShimmer(speed: 3.5f, amount: 0.14f);
 
             // SetPowerupId AFTER SetTemplate so the visual knows the base tint
-            if (!string.IsNullOrEmpty(entry.powerupId))
+            if (!isBumper && !string.IsNullOrEmpty(entry.powerupId))
                 brick.SetPowerupId(entry.powerupId);
 
             // Attach movement component for animated bricks
             if (entry.movement != null)
             {
-                var mover = brick.gameObject.AddComponent<BrickMover>();
+                var mover = motionRoot.gameObject.AddComponent<BrickMover>();
                 mover.Init(entry.movement);
             }
 
-            _spawnedBricks.Add(brick.gameObject);
+            _spawnedBricks.Add(motionRoot.gameObject);
 
             if (!indestructible) spawned++;
         }

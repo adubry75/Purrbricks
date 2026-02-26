@@ -1,5 +1,8 @@
 // Editor-only setup script — does NOT affect builds
 #if UNITY_EDITOR
+using System.Collections.Generic;
+using System.IO;
+using System.Text.RegularExpressions;
 using UnityEngine;
 using UnityEditor;
 
@@ -105,10 +108,26 @@ public static class PurrbricksSetup
             gmSo.FindProperty("_levelLoader").objectReferenceValue = loader;
 
             var levelIds = gmSo.FindProperty("_levelIds");
-            // Always refresh to 80 levels
-            levelIds.arraySize = 80;
-            for (int i = 0; i < 80; i++)
-                levelIds.GetArrayElementAtIndex(i).stringValue = $"level_{i:D2}";
+
+            // Refresh from actual level json files present in Resources/Levels.
+            // This keeps demo levels (and any future additions) automatically included.
+            var guids = AssetDatabase.FindAssets("t:TextAsset", new[] { "Assets/_Project/Resources/Levels" });
+            var found = new List<(int index, string id)>(guids.Length);
+            var rx = new Regex(@"^level_(\d+)$", RegexOptions.IgnoreCase);
+            foreach (var g in guids)
+            {
+                string path = AssetDatabase.GUIDToAssetPath(g);
+                string name = Path.GetFileNameWithoutExtension(path);
+                var m = rx.Match(name);
+                if (!m.Success) continue;
+                if (int.TryParse(m.Groups[1].Value, out int idx))
+                    found.Add((idx, name));
+            }
+            found.Sort((a, b) => a.index.CompareTo(b.index));
+
+            levelIds.arraySize = found.Count;
+            for (int i = 0; i < found.Count; i++)
+                levelIds.GetArrayElementAtIndex(i).stringValue = found[i].id;
             gmSo.ApplyModifiedProperties();
         }
 
