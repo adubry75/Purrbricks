@@ -38,33 +38,44 @@ public class ParallaxBackground : MonoBehaviour
 
         var ps = go.AddComponent<ParticleSystem>();
 
+        float viewW = 18f, viewH = 12f;
+        var cam = Camera.main;
+        if (cam != null && cam.orthographic)
+        {
+            viewH = cam.orthographicSize * 2f;
+            viewW = viewH * cam.aspect;
+        }
+
         // Main module
         var main = ps.main;
-        main.startLifetime = 40f;
+        float travel = Mathf.Max(6f, viewW * 1.6f);
+        float life   = Mathf.Clamp(travel / Mathf.Max(0.01f, scrollSpeed), 8f, 48f);
+        main.startLifetime = new ParticleSystem.MinMaxCurve(life * 0.75f, life * 1.05f);
         main.startSpeed = 0f;
-        main.startSize = starSize;
+        main.startSize = new ParticleSystem.MinMaxCurve(starSize * 0.7f, starSize * 1.25f);
         main.startColor = _starColor * brightness;
         main.gravityModifier = 0f;
         main.simulationSpace = ParticleSystemSimulationSpace.World;
         main.maxParticles = _starsPerLayer;
         main.loop = true;
         main.prewarm = true;
+        main.useUnscaledTime = true; // keep drifting during pause/slow-mo/UI
 
         // Emission: steady rate
         var emission = ps.emission;
-        emission.rateOverTime = _starsPerLayer / 35f;
+        emission.rateOverTime = Mathf.Max(1f, _starsPerLayer / Mathf.Max(1f, life * 0.80f));
 
         // Shape: spawn across a wide box covering the screen
         var shape = ps.shape;
         shape.shapeType = ParticleSystemShapeType.Box;
-        shape.scale = new Vector3(18f, 12f, 0.1f);
+        shape.scale = new Vector3(viewW * 1.6f, viewH * 1.6f, 0.1f);
 
         // Velocity: slow drift left + slight upward
         var velocityOverLifetime = ps.velocityOverLifetime;
         velocityOverLifetime.enabled = true;
         velocityOverLifetime.space = ParticleSystemSimulationSpace.World;
-        velocityOverLifetime.x = -scrollSpeed;
-        velocityOverLifetime.y = scrollSpeed * 0.25f;
+        velocityOverLifetime.x = new ParticleSystem.MinMaxCurve(-scrollSpeed * 1.12f, -scrollSpeed * 0.88f);
+        velocityOverLifetime.y = new ParticleSystem.MinMaxCurve(scrollSpeed * 0.10f, scrollSpeed * 0.28f);
 
         // Color twinkle (subtle alpha variation)
         var colorOverLifetime = ps.colorOverLifetime;
@@ -86,7 +97,7 @@ public class ParallaxBackground : MonoBehaviour
 
         // Renderer
         var renderer = ps.GetComponent<ParticleSystemRenderer>();
-        renderer.material = new Material(Shader.Find("Sprites/Default"));
+        renderer.material = VfxMaterials.Additive;
         renderer.sortingLayerName = "Default";
         renderer.sortingOrder = -200 - index; // Far behind everything
     }

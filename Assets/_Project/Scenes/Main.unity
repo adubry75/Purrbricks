@@ -4405,7 +4405,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a8e83df13f30c05498482040fa316eca, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::LevelRatingService
-  _firebaseBaseUrl: 
+  _apiBaseUrl: https://api.purrbricks.dubry.com
 --- !u!4 &1113029539
 Transform:
   m_ObjectHideFlags: 0
@@ -6445,7 +6445,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PauseMenuUI
   _resumeSprite: {fileID: 6090171506988809764, guid: 8756dc3c4868072498f3944b42cb4bdf, type: 3}
+  _settingsSprite: {fileID: 1857805116173471359, guid: 072e2aad497b7464787ce48236d289dd, type: 3}
   _mainMenuSprite: {fileID: 3431955587499001540, guid: 43680d8529a0d3b4c90942d122ea6ab9, type: 3}
+  _quitSprite: {fileID: 21300000, guid: 9d7d2b5805c6e144ab386c6ee5c63405, type: 3}
 --- !u!4 &1837778262
 Transform:
   m_ObjectHideFlags: 0

@@ -27,7 +27,7 @@ public class LevelEditorUI : MonoBehaviour
         "Laser", "Fireball", "BombBrick", "ShieldWall", "BigBall",
         "ScoreFrenzy", "PermanentStickyBall",
         "ShrinkPaddle", "ZipBall", "FlipControls", "CursedBall",
-        "TinyBall", "InvisiBall", "DrunkenPaddle"
+        "TinyBall", "InvisiBall", "DrunkenPaddle", "DrunkVision", "GremlinBounces"
     };
 
     private static readonly string[] BallColors = { "none", "blue", "red", "green", "yellow" };

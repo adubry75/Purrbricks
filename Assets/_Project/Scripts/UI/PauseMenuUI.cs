@@ -12,7 +12,9 @@ public class PauseMenuUI : MonoBehaviour
 
     [Header("Button Sprites")]
     [SerializeField] private Sprite _resumeSprite;
+    [SerializeField] private Sprite _settingsSprite;
     [SerializeField] private Sprite _mainMenuSprite;
+    [SerializeField] private Sprite _quitSprite;
 
     private void Awake()
     {
@@ -88,9 +90,12 @@ public class PauseMenuUI : MonoBehaviour
                 new Vector2(0f, btnY),          new Vector2(W, H),
                 () => GameManager.Instance?.ResumeGame(), UIStyle.AccentGreen);
 
-        UIStyle.CreateButton(card.transform, "Settings",
-            new Vector2(0f, btnY - step),   new Vector2(W, H),
-            () => GameManager.Instance?.ShowSettings(fromPause: true), UIStyle.AccentBlue);
+        if (_settingsSprite != null)
+            UIStyle.CreateImageButton(card.transform, _settingsSprite, new Vector2(0f, btnY - step), () => GameManager.Instance?.ShowSettings(fromPause: true));
+        else
+            UIStyle.CreateButton(card.transform, "Settings",
+                new Vector2(0f, btnY - step),   new Vector2(W, H),
+                () => GameManager.Instance?.ShowSettings(fromPause: true), UIStyle.AccentBlue);
 
         if (_mainMenuSprite != null)
             UIStyle.CreateImageButton(card.transform, _mainMenuSprite, new Vector2(0f, btnY - step*2), () => GameManager.Instance?.ShowMainMenu());
@@ -99,9 +104,12 @@ public class PauseMenuUI : MonoBehaviour
                 new Vector2(0f, btnY - step*2), new Vector2(W, H),
                 () => GameManager.Instance?.ShowMainMenu(), UIStyle.AccentMagenta);
 
-        UIStyle.CreateButton(card.transform, "Quit Game",
-            new Vector2(0f, btnY - step*3), new Vector2(W, H),
-            OnQuitGame, UIStyle.AccentRed);
+        if (_quitSprite != null)
+            UIStyle.CreateImageButton(card.transform, _quitSprite, new Vector2(0f, btnY - step*3), OnQuitGame);
+        else
+            UIStyle.CreateButton(card.transform, "Quit Game",
+                new Vector2(0f, btnY - step*3), new Vector2(W, H),
+                OnQuitGame, UIStyle.AccentRed);
     }
 
     private void Update()

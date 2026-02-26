@@ -169,7 +169,7 @@ public class PowerupManager : MonoBehaviour
     }
 
     private static bool IsBadPowerup(PowerupType type)
-        => type >= PowerupType.ShrinkPaddle && type <= PowerupType.DrunkenPaddle;
+        => PowerupRules.IsBad(type);
 
     private void NotifyBallCount()
     {
@@ -204,6 +204,11 @@ public class PowerupManager : MonoBehaviour
             case PowerupType.InvisiBall:    foreach (var b in _balls) b.SetInvisiBall(true);     break;
             case PowerupType.DrunkenPaddle: _paddle?.SetDrunk(true);                             break;
             case PowerupType.PermanentStickyBall: foreach (var b in _balls) b.SetSticky(true);   break;
+            case PowerupType.DrunkVision:
+                CameraShake.Instance?.SetDrunk(true);
+                ScreenEffects.Instance?.SetDrunkVision(true);
+                break;
+            case PowerupType.GremlinBounces: foreach (var b in _balls) b.SetGremlinBounces(true); break;
         }
     }
 
@@ -231,6 +236,11 @@ public class PowerupManager : MonoBehaviour
             case PowerupType.InvisiBall:    foreach (var b in _balls) b.SetInvisiBall(false);    break;
             case PowerupType.DrunkenPaddle: _paddle?.SetDrunk(false);                            break;
             case PowerupType.PermanentStickyBall: foreach (var b in _balls) b.SetSticky(false);  break;
+            case PowerupType.DrunkVision:
+                CameraShake.Instance?.SetDrunk(false);
+                ScreenEffects.Instance?.SetDrunkVision(false);
+                break;
+            case PowerupType.GremlinBounces: foreach (var b in _balls) b.SetGremlinBounces(false); break;
         }
     }
 

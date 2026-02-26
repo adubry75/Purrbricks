@@ -14,8 +14,10 @@ public class ScreenEffects : MonoBehaviour
 
     private Image _flashImg;
     private Image _vignetteImg;
+    private Image _drunkImg;
     private Coroutine _flashRoutine;
     private bool _isBadActive;
+    private bool _isDrunkActive;
 
     private void Awake()
     {
@@ -44,6 +46,17 @@ public class ScreenEffects : MonoBehaviour
         vigRt.anchorMin  = Vector2.zero;
         vigRt.anchorMax  = Vector2.one;
         vigRt.sizeDelta  = Vector2.zero;
+
+        // ── Drunk overlay (wobble color wash) ────────────────────────────────
+        var drunkGO = new GameObject("DrunkOverlay");
+        drunkGO.transform.SetParent(transform, false);
+        _drunkImg = drunkGO.AddComponent<Image>();
+        _drunkImg.color = new Color(0.15f, 0.25f, 0.85f, 0f);
+        _drunkImg.raycastTarget = false;
+        var dRt = _drunkImg.GetComponent<RectTransform>();
+        dRt.anchorMin = Vector2.zero;
+        dRt.anchorMax = Vector2.one;
+        dRt.sizeDelta = Vector2.zero;
 
         // ── Flash overlay ─────────────────────────────────────────────────────
         var flashGO = new GameObject("Flash");
@@ -78,6 +91,13 @@ public class ScreenEffects : MonoBehaviour
             _vignetteImg.color = new Color(0.75f, 0f, 0f, 0f);
     }
 
+    public void SetDrunkVision(bool active)
+    {
+        _isDrunkActive = active;
+        if (!active && _drunkImg != null)
+            _drunkImg.color = new Color(0.15f, 0.25f, 0.85f, 0f);
+    }
+
     // ── Internal ──────────────────────────────────────────────────────────────
 
     private void Update()
@@ -87,6 +107,18 @@ public class ScreenEffects : MonoBehaviour
         // Pulse red edge while bad powerup is active
         float alpha = 0.13f + 0.07f * Mathf.Sin(Time.unscaledTime * 2.8f);
         _vignetteImg.color = new Color(0.75f, 0f, 0f, alpha);
+    }
+
+    private void LateUpdate()
+    {
+        if (!_isDrunkActive || _drunkImg == null) return;
+
+        float t = Time.unscaledTime;
+        float a = 0.10f + 0.05f * Mathf.Sin(t * 1.7f);
+        var c0 = new Color(0.20f, 0.30f, 0.95f, a);
+        var c1 = new Color(0.95f, 0.20f, 0.75f, a * 0.85f);
+        float blend = 0.5f + 0.5f * Mathf.Sin(t * 0.9f);
+        _drunkImg.color = Color.Lerp(c0, c1, blend);
     }
 
     private IEnumerator FlashRoutine(Color color, float peakAlpha, float duration)

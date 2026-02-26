@@ -159,6 +159,8 @@ public class GameManager : MonoBehaviour
             if (Input.GetKeyDown(KeyCode.Keypad5)) PowerupManager.Instance?.Apply(PowerupType.TinyBall);
             if (Input.GetKeyDown(KeyCode.Keypad6)) PowerupManager.Instance?.Apply(PowerupType.InvisiBall);
             if (Input.GetKeyDown(KeyCode.Keypad7)) PowerupManager.Instance?.Apply(PowerupType.DrunkenPaddle);
+            if (Input.GetKeyDown(KeyCode.Keypad8)) PowerupManager.Instance?.Apply(PowerupType.DrunkVision);
+            if (Input.GetKeyDown(KeyCode.Keypad9)) PowerupManager.Instance?.Apply(PowerupType.GremlinBounces);
         }
 
         // Fury Strike: both mouse buttons pressed together when charge is full

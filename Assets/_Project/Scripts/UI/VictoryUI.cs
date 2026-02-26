@@ -1,3 +1,4 @@
+using System.Collections;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -29,6 +30,8 @@ public class VictoryUI : MonoBehaviour
     private int    _currentLevelScore;
     private string _currentLevelId;
     private int    _currentLevelIndex;
+    private Coroutine _fireworksRoutine;
+    private GameObject _fireworksRoot;
 
     private static readonly Color ColorGold  = new Color(1.00f, 0.84f, 0.10f);
     private static readonly Color ColorGreen = new Color(0.20f, 1f, 0.45f);
@@ -214,12 +217,16 @@ public class VictoryUI : MonoBehaviour
         if (_newBestBanner != null) _newBestBanner.SetActive(isNewBest);
 
         // Pre-load saved rating for this level
-        _currentRating = LevelRatingService.Instance != null
-            ? LevelRatingService.Instance.GetRating(levelId)
-            : 0;
+        if (LevelRatingService.Instance != null)
+            _currentRating = LevelRatingService.Instance.GetRating(levelId);
+        else
+        {
+            _currentRating = 0;
+            Debug.LogWarning("[VictoryUI] LevelRatingService.Instance is null — cannot read saved rating.");
+        }
         UpdateStars(_currentRating);
 
-        SpawnConfetti();
+        SpawnVictoryFireworks();
     }
 
     private void OnNextLevel()   => GameManager.Instance?.LoadNextLevel();
@@ -230,7 +237,13 @@ public class VictoryUI : MonoBehaviour
     {
         // Click the already-active star → clear the rating
         _currentRating = (_currentRating == starNum) ? 0 : starNum;
-        LevelRatingService.Instance?.SetRating(_currentLevelId, _currentLevelIndex, _currentRating);
+
+        if (LevelRatingService.Instance != null)
+            LevelRatingService.Instance.SetRating(_currentLevelId, _currentLevelIndex, _currentRating);
+        else
+            Debug.LogWarning("[VictoryUI] LevelRatingService.Instance is null — rating NOT saved! " +
+                             "Run 'Purrbricks > Setup Scene' to add the service to the scene.");
+
         UpdateStars(_currentRating);
     }
 
@@ -279,57 +292,156 @@ public class VictoryUI : MonoBehaviour
         return go;
     }
 
-    // ── Confetti ──────────────────────────────────────────────────────────────
+    // ── Victory fireworks ─────────────────────────────────────────────────────
 
-    private void SpawnConfetti()
+    private void SpawnVictoryFireworks()
     {
-        for (int i = 0; i < 3; i++)
-            SpawnConfettiEmitter(new Vector3(-3f + i * 3f, -2f, 0f));
+        if (_fireworksRoutine != null)
+            StopCoroutine(_fireworksRoutine);
+
+        if (_fireworksRoot != null)
+            Destroy(_fireworksRoot);
+
+        _fireworksRoot = new GameObject("VictoryFireworks");
+        _fireworksRoutine = StartCoroutine(FireworksRoutine());
     }
 
-    private void SpawnConfettiEmitter(Vector3 position)
+    private IEnumerator FireworksRoutine()
     {
-        var go   = new GameObject("Confetti");
-        go.transform.position = position;
-        var ps   = go.AddComponent<ParticleSystem>();
-        var main = ps.main;
-        main.startLifetime   = new ParticleSystem.MinMaxCurve(2f, 3f);
-        main.startSpeed      = new ParticleSystem.MinMaxCurve(8f, 12f);
-        main.startSize       = new ParticleSystem.MinMaxCurve(0.10f, 0.25f);
-        main.startColor      = new ParticleSystem.MinMaxGradient(Color.white);
-        main.gravityModifier = 0.5f;
-        main.loop            = false;
-        main.useUnscaledTime = true;
+        // Stagger multiple launches so it reads as a "show" instead of a single burst.
+        const int launches = 12;
+        for (int i = 0; i < launches; i++)
+        {
+            float x = Random.Range(-5.2f, 5.2f);
+            float y = Random.Range(-4.3f, -3.6f);
+            SpawnSingleFirework(new Vector3(x, y, 0f), _fireworksRoot.transform);
+            yield return new WaitForSecondsRealtime(Random.Range(0.10f, 0.18f));
+        }
 
-        var emission = ps.emission;
-        emission.SetBursts(new[] { new ParticleSystem.Burst(0f, 80) });
+        // Allow particles to finish, then clean up.
+        yield return new WaitForSecondsRealtime(3.2f);
+        if (_fireworksRoot != null)
+            Destroy(_fireworksRoot);
+        _fireworksRoot = null;
+        _fireworksRoutine = null;
+    }
 
-        var shape = ps.shape;
-        shape.shapeType = ParticleSystemShapeType.Cone;
-        shape.angle     = 15f;
-        shape.radius    = 0.2f;
+    private static void SpawnSingleFirework(Vector3 launchPos, Transform parent)
+    {
+        var root = new GameObject("Firework");
+        root.transform.SetParent(parent, worldPositionStays: true);
+        root.transform.position = launchPos;
 
-        var col  = ps.colorOverLifetime;
-        col.enabled = true;
+        // Burst (sub-emitter) — the actual "firework" flower.
+        var burstGO = new GameObject("Burst");
+        burstGO.transform.SetParent(root.transform, worldPositionStays: false);
+        burstGO.transform.localPosition = Vector3.zero;
+        var burst = burstGO.AddComponent<ParticleSystem>();
+        var bMain = burst.main;
+        bMain.loop            = false;
+        bMain.startLifetime   = new ParticleSystem.MinMaxCurve(0.85f, 1.35f);
+        bMain.startSpeed      = new ParticleSystem.MinMaxCurve(2.2f, 6.2f);
+        bMain.startSize       = new ParticleSystem.MinMaxCurve(0.05f, 0.12f);
+        bMain.startRotation   = new ParticleSystem.MinMaxCurve(0f, Mathf.PI * 2f);
+        bMain.gravityModifier = 0.25f;
+        bMain.simulationSpace = ParticleSystemSimulationSpace.World;
+        bMain.useUnscaledTime = true;
+
+        var bEmission = burst.emission;
+        bEmission.enabled = true;
+        bEmission.rateOverTime = 0f;
+        bEmission.SetBursts(new[] { new ParticleSystem.Burst(0f, (short)Random.Range(70, 105)) });
+
+        var bShape = burst.shape;
+        bShape.enabled   = true;
+        bShape.shapeType = ParticleSystemShapeType.Sphere;
+        bShape.radius    = 0.08f;
+
+        var bNoise = burst.noise;
+        bNoise.enabled     = true;
+        bNoise.strength    = 0.60f;
+        bNoise.frequency   = 1.8f;
+        bNoise.scrollSpeed = 0.8f;
+        bNoise.quality     = ParticleSystemNoiseQuality.Low;
+
+        // Color over lifetime: bright -> transparent.
+        var hue = Random.value;
+        Color c0 = Color.HSVToRGB(hue, 0.65f, 1.00f);
+        Color c1 = Color.HSVToRGB(Mathf.Repeat(hue + 0.10f, 1f), 0.55f, 1.00f);
+
+        var bCol = burst.colorOverLifetime;
+        bCol.enabled = true;
         var grad = new Gradient();
         grad.SetKeys(
-            new[] {
-                new GradientColorKey(new Color(1f, 0.2f, 0.2f), 0f),
-                new GradientColorKey(new Color(1f, 1f, 0.2f),   0.33f),
-                new GradientColorKey(new Color(0.2f, 1f, 0.2f), 0.66f),
-                new GradientColorKey(new Color(0.2f, 0.5f, 1f), 1f)
-            },
-            new[] {
-                new GradientAlphaKey(1f, 0f),
-                new GradientAlphaKey(0f, 1f)
-            }
+            new[] { new GradientColorKey(c0, 0f), new GradientColorKey(c1, 0.55f), new GradientColorKey(Color.white, 1f) },
+            new[] { new GradientAlphaKey(1f, 0f), new GradientAlphaKey(0.35f, 0.70f), new GradientAlphaKey(0f, 1f) }
         );
-        col.color = new ParticleSystem.MinMaxGradient(grad);
+        bCol.color = new ParticleSystem.MinMaxGradient(grad);
 
-        var renderer = ps.GetComponent<ParticleSystemRenderer>();
-        renderer.material     = new Material(Shader.Find("Sprites/Default"));
-        renderer.sortingOrder = 250;
+        var bSize = burst.sizeOverLifetime;
+        bSize.enabled = true;
+        bSize.size = new ParticleSystem.MinMaxCurve(1f, AnimationCurve.EaseInOut(0f, 1f, 1f, 0.05f));
 
-        Destroy(go, 4f);
+        var bTrails = burst.trails;
+        bTrails.enabled              = true;
+        bTrails.mode                 = ParticleSystemTrailMode.PerParticle;
+        bTrails.ratio                = 1f;
+        bTrails.lifetime             = 0.18f;
+        bTrails.minVertexDistance    = 0.05f;
+        bTrails.dieWithParticles     = true;
+        bTrails.inheritParticleColor = true;
+        bTrails.widthOverTrail       = new ParticleSystem.MinMaxCurve(1f, AnimationCurve.Linear(0f, 0.7f, 1f, 0f));
+
+        var bRend = burst.GetComponent<ParticleSystemRenderer>();
+        bRend.material     = VfxMaterials.Additive;
+        bRend.trailMaterial = VfxMaterials.Additive;
+        bRend.sortingOrder = 250;
+
+        // Rocket — single particle with a streak; on death it spawns the burst above.
+        var rocket = root.AddComponent<ParticleSystem>();
+        var rMain = rocket.main;
+        rMain.loop            = false;
+        rMain.startLifetime   = new ParticleSystem.MinMaxCurve(0.75f, 1.05f);
+        rMain.startSpeed      = new ParticleSystem.MinMaxCurve(10.5f, 13.5f);
+        rMain.startSize       = new ParticleSystem.MinMaxCurve(0.05f, 0.09f);
+        rMain.startColor      = new ParticleSystem.MinMaxGradient(c0);
+        rMain.gravityModifier = -0.10f; // slight lift
+        rMain.simulationSpace = ParticleSystemSimulationSpace.World;
+        rMain.useUnscaledTime = true;
+
+        var rEmission = rocket.emission;
+        rEmission.enabled = true;
+        rEmission.rateOverTime = 0f;
+        rEmission.SetBursts(new[] { new ParticleSystem.Burst(0f, 1) });
+
+        var rShape = rocket.shape;
+        rShape.enabled   = true;
+        rShape.shapeType = ParticleSystemShapeType.Cone;
+        rShape.angle     = 2.5f;
+        rShape.radius    = 0.02f;
+
+        var rTrails = rocket.trails;
+        rTrails.enabled              = true;
+        rTrails.mode                 = ParticleSystemTrailMode.PerParticle;
+        rTrails.ratio                = 1f;
+        rTrails.lifetime             = 0.35f;
+        rTrails.minVertexDistance    = 0.03f;
+        rTrails.dieWithParticles     = true;
+        rTrails.inheritParticleColor = true;
+        rTrails.widthOverTrail       = new ParticleSystem.MinMaxCurve(1f, AnimationCurve.Linear(0f, 0.55f, 1f, 0f));
+
+        // Sub-emitter wiring: rocket death -> burst.
+        var sub = rocket.subEmitters;
+        sub.enabled = true;
+        sub.AddSubEmitter(burst, ParticleSystemSubEmitterType.Death, ParticleSystemSubEmitterProperties.InheritNothing);
+
+        var rRend = rocket.GetComponent<ParticleSystemRenderer>();
+        rRend.material      = VfxMaterials.Additive;
+        rRend.trailMaterial = VfxMaterials.Additive;
+        rRend.sortingOrder  = 250;
+
+        rocket.Play(withChildren: true);
+
+        Object.Destroy(root, 4.0f);
     }
 }

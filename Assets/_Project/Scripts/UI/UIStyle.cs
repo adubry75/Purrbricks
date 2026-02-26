@@ -70,6 +70,9 @@ public static class UIStyle
         btnRt.sizeDelta       = size;
         btnRt.anchoredPosition = position;
 
+        if (btnGO.GetComponent<UIHoverFx>() == null)
+            btnGO.AddComponent<UIHoverFx>();
+
         // Subtle border
         var border = btnGO.AddComponent<Outline>();
         border.effectColor    = new Color(ac.r, ac.g, ac.b, 0.55f);
@@ -147,6 +150,9 @@ public static class UIStyle
         rt.anchorMax = new Vector2(0.5f, 0.5f);
         rt.sizeDelta = new Vector2(aspect * 70f, 70f);
         rt.anchoredPosition = anchoredPos;
+
+        if (go.GetComponent<UIHoverFx>() == null)
+            go.AddComponent<UIHoverFx>();
 
         return btn;
     }

@@ -34,6 +34,8 @@ public class PowerupHUD : MonoBehaviour
         new Color(0.55f, 0.55f, 0.60f),  // 16 InvisiBall
         new Color(1.00f, 0.55f, 0.00f),  // 17 DrunkenPaddle
         new Color(0.60f, 0.00f, 1.00f),  // 18 PermanentStickyBall
+        new Color(0.20f, 0.25f, 0.65f),  // 19 DrunkVision
+        new Color(0.12f, 0.60f, 0.65f),  // 20 GremlinBounces
     };
 
     private static readonly string[] TypeLabels = new string[]
@@ -59,10 +61,12 @@ public class PowerupHUD : MonoBehaviour
         "⚠ INVISIBALL",  // 16
         "⚠ DRUNK PAD",   // 17
         "STICKY ∞",      // 18
+        "⚠ DRUNK VISION",// 19
+        "⚠ GREMLIN",     // 20
     };
 
     private static bool IsBadPowerup(PowerupType type)
-        => type >= PowerupType.ShrinkPaddle && type <= PowerupType.DrunkenPaddle;
+        => PowerupRules.IsBad(type);
 
     // Slot UI references for each active powerup
     private class Slot

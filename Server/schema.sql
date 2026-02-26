@@ -1,0 +1,22 @@
+-- ============================================================
+-- Purrbricks Level Ratings — MySQL Schema
+-- Run this in cPanel > phpMyAdmin on your purrbricks database
+-- ============================================================
+
+-- Create the ratings table
+-- One row per (steam_id, level_id) pair.
+-- ON DUPLICATE KEY UPDATE means re-rating just updates the row.
+CREATE TABLE IF NOT EXISTS `ratings` (
+    `id`          INT UNSIGNED      NOT NULL AUTO_INCREMENT,
+    `level_id`    VARCHAR(32)       NOT NULL COMMENT 'e.g. level_01',
+    `level_index` SMALLINT UNSIGNED NOT NULL COMMENT '0-based index',
+    `steam_id`    VARCHAR(24)       NOT NULL COMMENT 'Steam 64-bit ID as string',
+    `steam_name`  VARCHAR(128)      NOT NULL DEFAULT '' COMMENT 'Display name at time of rating',
+    `rating`      TINYINT UNSIGNED  NOT NULL DEFAULT 0  COMMENT '0=unrated, 1-5 stars',
+    `created_at`  DATETIME          NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    `updated_at`  DATETIME          NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+
+    PRIMARY KEY (`id`),
+    UNIQUE KEY `uq_player_level` (`steam_id`, `level_id`),
+    INDEX `idx_level_id` (`level_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;

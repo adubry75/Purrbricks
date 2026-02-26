@@ -397,10 +397,12 @@ public static class PurrbricksSetup
 
             var sp1 = LoadButton("play-button.png");
             var sp2 = LoadButton("highscores-button.png");
+            var spS = LoadButton("settings-button.png");
             var sp3 = LoadButton("quit-button.png");
 
             if (sp1 != null) mmSo.FindProperty("_playSprite").objectReferenceValue        = sp1;
             if (sp2 != null) mmSo.FindProperty("_highScoresSprite").objectReferenceValue  = sp2;
+            if (spS != null) mmSo.FindProperty("_settingsSprite").objectReferenceValue    = spS;
             if (sp3 != null) mmSo.FindProperty("_quitSprite").objectReferenceValue        = sp3;
             mmSo.ApplyModifiedProperties();
 
@@ -427,9 +429,13 @@ public static class PurrbricksSetup
         {
             var so = new SerializedObject(pauseUI);
             var resume = LoadButton("resume-button.png");
+            var settings = LoadButton("settings-button.png");
             var mm = LoadButton("mainmenu-button.png");
+            var quit = LoadButton("quit-button.png");
             if (resume != null) so.FindProperty("_resumeSprite").objectReferenceValue = resume;
+            if (settings != null) so.FindProperty("_settingsSprite").objectReferenceValue = settings;
             if (mm != null) so.FindProperty("_mainMenuSprite").objectReferenceValue = mm;
+            if (quit != null) so.FindProperty("_quitSprite").objectReferenceValue = quit;
             so.ApplyModifiedProperties();
         }
 
@@ -450,6 +456,17 @@ public static class PurrbricksSetup
             var so = new SerializedObject(highScoresUI);
             var mm = LoadButton("mainmenu-button.png");
             if (mm != null) so.FindProperty("_mainMenuSprite").objectReferenceValue = mm;
+            so.ApplyModifiedProperties();
+        }
+
+        var settingsUI = Object.FindFirstObjectByType<SettingsUI>(FindObjectsInactive.Include);
+        if (settingsUI != null)
+        {
+            var so = new SerializedObject(settingsUI);
+            var apply = LoadButton("apply-button.png");
+            var back  = LoadButton("back-button.png");
+            if (apply != null) so.FindProperty("_applySprite").objectReferenceValue = apply;
+            if (back  != null) so.FindProperty("_backSprite").objectReferenceValue  = back;
             so.ApplyModifiedProperties();
         }
 

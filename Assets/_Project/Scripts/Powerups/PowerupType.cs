@@ -24,4 +24,8 @@ public enum PowerupType
 
     // Special
     PermanentStickyBall = 18, // sticky ball for the rest of the level once collected
+
+    // ── Extra bad (chaos) ─────────────────────────
+    DrunkVision    = 19,  // screen wobble/tilt while active
+    GremlinBounces = 20,  // small random angle errors on paddle/wall bounces
 }

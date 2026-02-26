@@ -13,7 +13,7 @@ public class PowerupPickup : MonoBehaviour
     private float _bobTimer;
 
     private static bool IsBad(PowerupType t)
-        => t >= PowerupType.ShrinkPaddle && t <= PowerupType.DrunkenPaddle;
+        => PowerupRules.IsBad(t);
 
     // Color per powerup type — index matches enum value
     private static readonly Color[] TypeColors = new Color[]
@@ -40,6 +40,8 @@ public class PowerupPickup : MonoBehaviour
         new Color(0.15f, 0.15f, 0.15f),   // 16 InvisiBall
         new Color(0.55f, 0.30f, 0.05f),   // 17 DrunkenPaddle
         new Color(0.60f, 0.00f, 1.00f),   // 18 PermanentStickyBall
+        new Color(0.20f, 0.25f, 0.65f),   // 19 DrunkVision
+        new Color(0.12f, 0.60f, 0.65f),   // 20 GremlinBounces
     };
 
     private static readonly string[] TypeNames = new string[]
@@ -47,6 +49,7 @@ public class PowerupPickup : MonoBehaviour
         "Wide", "Multi", "Sticky", "Fast", "+Life", "Laser", "Fire", "Bomb",
         "Shield", "Big", "2xScore",
         "SHRINK", "ZIP!", "FLIP!", "CURSE", "TINY", "INVIS", "DRUNK", "STICKY∞",
+        "WOBBLE", "GREMLIN",
     };
 
     public void Init(PowerupType type)

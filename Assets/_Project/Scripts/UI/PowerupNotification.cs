@@ -38,6 +38,8 @@ public class PowerupNotification : MonoBehaviour
         new Color(0.55f, 0.55f, 0.60f),   // 16 InvisiBall   gray
         new Color(1.00f, 0.55f, 0.00f),   // 17 DrunkenPaddle amber
         new Color(0.60f, 0.00f, 1.00f),   // 18 PermanentStickyBall purple
+        new Color(0.20f, 0.25f, 0.65f),   // 19 DrunkVision
+        new Color(0.12f, 0.60f, 0.65f),   // 20 GremlinBounces
     };
 
     private static readonly string[] TypeLabels = new string[]
@@ -61,6 +63,8 @@ public class PowerupNotification : MonoBehaviour
         "⚠ INVISIBALL",   // 16
         "⚠ DRUNK PAD",    // 17
         "STICKY ∞",       // 18
+        "⚠ DRUNK VISION", // 19
+        "⚠ GREMLIN",      // 20
     };
 
     // Anchor position reset every coroutine run
@@ -118,7 +122,7 @@ public class PowerupNotification : MonoBehaviour
         int idx   = Mathf.Clamp((int)type, 0, TypeColors.Length - 1);
         Color col = TypeColors[idx];
         string lbl = idx < TypeLabels.Length ? TypeLabels[idx] : type.ToString().ToUpper();
-        bool bad = type >= PowerupType.ShrinkPaddle && type <= PowerupType.DrunkenPaddle;
+        bool bad = PowerupRules.IsBad(type);
 
         if (bad)
             col = new Color(1f, 0.3f, 0.3f);

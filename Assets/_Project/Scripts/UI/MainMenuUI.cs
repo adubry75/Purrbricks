@@ -92,12 +92,31 @@ public class MainMenuUI : MonoBehaviour
 
         CreateTitle();
 
-        if (_playSprite != null)
+        if (_playSprite != null || _highScoresSprite != null || _settingsSprite != null || _quitSprite != null)
         {
-            UIStyle.CreateImageButton(_panel.transform, _playSprite,       new Vector2(0f, -80f),  () => GameManager.Instance?.StartGame());
-            UIStyle.CreateImageButton(_panel.transform, _highScoresSprite, new Vector2(0f, -170f), () => GameManager.Instance?.ShowHighScores());
-            UIStyle.CreateImageButton(_panel.transform, _settingsSprite, new Vector2(0f, -255f), () => GameManager.Instance?.ShowSettings(fromPause:false));
-            UIStyle.CreateImageButton(_panel.transform, _quitSprite,       new Vector2(0f, -340f), QuitGame);
+            if (_playSprite != null)
+                UIStyle.CreateImageButton(_panel.transform, _playSprite, new Vector2(0f, -80f), () => GameManager.Instance?.StartGame());
+            else
+                UIStyle.CreateButton(_panel.transform, "Play", new Vector2(0f, -80f), new Vector2(320f, 80f),
+                    () => GameManager.Instance?.StartGame(), UIStyle.AccentMagenta);
+
+            if (_highScoresSprite != null)
+                UIStyle.CreateImageButton(_panel.transform, _highScoresSprite, new Vector2(0f, -170f), () => GameManager.Instance?.ShowHighScores());
+            else
+                UIStyle.CreateButton(_panel.transform, "High Scores", new Vector2(0f, -170f), new Vector2(320f, 80f),
+                    () => GameManager.Instance?.ShowHighScores(), UIStyle.AccentBlue);
+
+            if (_settingsSprite != null)
+                UIStyle.CreateImageButton(_panel.transform, _settingsSprite, new Vector2(0f, -255f), () => GameManager.Instance?.ShowSettings(fromPause: false));
+            else
+                UIStyle.CreateButton(_panel.transform, "Settings", new Vector2(0f, -255f), new Vector2(320f, 80f),
+                    () => GameManager.Instance?.ShowSettings(fromPause: false), UIStyle.AccentBlue);
+
+            if (_quitSprite != null)
+                UIStyle.CreateImageButton(_panel.transform, _quitSprite, new Vector2(0f, -340f), QuitGame);
+            else
+                UIStyle.CreateButton(_panel.transform, "Quit", new Vector2(0f, -340f), new Vector2(320f, 80f),
+                    QuitGame, UIStyle.AccentRed);
 #if UNITY_EDITOR
             UIStyle.CreateButton(_panel.transform, "Level Editor [F1]", new Vector2(0f, -420f),
                 new Vector2(260f, 48f), ShowLevelEditor, UIStyle.AccentGold);

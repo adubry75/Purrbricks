@@ -84,12 +84,9 @@ public class BallTrail : MonoBehaviour
         noise.scrollSpeed = 0.6f;
         noise.quality     = ParticleSystemNoiseQuality.Low;
 
-        // Additive blending for a glowing look
+        // Additive blending for a glowing look (also assigns a soft particle texture).
         var rend = _ps.GetComponent<ParticleSystemRenderer>();
-        var mat  = new Material(Shader.Find("Sprites/Default"));
-        mat.SetInt("_SrcBlend", (int)UnityEngine.Rendering.BlendMode.SrcAlpha);
-        mat.SetInt("_DstBlend", (int)UnityEngine.Rendering.BlendMode.One); // Additive
-        rend.material         = mat;
+        rend.material         = VfxMaterials.Additive;
         rend.sortingLayerName = "Default";
         rend.sortingOrder     = -1; // behind ball sprite
 

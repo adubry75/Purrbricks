@@ -8,22 +8,25 @@ using UnityEngine.Networking;
 /// <summary>
 /// Singleton that stores per-level ratings (1–5 stars, 0 = unrated).
 /// Storage strategy:
-///   1. Local PlayerPrefs for instant read-back.
+///   1. Local PlayerPrefs for instant read-back (always works, even offline).
 ///   2. Steam leaderboard (ForceUpdate) so ratings can change up or down.
-///   3. Optional Firebase Realtime Database REST endpoint for rich analytics.
-///      Set FirebaseBaseUrl in the Inspector (or leave empty to skip).
+///   3. Optional MySQL REST API on your own server.
+///      Set ApiBaseUrl in the Inspector (e.g. https://api.purrbricks.dubry.com).
+///      Leave empty to skip remote logging.
 /// </summary>
 public class LevelRatingService : MonoBehaviour
 {
     public static LevelRatingService Instance { get; private set; }
 
-    [Tooltip("Firebase Realtime Database base URL, e.g. https://yourproject-default-rtdb.firebaseio.com\n" +
+    [Tooltip("Base URL of your Purrbricks rating API endpoint.\n" +
+             "Example: https://api.purrbricks.dubry.com\n" +
+             "The service will POST to <ApiBaseUrl>/rate.php\n" +
              "Leave empty to disable remote logging.")]
-    [SerializeField] private string _firebaseBaseUrl = "";
+    [SerializeField] private string _apiBaseUrl = "";
 
     // PlayerPrefs key prefixes
-    private const string KeyRating      = "lvlrating_";      // int, 0 = unrated
-    private const string KeyCreatedAt   = "lvlratingct_";    // long (UTC ticks)
+    private const string KeyRating    = "lvlrating_";    // int 0–5, 0 = unrated
+    private const string KeyCreatedAt = "lvlratingct_";  // long (UTC ticks), first time rated
 
     // Steam board naming: "Purrbricks_rate_level_03"
     private const string BoardPrefix = "Purrbricks_rate_";
@@ -33,44 +36,51 @@ public class LevelRatingService : MonoBehaviour
         if (Instance != null && Instance != this) { Destroy(gameObject); return; }
         Instance = this;
         DontDestroyOnLoad(gameObject);
+        Debug.Log("[LevelRatingService] Singleton ready.");
     }
 
     // ── Public API ────────────────────────────────────────────────────────────
 
     /// <summary>Returns the locally stored rating for <paramref name="levelId"/> (0 = unrated).</summary>
     public int GetRating(string levelId)
-        => PlayerPrefs.GetInt(KeyRating + levelId, 0);
+    {
+        int r = PlayerPrefs.GetInt(KeyRating + levelId, 0);
+        Debug.Log($"[LevelRatingService] GetRating({levelId}) = {r}");
+        return r;
+    }
 
     /// <summary>
     /// Saves a rating (1–5) or clears it (0) for <paramref name="levelId"/>.
-    /// Persists locally, submits to Steam, and optionally logs to Firebase.
+    /// Persists locally, submits to Steam, and optionally posts to the MySQL API.
     /// </summary>
     public void SetRating(string levelId, int levelIndex, int rating)
     {
         rating = Mathf.Clamp(rating, 0, 5);
 
+        // ── 1. Local PlayerPrefs ──────────────────────────────────────────────
         bool isFirstRating = PlayerPrefs.GetInt(KeyRating + levelId, 0) == 0 && rating > 0;
         if (isFirstRating)
             PlayerPrefs.SetString(KeyCreatedAt + levelId, DateTime.UtcNow.Ticks.ToString());
 
         PlayerPrefs.SetInt(KeyRating + levelId, rating);
         PlayerPrefs.Save();
+        Debug.Log($"[LevelRatingService] SetRating({levelId}, {rating}) → PlayerPrefs saved.");
 
-        // Steam — only submit non-zero ratings (can't remove an entry, but 0 never happened)
+        // ── 2. Steam leaderboard ──────────────────────────────────────────────
         if (rating > 0)
         {
             string boardName = BoardPrefix + levelId;
             SteamLeaderboardManager.Instance?.SubmitScoreForce(boardName, rating);
         }
 
-        // Firebase — fire and forget (won't block gameplay)
-        if (!string.IsNullOrEmpty(_firebaseBaseUrl))
-            StartCoroutine(PostToFirebase(levelId, levelIndex, rating));
+        // ── 3. Remote MySQL API ───────────────────────────────────────────────
+        if (!string.IsNullOrEmpty(_apiBaseUrl))
+            StartCoroutine(PostRating(levelId, levelIndex, rating));
     }
 
-    // ── Firebase REST ─────────────────────────────────────────────────────────
+    // ── MySQL REST API ────────────────────────────────────────────────────────
 
-    private IEnumerator PostToFirebase(string levelId, int levelIndex, int rating)
+    private IEnumerator PostRating(string levelId, int levelIndex, int rating)
     {
         string steamId   = "";
         string steamName = "";
@@ -86,20 +96,24 @@ public class LevelRatingService : MonoBehaviour
         long createdAtTicks = long.TryParse(
             PlayerPrefs.GetString(KeyCreatedAt + levelId, "0"), out long t) ? t : 0L;
 
-        string createdAt  = new DateTime(createdAtTicks, DateTimeKind.Utc).ToString("o");
-        string updatedAt  = DateTime.UtcNow.ToString("o");
+        string createdAt = new DateTime(createdAtTicks, DateTimeKind.Utc).ToString("o");
+        string updatedAt = DateTime.UtcNow.ToString("o");
 
-        // Build a minimal JSON payload
-        // PATCH merges fields into an existing record (preserves createdAt on subsequent updates)
-        string json = rating == 0
-            ? $"{{\"steamId\":\"{steamId}\",\"steamName\":\"{EscapeJson(steamName)}\",\"levelId\":\"{levelId}\",\"levelIndex\":{levelIndex},\"rating\":0,\"createdAt\":\"{createdAt}\",\"updatedAt\":\"{updatedAt}\"}}"
-            : $"{{\"steamId\":\"{steamId}\",\"steamName\":\"{EscapeJson(steamName)}\",\"levelId\":\"{levelId}\",\"levelIndex\":{levelIndex},\"rating\":{rating},\"createdAt\":\"{createdAt}\",\"updatedAt\":\"{updatedAt}\"}}";
+        string body = "{" +
+            $"\"levelId\":\"{levelId}\"," +
+            $"\"levelIndex\":{levelIndex}," +
+            $"\"steamId\":\"{steamId}\"," +
+            $"\"steamName\":\"{EscapeJson(steamName)}\"," +
+            $"\"rating\":{rating}," +
+            $"\"createdAt\":\"{createdAt}\"," +
+            $"\"updatedAt\":\"{updatedAt}\"" +
+            "}";
 
-        // Path: /ratings/<levelId>/<steamId>.json
-        string url = $"{_firebaseBaseUrl.TrimEnd('/')}/ratings/{levelId}/{steamId}.json";
+        string url = _apiBaseUrl.TrimEnd('/') + "/rate.php";
+        Debug.Log($"[LevelRatingService] POSTing rating to: {url}");
 
-        byte[] bodyRaw = Encoding.UTF8.GetBytes(json);
-        using var req = new UnityWebRequest(url, "PATCH");
+        byte[] bodyRaw = Encoding.UTF8.GetBytes(body);
+        using var req = new UnityWebRequest(url, "POST");
         req.uploadHandler   = new UploadHandlerRaw(bodyRaw);
         req.downloadHandler = new DownloadHandlerBuffer();
         req.SetRequestHeader("Content-Type", "application/json");
@@ -107,7 +121,9 @@ public class LevelRatingService : MonoBehaviour
         yield return req.SendWebRequest();
 
         if (req.result != UnityWebRequest.Result.Success)
-            Debug.LogWarning($"LevelRatingService: Firebase write failed — {req.error}");
+            Debug.LogWarning($"[LevelRatingService] API error: {req.error}  ({url})");
+        else
+            Debug.Log($"[LevelRatingService] API response: {req.downloadHandler.text}");
     }
 
     private static string EscapeJson(string s)

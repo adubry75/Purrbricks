@@ -39,6 +39,7 @@ public class BallController : MonoBehaviour
     private bool _isBigBall;        // ball scales to 2×
     private bool _isTinyBall;       // ball scales to 0.5×
     private bool _isInvisiBall;     // ball alpha 0.05, flashes every 3 s
+    private bool _isGremlinBounces; // small random angle errors on paddle/wall bounces
     private float _curseTimer;
     private float _invisTimer;
 
@@ -513,6 +514,8 @@ public class BallController : MonoBehaviour
         if (!on) _invisTimer = 0f;
     }
 
+    public void SetGremlinBounces(bool on) => _isGremlinBounces = on;
+
     public void SetPrismColor(PrismColor color)
     {
         _prismColor = color;
@@ -555,6 +558,7 @@ public class BallController : MonoBehaviour
         cloneBall._isBigBall = _isBigBall;
         cloneBall._isTinyBall = _isTinyBall;
         cloneBall._isInvisiBall = _isInvisiBall;
+        cloneBall._isGremlinBounces = _isGremlinBounces;
         cloneBall._rampMultiplier = _rampMultiplier;
         cloneBall._bumperMultiplier = _bumperMultiplier;
         cloneBall._bumperStartMultiplier = _bumperStartMultiplier;
@@ -652,6 +656,12 @@ public class BallController : MonoBehaviour
             if (_isBomb)
                 TriggerBombAt(brick.transform.position, brick);
         }
+
+        // GremlinBounces: introduce small random reflection errors on non-brick wall collisions.
+        if (brick == null && _isGremlinBounces && _rb != null && collision.collider.CompareTag("Wall"))
+        {
+            _rb.linearVelocity = RotateDeg(_rb.linearVelocity, Random.Range(-7.0f, 7.0f));
+        }
     }
 
     private void TriggerBombAt(Vector2 center, Brick source)
@@ -680,7 +690,18 @@ public class BallController : MonoBehaviour
         float rad = angle * Mathf.Deg2Rad;
         Vector2 dir = new Vector2(Mathf.Sin(rad), Mathf.Cos(rad)).normalized;
 
-        _rb.linearVelocity = dir * CurrentSpeed;
+        Vector2 v = dir * CurrentSpeed;
+        if (_isGremlinBounces)
+            v = RotateDeg(v, Random.Range(-9.0f, 9.0f));
+        _rb.linearVelocity = v;
+    }
+
+    private static Vector2 RotateDeg(Vector2 v, float degrees)
+    {
+        float rad = degrees * Mathf.Deg2Rad;
+        float c = Mathf.Cos(rad);
+        float s = Mathf.Sin(rad);
+        return new Vector2(v.x * c - v.y * s, v.x * s + v.y * c);
     }
 
     public void ResetToPaddle()
@@ -701,6 +722,7 @@ public class BallController : MonoBehaviour
         _isBigBall = false;
         _isTinyBall = false;
         _isInvisiBall = false;
+        _isGremlinBounces = false;
         _wantFireballPierce = false;
         _curseTimer = 0f;
         _invisTimer = 0f;
