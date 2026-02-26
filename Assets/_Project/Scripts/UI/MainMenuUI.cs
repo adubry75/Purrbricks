@@ -6,6 +6,7 @@ using UnityEngine.UI;
 /// Main menu screen: logo, Play, High Scores, Quit buttons.
 /// Uses UIStyle for AAA-quality cyberpunk button aesthetic.
 /// Assign button sprites via Inspector (PurrbricksSetup does this automatically).
+/// Press F1 (editor builds only) to open the Level Editor browser.
 /// </summary>
 public class MainMenuUI : MonoBehaviour
 {
@@ -18,10 +19,45 @@ public class MainMenuUI : MonoBehaviour
     private Canvas _canvas;
     private GameObject _panel;
 
+#if UNITY_EDITOR
+    private LevelEditorBrowserUI _levelEditorBrowser;
+#endif
+
     private void Awake()
     {
         BuildUI();
+#if UNITY_EDITOR
+        _levelEditorBrowser = Object.FindFirstObjectByType<LevelEditorBrowserUI>(FindObjectsInactive.Include);
+#endif
     }
+
+#if UNITY_EDITOR
+    private void Update()
+    {
+        if (Input.GetKeyDown(KeyCode.F1) && gameObject.activeSelf)
+            ShowLevelEditor();
+    }
+
+    private void ShowLevelEditor()
+    {
+        if (_levelEditorBrowser == null)
+            _levelEditorBrowser = Object.FindFirstObjectByType<LevelEditorBrowserUI>(FindObjectsInactive.Include);
+
+        if (_levelEditorBrowser == null)
+        {
+            Debug.LogWarning("[MainMenuUI] LevelEditorBrowserUI not found in scene. Run Purrbricks > Setup Scene.");
+            return;
+        }
+
+        Hide();
+        _levelEditorBrowser.SetBackAction(() =>
+        {
+            Show();
+            GameManager.Instance?.SetState(GameState.MainMenu);
+        });
+        _levelEditorBrowser.Show();
+    }
+#endif
 
     private void BuildUI()
     {
@@ -62,6 +98,10 @@ public class MainMenuUI : MonoBehaviour
             UIStyle.CreateImageButton(_panel.transform, _highScoresSprite, new Vector2(0f, -170f), () => GameManager.Instance?.ShowHighScores());
             UIStyle.CreateImageButton(_panel.transform, _settingsSprite, new Vector2(0f, -255f), () => GameManager.Instance?.ShowSettings(fromPause:false));
             UIStyle.CreateImageButton(_panel.transform, _quitSprite,       new Vector2(0f, -340f), QuitGame);
+#if UNITY_EDITOR
+            UIStyle.CreateButton(_panel.transform, "Level Editor [F1]", new Vector2(0f, -420f),
+                new Vector2(260f, 48f), ShowLevelEditor, UIStyle.AccentGold);
+#endif
         }
         else
         {
@@ -69,6 +109,10 @@ public class MainMenuUI : MonoBehaviour
             UIStyle.CreateButton(_panel.transform, "High Scores", new Vector2(0f,  -65f), new Vector2(320f, 80f), () => GameManager.Instance?.ShowHighScores(),                 UIStyle.AccentBlue);
             UIStyle.CreateButton(_panel.transform, "Settings",    new Vector2(0f, -160f), new Vector2(320f, 80f), () => GameManager.Instance?.ShowSettings(fromPause: false),   UIStyle.AccentBlue);
             UIStyle.CreateButton(_panel.transform, "Quit",        new Vector2(0f, -255f), new Vector2(320f, 80f), QuitGame,                                                     UIStyle.AccentRed);
+#if UNITY_EDITOR
+            UIStyle.CreateButton(_panel.transform, "Level Editor [F1]", new Vector2(0f, -350f),
+                new Vector2(260f, 48f), ShowLevelEditor, UIStyle.AccentGold);
+#endif
         }
 
         

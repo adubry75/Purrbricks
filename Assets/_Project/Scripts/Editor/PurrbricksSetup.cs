@@ -350,6 +350,27 @@ public static class PurrbricksSetup
             Debug.Log("Added LevelRatingService.");
         }
 
+        // ── Level Editor UI ──────────────────────────────────────────────────
+        var levelEditorGO = EnsureGO("LevelEditorUI");
+        var levelEditorUI = levelEditorGO.GetComponent<LevelEditorUI>();
+        if (levelEditorUI == null)
+        {
+            levelEditorUI = levelEditorGO.AddComponent<LevelEditorUI>();
+            Debug.Log("Added LevelEditorUI.");
+        }
+
+        var levelBrowserGO = EnsureGO("LevelEditorBrowserUI");
+        var levelBrowserUI = levelBrowserGO.GetComponent<LevelEditorBrowserUI>();
+        if (levelBrowserUI == null)
+        {
+            levelBrowserUI = levelBrowserGO.AddComponent<LevelEditorBrowserUI>();
+            Debug.Log("Added LevelEditorBrowserUI.");
+        }
+
+        // Wire them together
+        levelBrowserUI.SetEditorUI(levelEditorUI);
+        levelEditorUI.SetBrowser(levelBrowserUI);
+
         // ── 12. Main menu button sprites + ball/paddle sprites ───────────────
         // Refresh asset database so newly-added Art files are recognized
         AssetDatabase.Refresh();
