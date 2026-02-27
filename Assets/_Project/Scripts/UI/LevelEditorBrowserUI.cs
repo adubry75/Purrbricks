@@ -55,6 +55,12 @@ public class LevelEditorBrowserUI : MonoBehaviour
         new List<(string, LevelData)>();
     private int _page;
 
+    // ── Level-select mode ─────────────────────────────────────────────────────
+    private bool          _isLevelSelectMode;
+    private System.Action<int> _onLevelSelected;
+    private Text   _headerTitle;
+    private Button _newLevelBtn;
+
     // ── Modal ─────────────────────────────────────────────────────────────────
     private GameObject _modal;
     private InputField _modalId, _modalName, _modalCols, _modalRows;
@@ -75,6 +81,16 @@ public class LevelEditorBrowserUI : MonoBehaviour
 
     public void SetEditorUI(LevelEditorUI editorUI) => _editorUI = editorUI;
     public void SetBackAction(System.Action onBack) => _onBack = onBack;
+
+    /// <summary>Show the browser as a Level Select screen (in-game, with lock icons).</summary>
+    public void ShowAsLevelSelect(System.Action<int> onLevelSelected)
+    {
+        _isLevelSelectMode = true;
+        _onLevelSelected   = onLevelSelected;
+        if (_headerTitle  != null) _headerTitle.text = "LEVEL SELECT";
+        if (_newLevelBtn  != null) _newLevelBtn.gameObject.SetActive(false);
+        Show();
+    }
 
     /// <summary>Show the browser and freeze the game behind it.</summary>
     public void Show()
@@ -160,10 +176,11 @@ public class LevelEditorBrowserUI : MonoBehaviour
         titleRt.offsetMin = new Vector2(H_MARGIN + 10f, 0f);
         titleRt.offsetMax = Vector2.zero;
         titleGO.AddComponent<Outline>().effectColor = new Color(0.8f, 0.5f, 0f, 0.6f);
+        _headerTitle = titleTxt;
 
         // Buttons on the right side of the header (using UIStyle → anchor at parent centre)
         // Header is 1920 wide, so parent-centre in header = x:0  => +800 = near right edge
-        UIStyle.CreateButton(header.transform, "+ New Level",
+        _newLevelBtn = UIStyle.CreateButton(header.transform, "+ New Level",
             new Vector2(630f, 0f), new Vector2(210f, 54f),
             ShowNewLevelModal, UIStyle.AccentGreen);
 
@@ -482,16 +499,51 @@ public class LevelEditorBrowserUI : MonoBehaviour
         cols.colorMultiplier  = 1f;
         btn.colors = cols;
 
+        // Determine lock state (level select mode only)
+        var  numMatch   = Regex.Match(levelId, @"\d+");
+        int  levelIndex = numMatch.Success ? int.Parse(numMatch.Value) : -1;
+        bool isLocked   = _isLevelSelectMode && (GameManager.Instance == null || !GameManager.Instance.IsLevelUnlocked(levelIndex));
+
         string capturedId   = levelId;
         LevelData capturedData = data;
         btn.onClick.AddListener(() =>
         {
-            // Deep-clone the data so edits don't mutate the cached object
-            string json  = JsonConvert.SerializeObject(capturedData);
-            var    clone = JsonConvert.DeserializeObject<LevelData>(json);
-            Hide();
-            _editorUI?.OpenLevel(clone, capturedId);
+            if (_isLevelSelectMode)
+            {
+                if (!isLocked) { Hide(); _onLevelSelected?.Invoke(levelIndex); }
+            }
+            else
+            {
+                // Deep-clone the data so edits don't mutate the cached object
+                string json  = JsonConvert.SerializeObject(capturedData);
+                var    clone = JsonConvert.DeserializeObject<LevelData>(json);
+                Hide();
+                _editorUI?.OpenLevel(clone, capturedId);
+            }
         });
+
+        // Lock overlay (level select mode, locked levels only)
+        if (isLocked)
+        {
+            btn.interactable = false;
+
+            var overlay = MakePanel(card.transform, "LockOverlay", new Color(0f, 0f, 0f, 0.60f));
+            Stretch(overlay);
+
+            var lockGO  = new GameObject("LockText");
+            lockGO.transform.SetParent(overlay.transform, false);
+            var lockTxt = lockGO.AddComponent<Text>();
+            lockTxt.text      = "LOCKED";
+            lockTxt.font      = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
+            lockTxt.fontSize  = 28;
+            lockTxt.fontStyle = FontStyle.Bold;
+            lockTxt.color     = new Color(0.9f, 0.3f, 0.3f);
+            lockTxt.alignment = TextAnchor.MiddleCenter;
+            var lockRt = lockGO.GetComponent<RectTransform>() ?? lockGO.AddComponent<RectTransform>();
+            lockRt.anchorMin = Vector2.zero;
+            lockRt.anchorMax = Vector2.one;
+            lockRt.offsetMin = lockRt.offsetMax = Vector2.zero;
+        }
     }
 
     // ── Thumbnail ─────────────────────────────────────────────────────────────
@@ -555,6 +607,12 @@ public class LevelEditorBrowserUI : MonoBehaviour
     // ── Navigation ────────────────────────────────────────────────────────────
     private void GoBack()
     {
+        // Reset level-select mode so the next Show() behaves as editor again
+        _isLevelSelectMode = false;
+        _onLevelSelected   = null;
+        if (_headerTitle != null) _headerTitle.text = "LEVEL EDITOR";
+        if (_newLevelBtn != null) _newLevelBtn.gameObject.SetActive(true);
+
         // Unfreeze the game
         Time.timeScale = 1f;
         AudioListener.pause = false;

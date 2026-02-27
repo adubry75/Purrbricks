@@ -55,7 +55,7 @@ public class PauseMenuUI : MonoBehaviour
         var cardRt = card.GetComponent<RectTransform>();
         cardRt.anchorMin        = new Vector2(0.5f, 0.5f);
         cardRt.anchorMax        = new Vector2(0.5f, 0.5f);
-        cardRt.sizeDelta        = new Vector2(480f, 520f);
+        cardRt.sizeDelta        = new Vector2(480f, 620f);
         cardRt.anchoredPosition = Vector2.zero;
 
         // Title
@@ -76,10 +76,10 @@ public class PauseMenuUI : MonoBehaviour
         titleRt.anchorMin        = new Vector2(0.5f, 0.5f);
         titleRt.anchorMax        = new Vector2(0.5f, 0.5f);
         titleRt.sizeDelta        = new Vector2(440f, 90f);
-        titleRt.anchoredPosition = new Vector2(0f, 185f);
+        titleRt.anchoredPosition = new Vector2(0f, 245f);
 
-        // Buttons — stacked vertically
-        float btnY  = 90f;
+        // Buttons — stacked vertically (5 buttons)
+        float btnY  = 138f;
         float step  = 96f;
         const float W = 360f, H = 74f;
 
@@ -91,12 +91,16 @@ public class PauseMenuUI : MonoBehaviour
             new Vector2(0f, btnY - step),   new Vector2(W, H),
             () => GameManager.Instance?.ShowSettings(fromPause: true), UIStyle.AccentBlue);
 
-        UIStyle.CreateButton(card.transform, "Main Menu",
+        UIStyle.CreateButton(card.transform, "Level Select",
             new Vector2(0f, btnY - step*2), new Vector2(W, H),
+            ShowLevelSelect, UIStyle.AccentBlue);
+
+        UIStyle.CreateButton(card.transform, "Main Menu",
+            new Vector2(0f, btnY - step*3), new Vector2(W, H),
             () => GameManager.Instance?.ShowMainMenu(), UIStyle.AccentMagenta);
 
         UIStyle.CreateButton(card.transform, "Quit Game",
-            new Vector2(0f, btnY - step*3), new Vector2(W, H),
+            new Vector2(0f, btnY - step*4), new Vector2(W, H),
             OnQuitGame, UIStyle.AccentRed);
     }
 
@@ -105,6 +109,21 @@ public class PauseMenuUI : MonoBehaviour
         if (!gameObject.activeSelf) return;
         if (Input.GetKeyDown(KeyCode.Escape))
             GameManager.Instance?.ResumeGame();
+    }
+
+    private void ShowLevelSelect()
+    {
+        var browser = Object.FindFirstObjectByType<LevelEditorBrowserUI>(FindObjectsInactive.Include);
+        if (browser == null) return;
+        Hide();
+        browser.SetBackAction(Show);
+        browser.ShowAsLevelSelect(levelIndex =>
+        {
+            browser.Hide();
+            Time.timeScale = 1f;
+            AudioListener.pause = false;
+            GameManager.Instance?.WarpToLevel(levelIndex);
+        });
     }
 
     private static void OnQuitGame()

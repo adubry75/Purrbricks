@@ -546,6 +546,7 @@ public class GameManager : MonoBehaviour
         }
 
         _currentLevelIndex = Mathf.Clamp(levelIndex, 0, _levelIds.Length - 1);
+        UnlockLevel(_currentLevelIndex);
 
         // Fallback if LevelLoader not wired
         if (_levelLoader == null)
@@ -603,6 +604,53 @@ public class GameManager : MonoBehaviour
 
         _ball?.ResetToPaddle();
         _paddle?.ResetPosition();
+    }
+
+    // ── Level Unlock Tracking ───────────────────────────────────────────────
+
+    public bool IsLevelUnlocked(int index)
+    {
+        if (index == 0) return true;
+        return PlayerPrefs.GetInt($"lvl_unlocked_{index}", 0) == 1;
+    }
+
+    private void UnlockLevel(int index)
+    {
+        if (PlayerPrefs.GetInt($"lvl_unlocked_{index}", 0) == 0)
+        {
+            PlayerPrefs.SetInt($"lvl_unlocked_{index}", 1);
+            PlayerPrefs.Save();
+        }
+    }
+
+    /// <summary>Start a fresh game beginning at the specified level (used by Level Select from Main Menu).</summary>
+    public void StartGameAtLevel(int levelIndex)
+    {
+        RestoreGameplayAfterHighScores();
+        _isDemoMode = false;
+        _paddle?.SetDemoMode(false);
+
+        PowerupManager.Instance?.ResetAll();
+        ClearAllParticles();
+
+        _score = 0;
+        _combo = 0;
+        _comboTimer = 0f;
+        _lives = _startingLives;
+        _scoreFrenzyActive = false;
+
+        _hud?.SetScore(_score);
+        _hud?.SetLives(_lives);
+        _hud?.SetCombo(_combo);
+
+        AchievementManager.Instance?.OnGameStarted();
+
+        LoadLevel(levelIndex);
+        MusicPlayer.Instance?.PlayGameplay(levelIndex);
+        SetState(GameState.Ready);
+
+        _mainMenuUI?.Hide();
+        _highScoresUI?.Hide();
     }
 
     // ── State Management ────────────────────────────────────────────────────

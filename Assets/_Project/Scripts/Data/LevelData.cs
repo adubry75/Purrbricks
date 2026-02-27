@@ -10,6 +10,7 @@ public class LevelData
     public GridConfig grid = new GridConfig();
     public List<BrickEntryData> bricks = new List<BrickEntryData>();
     public List<PrismGateData> prismGates = new List<PrismGateData>();
+    public bool unlocked;
 }
 
 [Serializable]

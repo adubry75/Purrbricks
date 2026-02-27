@@ -1,6 +1,7 @@
 {
   "id": "level_00",
   "displayName": "Diamond Rain",
+  "unlocked": true,
   "ballSpeed": 8.5,
   "grid": {
     "cols": 12,

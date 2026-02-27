@@ -92,14 +92,19 @@ public class VictoryUI : MonoBehaviour
             new Vector2(0f, -110f), new Vector2(320f, 70f),
             OnLevelBoard, UIStyle.AccentBlue);
 
-        // Next Level / Replay (side by side below)
+        // Next Level / Replay (side by side)
         UIStyle.CreateButton(_panel.transform, "Next Level",
-            new Vector2(162f, -210f), new Vector2(300f, 70f),
+            new Vector2(162f, -200f), new Vector2(300f, 70f),
             OnNextLevel, UIStyle.AccentGreen);
 
         UIStyle.CreateButton(_panel.transform, "Replay Level",
-            new Vector2(-162f, -210f), new Vector2(300f, 70f),
+            new Vector2(-162f, -200f), new Vector2(300f, 70f),
             OnReplayLevel, UIStyle.AccentBlue);
+
+        // Level Select (below, centered)
+        UIStyle.CreateButton(_panel.transform, "Level Select",
+            new Vector2(0f, -290f), new Vector2(280f, 60f),
+            OnLevelSelect, UIStyle.AccentBlue);
 
         BuildRatingSection();
     }
@@ -107,7 +112,7 @@ public class VictoryUI : MonoBehaviour
     private void BuildRatingSection()
     {
         // "Rate This Level" label
-        var labelGO = CreateTextGO(_panel, "Rate This Level", new Vector2(0f, -285f), 26,
+        var labelGO = CreateTextGO(_panel, "Rate This Level", new Vector2(0f, -375f), 26,
             new Color(0.65f, 0.65f, 0.80f, 0.85f), "RateLabel");
         labelGO.GetComponent<Text>().raycastTarget = false;
 
@@ -129,7 +134,7 @@ public class VictoryUI : MonoBehaviour
             rt.anchorMin        = new Vector2(0.5f, 0.5f);
             rt.anchorMax        = new Vector2(0.5f, 0.5f);
             rt.sizeDelta        = new Vector2(72f, 90f);
-            rt.anchoredPosition = new Vector2(startX + i * spacing, -355f);
+            rt.anchoredPosition = new Vector2(startX + i * spacing, -445f);
 
             var btn = go.AddComponent<Button>();
             btn.targetGraphic = bg;
@@ -223,6 +228,20 @@ public class VictoryUI : MonoBehaviour
     private void OnNextLevel()   => GameManager.Instance?.LoadNextLevel();
     private void OnReplayLevel() => GameManager.Instance?.ReplayCurrentLevel();
     private void OnLevelBoard()  => GameManager.Instance?.ShowLevelLeaderboard(_currentLevelIndex);
+
+    private void OnLevelSelect()
+    {
+        var browser = Object.FindFirstObjectByType<LevelEditorBrowserUI>(FindObjectsInactive.Include);
+        if (browser == null) return;
+        Hide();
+        browser.ShowAsLevelSelect(levelIndex =>
+        {
+            browser.Hide();
+            Time.timeScale = 1f;
+            AudioListener.pause = false;
+            GameManager.Instance?.WarpToLevel(levelIndex);
+        });
+    }
 
     private void OnStarClicked(int starNum)
     {
