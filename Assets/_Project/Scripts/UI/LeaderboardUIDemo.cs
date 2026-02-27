@@ -210,7 +210,7 @@ public class LeaderboardUIDemo : MonoBehaviour
 
         if (steamUnavailableText != null)
         {
-            steamUnavailableText.text = steamAvailable ? string.Empty : "Steam not available: run Steam or use steam_appid.txt with 480 for editor testing.";
+            steamUnavailableText.text = steamAvailable ? string.Empty : "Steam not available: run Steam or use steam_appid.txt with 4459470 for editor testing.";
         }
 
         SetButtonState(submitButton, steamAvailable);

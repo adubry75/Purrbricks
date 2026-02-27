@@ -1,10 +1,10 @@
 fileFormatVersion: 2
-guid: e4b9e9c9762c817469b8740aa939900b
+guid: 6ea464371b8a4bf4281e9c7a9610f7ca
 TextureImporter:
   internalIDToNameTable:
   - first:
-      213: 6436194679782145604
-    second: paddle_0
+      213: 7002396335607018634
+    second: stars_far_0
   externalObjects: {}
   serializedVersion: 13
   mipmaps:
@@ -113,23 +113,23 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: paddle_0
+      name: stars_far_0
       rect:
         serializedVersion: 2
         x: 0
         y: 0
-        width: 250
-        height: 48
+        width: 3072
+        height: 1024
       alignment: 0
-      pivot: {x: 0.5, y: 0.5}
+      pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: 44e7ca9f5f4f15950800000000000000
-      internalID: 6436194679782145604
+      spriteID: a847a50fd528d2160800000000000000
+      internalID: 7002396335607018634
       vertices: []
       indices: 
       edges: []
@@ -138,7 +138,7 @@ TextureImporter:
     customData: 
     physicsShape: []
     bones: []
-    spriteID: 05ab0c722072cce4985062144c61d1ba
+    spriteID: 5e97eb03825dee720800000000000000
     internalID: 0
     vertices: []
     indices: 
@@ -148,7 +148,7 @@ TextureImporter:
     spriteCustomMetadata:
       entries: []
     nameFileIdTable:
-      paddle_0: 6436194679782145604
+      stars_far_0: 7002396335607018634
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 

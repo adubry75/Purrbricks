@@ -408,6 +408,20 @@ public static class PurrbricksSetup
             so.ApplyModifiedProperties();
         }
 
+        // Parallax background art (optional)
+        var parallax = Object.FindFirstObjectByType<ParallaxBackground>(FindObjectsInactive.Include);
+        if (parallax != null)
+        {
+            var so = new SerializedObject(parallax);
+            var stars  = LoadSprite("Assets/_Project/Art/stars_far.png");
+            var nebula = LoadSprite("Assets/_Project/Art/nebula_mid.png");
+            var dust   = LoadSprite("Assets/_Project/Art/dust_near.png");
+            if (stars  != null) so.FindProperty("_starsFarSprite").objectReferenceValue   = stars;
+            if (nebula != null) so.FindProperty("_nebulaMidSprite").objectReferenceValue = nebula;
+            if (dust   != null) so.FindProperty("_dustNearSprite").objectReferenceValue   = dust;
+            so.ApplyModifiedProperties();
+        }
+
         var mainMenuUI = Object.FindFirstObjectByType<MainMenuUI>(FindObjectsInactive.Include);
         if (mainMenuUI != null)
         {

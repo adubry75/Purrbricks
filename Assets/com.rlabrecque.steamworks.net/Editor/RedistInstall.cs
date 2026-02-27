@@ -41,7 +41,7 @@ public class RedistInstall {
 
 		try {
 			StreamWriter appIdFile = File.CreateText(strSteamAppIdPath);
-			appIdFile.Write("480");
+			appIdFile.Write("4459470");
 			appIdFile.Close();
 
 			Debug.Log("[Steamworks.NET] Successfully copied 'steam_appid.txt' into the project root.");

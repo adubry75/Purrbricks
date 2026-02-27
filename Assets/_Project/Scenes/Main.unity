@@ -2114,6 +2114,16 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5146d5b8ce741ba45a043af09464f9c6, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ParallaxBackground
+  _starsFarSprite: {fileID: 21300000, guid: 6ea464371b8a4bf4281e9c7a9610f7ca, type: 3}
+  _nebulaMidSprite: {fileID: 21300000, guid: ad182b1864fe117448911d2e349e53b4, type: 3}
+  _dustNearSprite: {fileID: 21300000, guid: 1b391d70b9d175f46bf7795568ac0471, type: 3}
+  _starsAlpha: 0.6
+  _nebulaAlpha: 0.1
+  _dustAlpha: 0.05
+  _starsSpeedX: 0.12
+  _nebulaSpeedX: 0.28
+  _dustSpeedX: 0.55
+  _driftY: 0.02
   _layerCount: 3
   _starsPerLayer: 80
   _starColor: {r: 0.9, g: 0.95, b: 1, a: 1}

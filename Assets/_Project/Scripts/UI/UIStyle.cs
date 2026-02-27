@@ -18,6 +18,29 @@ public static class UIStyle
     private static readonly Color BgHighlight  = new Color(0.10f, 0.20f, 0.36f, 0.98f);
     private static readonly Color BgPressed    = new Color(0.02f, 0.04f, 0.09f, 1.00f);
 
+    private static Sprite s_cachedTemplate;
+    private static bool s_triedTemplate;
+
+    private static Sprite GetButtonTemplate()
+    {
+        if (s_triedTemplate) return s_cachedTemplate;
+        s_triedTemplate = true;
+
+        if (UITheme.Instance != null && UITheme.Instance.ButtonTemplate != null)
+        {
+            s_cachedTemplate = UITheme.Instance.ButtonTemplate;
+            return s_cachedTemplate;
+        }
+
+        // Fallback: execution order should make Instance available, but in case UITheme
+        // is created dynamically we try to find it once.
+        var theme = Object.FindFirstObjectByType<UITheme>(FindObjectsInactive.Include);
+        if (theme != null && theme.ButtonTemplate != null)
+            s_cachedTemplate = theme.ButtonTemplate;
+
+        return s_cachedTemplate;
+    }
+
     // ── Global Variables TODO MOVE SOMEONE ELSE THIS DOESNT BELONG IN UI ───────────────────────────────────────────────────────────────
     public static readonly int TotalLevels = 84;
 
@@ -51,7 +74,7 @@ public static class UIStyle
         btnImg.color = Color.white; // ColorBlock multiplies against this
 
         // If a global template sprite exists, use it for all buttons.
-        var template = UITheme.Instance != null ? UITheme.Instance.ButtonTemplate : null;
+        var template = GetButtonTemplate();
         bool usesTemplate = template != null;
         if (usesTemplate)
         {
@@ -98,17 +121,7 @@ public static class UIStyle
         border.effectColor    = new Color(ac.r, ac.g, ac.b, 0.55f);
         border.effectDistance = new Vector2(1f, -1f);
 
-        // ── Left accent strip ─────────────────────────────────────────────────
-        var strip    = new GameObject("Strip");
-        strip.transform.SetParent(btnGO.transform, false);
-        var stripImg = strip.AddComponent<Image>();
-        stripImg.color = ac;
-        var stripRt  = strip.GetComponent<RectTransform>();
-        stripRt.anchorMin       = new Vector2(0f, 0f);
-        stripRt.anchorMax       = new Vector2(0f, 1f);
-        stripRt.pivot           = new Vector2(0f, 0.5f);
-        stripRt.sizeDelta       = new Vector2(5f, -6f);
-        stripRt.anchoredPosition = new Vector2(3f, 0f);
+        // No accent strip — template art should carry the look.
 
         // ── Label ─────────────────────────────────────────────────────────────
         var textGO  = new GameObject("Text");

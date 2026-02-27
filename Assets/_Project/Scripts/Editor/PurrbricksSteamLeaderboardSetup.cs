@@ -206,7 +206,7 @@ public static class PurrbricksSteamLeaderboardSetup
         var image = panelGO.AddComponent<Image>();
         image.color = new Color(0.18f, 0.05f, 0.06f, 0.85f);
 
-        var text = CreateTmpText("SteamUnavailableText", panelGO.transform, font, "Steam not available. Start Steam or use steam_appid.txt (480) for editor testing.", TextAlignmentOptions.Center);
+        var text = CreateTmpText("SteamUnavailableText", panelGO.transform, font, "Steam not available. Start Steam or use steam_appid.txt (4459470) for editor testing.", TextAlignmentOptions.Center);
         text.fontSize = 16;
         text.color = Color.white;
 
