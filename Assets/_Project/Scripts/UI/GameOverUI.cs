@@ -84,19 +84,13 @@ public class GameOverUI : MonoBehaviour
         scoreOl.effectDistance = new Vector2(3f, -3f);
 
         // Buttons (side by side)
-        if (_leaderboardSprite != null)
-            UIStyle.CreateImageButton(panel.transform, _leaderboardSprite, new Vector2(-200f, -60f), OnLeaderboard);
-        else
-            UIStyle.CreateButton(panel.transform, "Leaderboard",
-                new Vector2(-200f, -60f), new Vector2(280f, 70f),
-                OnLeaderboard, UIStyle.AccentBlue);
+        UIStyle.CreateButton(panel.transform, "Leaderboard",
+            new Vector2(-200f, -60f), new Vector2(280f, 70f),
+            OnLeaderboard, UIStyle.AccentBlue);
 
-        if (_mainMenuSprite != null)
-            UIStyle.CreateImageButton(panel.transform, _mainMenuSprite, new Vector2(200f, -60f), OnMainMenu);
-        else
-            UIStyle.CreateButton(panel.transform, "Main Menu",
-                new Vector2(200f, -60f), new Vector2(280f, 70f),
-                OnMainMenu, UIStyle.AccentGold);
+        UIStyle.CreateButton(panel.transform, "Main Menu",
+            new Vector2(200f, -60f), new Vector2(280f, 70f),
+            OnMainMenu, UIStyle.AccentGold);
     }
 
     // ── Public API ────────────────────────────────────────────────────────────

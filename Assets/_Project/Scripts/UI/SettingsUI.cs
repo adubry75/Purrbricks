@@ -142,26 +142,13 @@ public class SettingsUI : MonoBehaviour
         y -= 190f;
 
         // ── Buttons ───────────────────────────────────────────────────────────
-        if (_applySprite != null)
-        {
-            UIStyle.CreateImageButton(panel.transform, _applySprite, new Vector2(-200f, y), OnApply);
-        }
-        else
-        {
-            UIStyle.CreateButton(panel.transform, "Apply",
-                new Vector2(-145f, y), new Vector2(260f, 68f),
-                OnApply, UIStyle.AccentGreen);
-        }
-        if (_applySprite != null)
-        {
-            UIStyle.CreateImageButton(panel.transform, _backSprite, new Vector2(200f, y), OnBack);
-        }
-        else
-        {
-            UIStyle.CreateButton(panel.transform, "Back",
-                new Vector2(145f, y), new Vector2(260f, 68f),
-                OnBack, UIStyle.AccentBlue);
-        }
+        UIStyle.CreateButton(panel.transform, "Apply",
+            new Vector2(-145f, y), new Vector2(260f, 68f),
+            OnApply, UIStyle.AccentGreen);
+
+        UIStyle.CreateButton(panel.transform, "Back",
+            new Vector2(145f, y), new Vector2(260f, 68f),
+            OnBack, UIStyle.AccentBlue);
         
     }
 

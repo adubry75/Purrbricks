@@ -159,12 +159,9 @@ public class HighScoresUI : MonoBehaviour
         pageRt.anchoredPosition = new Vector2(0f, -388f);
 
         // ── Exit buttons ──────────────────────────────────────────────────────
-        if (_mainMenuSprite != null)
-            _mainMenuBtn = UIStyle.CreateImageButton(panel.transform, _mainMenuSprite, new Vector2(0f, -455f), () => GameManager.Instance?.ShowMainMenu());
-        else
-            _mainMenuBtn = UIStyle.CreateButton(panel.transform, "Main Menu",
-                new Vector2(0f, -455f), new Vector2(280f, 70f),
-                () => GameManager.Instance?.ShowMainMenu(), UIStyle.AccentBlue);
+        _mainMenuBtn = UIStyle.CreateButton(panel.transform, "Main Menu",
+            new Vector2(0f, -455f), new Vector2(280f, 70f),
+            () => GameManager.Instance?.ShowMainMenu(), UIStyle.AccentBlue);
 
         _backToGameBtn = UIStyle.CreateButton(panel.transform, "Back To Game",
             new Vector2(0f, -455f), new Vector2(280f, 70f),

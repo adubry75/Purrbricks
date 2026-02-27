@@ -88,27 +88,18 @@ public class VictoryUI : MonoBehaviour
 
         // ── Buttons ───────────────────────────────────────────────────────────
         // Level Rankings button (top center)
-        if (_levelRankingsSprite != null)
-            UIStyle.CreateImageButton(_panel.transform, _levelRankingsSprite, new Vector2(0f, -110f), OnLevelBoard);
-        else
-            UIStyle.CreateButton(_panel.transform, "Level Board",
-                new Vector2(0f, -110f), new Vector2(300f, 65f),
-                OnLevelBoard, UIStyle.AccentBlue);
+        UIStyle.CreateButton(_panel.transform, "Level Board",
+            new Vector2(0f, -110f), new Vector2(320f, 70f),
+            OnLevelBoard, UIStyle.AccentBlue);
 
         // Next Level / Replay (side by side below)
-        if (_nextLevelSprite != null)
-            UIStyle.CreateImageButton(_panel.transform, _nextLevelSprite, new Vector2(162f, -210f), OnNextLevel);
-        else
-            UIStyle.CreateButton(_panel.transform, "Next Level",
-                new Vector2(162f, -210f), new Vector2(300f, 70f),
-                OnNextLevel, UIStyle.AccentGreen);
+        UIStyle.CreateButton(_panel.transform, "Next Level",
+            new Vector2(162f, -210f), new Vector2(300f, 70f),
+            OnNextLevel, UIStyle.AccentGreen);
 
-        if (_replayLevelSprite != null)
-            UIStyle.CreateImageButton(_panel.transform, _replayLevelSprite, new Vector2(-162f, -210f), OnReplayLevel);
-        else
-            UIStyle.CreateButton(_panel.transform, "Replay Level",
-                new Vector2(-162f, -210f), new Vector2(300f, 70f),
-                OnReplayLevel, UIStyle.AccentBlue);
+        UIStyle.CreateButton(_panel.transform, "Replay Level",
+            new Vector2(-162f, -210f), new Vector2(300f, 70f),
+            OnReplayLevel, UIStyle.AccentBlue);
 
         BuildRatingSection();
     }

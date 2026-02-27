@@ -83,33 +83,21 @@ public class PauseMenuUI : MonoBehaviour
         float step  = 96f;
         const float W = 360f, H = 74f;
 
-        if (_resumeSprite != null)
-            UIStyle.CreateImageButton(card.transform, _resumeSprite, new Vector2(0f, btnY), () => GameManager.Instance?.ResumeGame());
-        else
-            UIStyle.CreateButton(card.transform, "Resume",
-                new Vector2(0f, btnY),          new Vector2(W, H),
-                () => GameManager.Instance?.ResumeGame(), UIStyle.AccentGreen);
+        UIStyle.CreateButton(card.transform, "Resume",
+            new Vector2(0f, btnY),          new Vector2(W, H),
+            () => GameManager.Instance?.ResumeGame(), UIStyle.AccentGreen);
 
-        if (_settingsSprite != null)
-            UIStyle.CreateImageButton(card.transform, _settingsSprite, new Vector2(0f, btnY - step), () => GameManager.Instance?.ShowSettings(fromPause: true));
-        else
-            UIStyle.CreateButton(card.transform, "Settings",
-                new Vector2(0f, btnY - step),   new Vector2(W, H),
-                () => GameManager.Instance?.ShowSettings(fromPause: true), UIStyle.AccentBlue);
+        UIStyle.CreateButton(card.transform, "Settings",
+            new Vector2(0f, btnY - step),   new Vector2(W, H),
+            () => GameManager.Instance?.ShowSettings(fromPause: true), UIStyle.AccentBlue);
 
-        if (_mainMenuSprite != null)
-            UIStyle.CreateImageButton(card.transform, _mainMenuSprite, new Vector2(0f, btnY - step*2), () => GameManager.Instance?.ShowMainMenu());
-        else
-            UIStyle.CreateButton(card.transform, "Main Menu",
-                new Vector2(0f, btnY - step*2), new Vector2(W, H),
-                () => GameManager.Instance?.ShowMainMenu(), UIStyle.AccentMagenta);
+        UIStyle.CreateButton(card.transform, "Main Menu",
+            new Vector2(0f, btnY - step*2), new Vector2(W, H),
+            () => GameManager.Instance?.ShowMainMenu(), UIStyle.AccentMagenta);
 
-        if (_quitSprite != null)
-            UIStyle.CreateImageButton(card.transform, _quitSprite, new Vector2(0f, btnY - step*3), OnQuitGame);
-        else
-            UIStyle.CreateButton(card.transform, "Quit Game",
-                new Vector2(0f, btnY - step*3), new Vector2(W, H),
-                OnQuitGame, UIStyle.AccentRed);
+        UIStyle.CreateButton(card.transform, "Quit Game",
+            new Vector2(0f, btnY - step*3), new Vector2(W, H),
+            OnQuitGame, UIStyle.AccentRed);
     }
 
     private void Update()

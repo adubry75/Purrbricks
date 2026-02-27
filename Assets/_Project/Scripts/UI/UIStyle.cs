@@ -50,14 +50,34 @@ public static class UIStyle
         var btnImg = btnGO.AddComponent<Image>();
         btnImg.color = Color.white; // ColorBlock multiplies against this
 
+        // If a global template sprite exists, use it for all buttons.
+        var template = UITheme.Instance != null ? UITheme.Instance.ButtonTemplate : null;
+        bool usesTemplate = template != null;
+        if (usesTemplate)
+        {
+            btnImg.sprite = template;
+            btnImg.type   = Image.Type.Sliced;
+        }
+
         var button = btnGO.AddComponent<Button>();
         button.targetGraphic = btnImg;
 
         var colors = button.colors;
-        colors.normalColor      = BgNormal;
-        colors.highlightedColor = BgHighlight;
-        colors.pressedColor     = BgPressed;
-        colors.selectedColor    = BgHighlight;
+        if (usesTemplate)
+        {
+            // Template art provides the look; we just do subtle brighten/darken.
+            colors.normalColor      = Color.white;
+            colors.highlightedColor = new Color(1.08f, 1.08f, 1.08f, 1f);
+            colors.pressedColor     = new Color(0.92f, 0.92f, 0.92f, 1f);
+            colors.selectedColor    = new Color(1.08f, 1.08f, 1.08f, 1f);
+        }
+        else
+        {
+            colors.normalColor      = BgNormal;
+            colors.highlightedColor = BgHighlight;
+            colors.pressedColor     = BgPressed;
+            colors.selectedColor    = BgHighlight;
+        }
         colors.colorMultiplier  = 1f;
         colors.fadeDuration     = 0.06f;
         button.colors = colors;
@@ -110,6 +130,10 @@ public static class UIStyle
         var textOutline = textGO.AddComponent<Outline>();
         textOutline.effectColor    = new Color(ac.r, ac.g, ac.b, 0.85f);
         textOutline.effectDistance = new Vector2(1f, -1f);
+
+        var shadow = textGO.AddComponent<Shadow>();
+        shadow.effectColor    = new Color(0f, 0f, 0f, 0.80f);
+        shadow.effectDistance = new Vector2(2f, -2f);
 
         return button;
     }

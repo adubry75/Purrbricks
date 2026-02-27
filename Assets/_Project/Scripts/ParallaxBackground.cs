@@ -76,6 +76,8 @@ public class ParallaxBackground : MonoBehaviour
         velocityOverLifetime.space = ParticleSystemSimulationSpace.World;
         velocityOverLifetime.x = new ParticleSystem.MinMaxCurve(-scrollSpeed * 1.12f, -scrollSpeed * 0.88f);
         velocityOverLifetime.y = new ParticleSystem.MinMaxCurve(scrollSpeed * 0.10f, scrollSpeed * 0.28f);
+        // Keep curve mode consistent across X/Y/Z to avoid Unity runtime errors.
+        velocityOverLifetime.z = new ParticleSystem.MinMaxCurve(0f, 0f);
 
         // Color twinkle (subtle alpha variation)
         var colorOverLifetime = ps.colorOverLifetime;

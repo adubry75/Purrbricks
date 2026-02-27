@@ -179,6 +179,14 @@ public static class PurrbricksSetup
             Debug.Log("Added ScreenEffects.");
         }
 
+        // ── 11c2. UITheme (shared UI sprites) ───────────────────────────────
+        var themeGO = EnsureGO("UITheme");
+        if (themeGO.GetComponent<UITheme>() == null)
+        {
+            themeGO.AddComponent<UITheme>();
+            Debug.Log("Added UITheme.");
+        }
+
         // ── 11d. PowerupNotification ─────────────────────────────────────────
         var puNotifGO = EnsureGO("PowerupNotification");
         if (puNotifGO.GetComponent<PowerupNotification>() == null)
@@ -388,6 +396,16 @@ public static class PurrbricksSetup
             // Prefer the new folder, but keep legacy fallback.
             return LoadSprite("Assets/_Project/Art/Buttons/" + file)
                 ?? LoadSprite("Assets/_Project/Art/" + file);
+        }
+
+        // Shared button template sprite (used by UIStyle.CreateButton)
+        var theme = Object.FindFirstObjectByType<UITheme>(FindObjectsInactive.Include);
+        if (theme != null)
+        {
+            var so = new SerializedObject(theme);
+            var tmpl = LoadButton("button-template.png");
+            if (tmpl != null) so.FindProperty("_buttonTemplate").objectReferenceValue = tmpl;
+            so.ApplyModifiedProperties();
         }
 
         var mainMenuUI = Object.FindFirstObjectByType<MainMenuUI>(FindObjectsInactive.Include);
