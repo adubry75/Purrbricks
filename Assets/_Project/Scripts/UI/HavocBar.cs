@@ -94,7 +94,7 @@ public class HavocBar : MonoBehaviour
         var lblGO    = new GameObject("ReadyLabel");
         lblGO.transform.SetParent(container.transform, false);
         _readyLabel          = lblGO.AddComponent<Text>();
-        _readyLabel.text     = "FURY STRIKE  [ENTER]";
+        _readyLabel.text     = "FURY STRIKE [🖱 LMB + RMB]";
         _readyLabel.font     = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
         _readyLabel.fontSize = 21;
         _readyLabel.fontStyle = FontStyle.Bold;
