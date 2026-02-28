@@ -40,6 +40,7 @@
     { "col":  0, "row": 9, "templateId": "gem", "powerupId": "Laser" },
     { "col":  1, "row": 9, "templateId": "gold" }, { "col":  2, "row": 9, "templateId": "gold" },
     { "col":  3, "row": 9, "templateId": "gold" }, { "col":  4, "row": 9, "templateId": "gold" },
-    { "col":  5, "row": 9, "templateId": "gold" }
+    { "col":  5, "row": 9, "templateId": "gold" },
+    { "col":  0, "row": 0, "templateId": "standard", "tint": "#FF3333", "powerupId": "FlipScreen" }
   ]
 }

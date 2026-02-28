@@ -28,4 +28,5 @@ public enum PowerupType
     // ── Extra bad (chaos) ─────────────────────────
     DrunkVision    = 19,  // screen wobble/tilt while active
     GremlinBounces = 20,  // small random angle errors on paddle/wall bounces
+    FlipScreen     = 21,  // rotates the camera 180° — everything is upside down
 }

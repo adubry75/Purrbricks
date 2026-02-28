@@ -1,0 +1,39 @@
+{
+  "id": "level_99",
+  "displayName": "Powerup Cross",
+  "ballSpeed": 9.0,
+  "grid": { "cols": 12, "rows": 6, "brickWidth": 1.35, "brickHeight": 0.45, "gapX": 0.08, "gapY": 0.16 },
+  "bricks": [
+    { "col": 5, "row": 0, "templateId": "gold",     "powerupId": "SpeedBall"    },
+    { "col": 6, "row": 0, "templateId": "gold",     "powerupId": "BigBall"      },
+    { "col": 5, "row": 1, "templateId": "cyan",     "powerupId": "MultiBall"    },
+    { "col": 6, "row": 1, "templateId": "cyan",     "powerupId": "ScoreFrenzy"  },
+
+    { "col": 1, "row": 2, "templateId": "red",      "powerupId": "ShrinkPaddle" },
+    { "col": 2, "row": 2, "templateId": "dark",     "powerupId": "FlipControls" },
+    { "col": 3, "row": 2, "templateId": "purple",   "powerupId": "ZipBall"      },
+    { "col": 4, "row": 2, "templateId": "dark",     "powerupId": "DrunkenPaddle"},
+    { "col": 5, "row": 2, "templateId": "gem",      "powerupId": "ExtraLife",     "points": 5000 },
+    { "col": 6, "row": 2, "templateId": "gem",      "powerupId": "PermanentStickyBall", "points": 5000 },
+    { "col": 7, "row": 2, "templateId": "standard", "powerupId": "SpeedBall"    },
+    { "col": 8, "row": 2, "templateId": "gold",     "powerupId": "ScoreFrenzy"  },
+    { "col": 9, "row": 2, "templateId": "cyan",     "powerupId": "MultiBall"    },
+    { "col": 10,"row": 2, "templateId": "green",    "powerupId": "ExtraLife"    },
+
+    { "col": 1, "row": 3, "templateId": "purple",   "powerupId": "TinyBall"     },
+    { "col": 2, "row": 3, "templateId": "red",      "powerupId": "InvisiBall"   },
+    { "col": 3, "row": 3, "templateId": "dark",     "powerupId": "CursedBall"   },
+    { "col": 4, "row": 3, "templateId": "red",      "powerupId": "FlipControls" },
+    { "col": 5, "row": 3, "templateId": "gem",      "powerupId": "Fireball",      "points": 5000 },
+    { "col": 6, "row": 3, "templateId": "gem",      "powerupId": "BombBrick",     "points": 5000 },
+    { "col": 7, "row": 3, "templateId": "dark",     "powerupId": "GremlinBounces"},
+    { "col": 8, "row": 3, "templateId": "red",      "powerupId": "FlipScreen"   },
+    { "col": 9, "row": 3, "templateId": "purple",   "powerupId": "DrunkVision"  },
+    { "col": 10,"row": 3, "templateId": "standard", "powerupId": "BigBall"      },
+
+    { "col": 5, "row": 4, "templateId": "green",    "powerupId": "ShieldWall"   },
+    { "col": 6, "row": 4, "templateId": "green",    "powerupId": "WidePaddle"   },
+    { "col": 5, "row": 5, "templateId": "standard", "powerupId": "Laser"        },
+    { "col": 6, "row": 5, "templateId": "standard", "powerupId": "StickyBall"   }
+  ]
+}

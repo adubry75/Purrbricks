@@ -13,6 +13,7 @@ public static class PowerupRules
             case PowerupType.DrunkenPaddle:
             case PowerupType.DrunkVision:
             case PowerupType.GremlinBounces:
+            case PowerupType.FlipScreen:
                 return true;
             default:
                 return false;

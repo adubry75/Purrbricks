@@ -22,6 +22,9 @@ public class CameraShake : MonoBehaviour
     private float _zoomTargetSize;
     private float _zoomSpeed;
 
+    // ── Flip screen (powerup) ───────────────────────────────────────────────
+    private bool _isFlipped;
+
     // ── Drunk wobble (powerup) ───────────────────────────────────────────────
     private bool  _drunk;
     private float _drunkStrength = 1f;
@@ -81,7 +84,8 @@ public class CameraShake : MonoBehaviour
         }
 
         transform.localPosition = _originalPos + _shakeOffset + _drunkOffset;
-        transform.localRotation = _originalRot * Quaternion.Euler(0f, 0f, _drunkRotZ);
+        float flipRot = _isFlipped ? 180f : 0f;
+        transform.localRotation = _originalRot * Quaternion.Euler(0f, 0f, _drunkRotZ + flipRot);
 
         // Smooth zoom toward target ortho size
         if (_isZooming && _cam != null)
@@ -121,6 +125,12 @@ public class CameraShake : MonoBehaviour
             _shakeDuration = duration;
             _shakeTimer = duration;
         }
+    }
+
+    /// <summary>Bad powerup: flips the camera 180° — everything is upside down.</summary>
+    public void SetFlipScreen(bool on)
+    {
+        _isFlipped = on;
     }
 
     /// <summary>Bad powerup: persistent camera wobble/tilt using unscaled time.</summary>

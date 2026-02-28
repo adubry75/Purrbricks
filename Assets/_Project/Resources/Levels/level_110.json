@@ -1,0 +1,58 @@
+{
+  "id": "level_110",
+  "displayName": "Creation of Adumb",
+  "ballSpeed": 8.0,
+  "grid": { "cols": 20, "rows": 12, "brickWidth": 0.65, "brickHeight": 0.40, "gapX": 0.02, "gapY": 0.02 },
+  "bricks": [
+    { "col": 0, "row": 1, "templateId": "steel" }, { "col": 1, "row": 1, "templateId": "steel" },
+    { "col": 2, "row": 1, "templateId": "steel" }, { "col": 3, "row": 1, "templateId": "steel" },
+    { "col": 4, "row": 1, "templateId": "steel" },
+    { "col": 13,"row": 1, "templateId": "steel" }, { "col": 14,"row": 1, "templateId": "steel" },
+    { "col": 15,"row": 1, "templateId": "steel" }, { "col": 16,"row": 1, "templateId": "steel" },
+    { "col": 17,"row": 1, "templateId": "steel" }, { "col": 18,"row": 1, "templateId": "steel" },
+    { "col": 19,"row": 1, "templateId": "steel" },
+
+    { "col": 0, "row": 2, "templateId": "steel" }, { "col": 1, "row": 2, "templateId": "steel" },
+    { "col": 2, "row": 2, "templateId": "steel" }, { "col": 3, "row": 2, "templateId": "steel" },
+    { "col": 4, "row": 2, "templateId": "steel" }, { "col": 5, "row": 2, "templateId": "steel" },
+    { "col": 12,"row": 2, "templateId": "steel" }, { "col": 13,"row": 2, "templateId": "steel" },
+    { "col": 14,"row": 2, "templateId": "steel" }, { "col": 15,"row": 2, "templateId": "steel" },
+    { "col": 16,"row": 2, "templateId": "steel" }, { "col": 17,"row": 2, "templateId": "steel" },
+    { "col": 18,"row": 2, "templateId": "steel" }, { "col": 19,"row": 2, "templateId": "steel" },
+
+    { "col": 0, "row": 3, "templateId": "gold"  }, { "col": 1, "row": 3, "templateId": "gold"  },
+    { "col": 2, "row": 3, "templateId": "gold"  }, { "col": 3, "row": 3, "templateId": "gold"  },
+    { "col": 4, "row": 3, "templateId": "gold"  }, { "col": 5, "row": 3, "templateId": "gold"  },
+    { "col": 6, "row": 3, "templateId": "gold"  }, { "col": 7, "row": 3, "templateId": "gold"  },
+    { "col": 12,"row": 3, "templateId": "gold"  }, { "col": 13,"row": 3, "templateId": "gold"  },
+    { "col": 14,"row": 3, "templateId": "gold"  }, { "col": 15,"row": 3, "templateId": "gold"  },
+    { "col": 16,"row": 3, "templateId": "gold"  }, { "col": 17,"row": 3, "templateId": "gold"  },
+    { "col": 18,"row": 3, "templateId": "gold"  }, { "col": 19,"row": 3, "templateId": "gold"  },
+
+    { "col": 1, "row": 4, "templateId": "gold"  }, { "col": 2, "row": 4, "templateId": "gold"  },
+    { "col": 3, "row": 4, "templateId": "gold"  }, { "col": 4, "row": 4, "templateId": "gold"  },
+    { "col": 5, "row": 4, "templateId": "gold"  }, { "col": 6, "row": 4, "templateId": "gold"  },
+    { "col": 7, "row": 4, "templateId": "gold"  }, { "col": 8, "row": 4, "templateId": "gold"  },
+    { "col": 11,"row": 4, "templateId": "gold"  }, { "col": 12,"row": 4, "templateId": "gold"  },
+    { "col": 13,"row": 4, "templateId": "gold"  }, { "col": 14,"row": 4, "templateId": "gold"  },
+    { "col": 15,"row": 4, "templateId": "gold"  }, { "col": 16,"row": 4, "templateId": "gold"  },
+    { "col": 17,"row": 4, "templateId": "gold"  }, { "col": 18,"row": 4, "templateId": "gold"  },
+
+    { "col": 3, "row": 5, "templateId": "gold"  }, { "col": 4, "row": 5, "templateId": "gold"  },
+    { "col": 5, "row": 5, "templateId": "gold"  }, { "col": 6, "row": 5, "templateId": "gold"  },
+    { "col": 7, "row": 5, "templateId": "gold"  }, { "col": 8, "row": 5, "templateId": "gold"  },
+    { "col": 9, "row": 5, "templateId": "gold"  },
+    { "col": 11,"row": 5, "templateId": "gold"  }, { "col": 12,"row": 5, "templateId": "gold"  },
+    { "col": 13,"row": 5, "templateId": "gold"  }, { "col": 14,"row": 5, "templateId": "gold"  },
+    { "col": 15,"row": 5, "templateId": "gold"  }, { "col": 16,"row": 5, "templateId": "gold"  },
+
+    { "col": 6, "row": 6, "templateId": "gold"  }, { "col": 7, "row": 6, "templateId": "gold"  },
+    { "col": 8, "row": 6, "templateId": "gold"  }, { "col": 9, "row": 6, "templateId": "gem",  "points": 50000 },
+    { "col": 11,"row": 6, "templateId": "gem",   "points": 50000 },
+    { "col": 12,"row": 6, "templateId": "gold"  }, { "col": 13,"row": 6, "templateId": "gold"  },
+
+    { "col": 7, "row": 7, "templateId": "gold"  }, { "col": 8, "row": 7, "templateId": "gold"  },
+    { "col": 9, "row": 7, "templateId": "gold"  },
+    { "col": 11,"row": 7, "templateId": "gold"  }, { "col": 12,"row": 7, "templateId": "gold"  }
+  ]
+}

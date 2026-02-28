@@ -209,6 +209,7 @@ public class PowerupManager : MonoBehaviour
                 ScreenEffects.Instance?.SetDrunkVision(true);
                 break;
             case PowerupType.GremlinBounces: foreach (var b in _balls) b.SetGremlinBounces(true); break;
+            case PowerupType.FlipScreen:     CameraShake.Instance?.SetFlipScreen(true);            break;
         }
     }
 
@@ -241,6 +242,7 @@ public class PowerupManager : MonoBehaviour
                 ScreenEffects.Instance?.SetDrunkVision(false);
                 break;
             case PowerupType.GremlinBounces: foreach (var b in _balls) b.SetGremlinBounces(false); break;
+            case PowerupType.FlipScreen:     CameraShake.Instance?.SetFlipScreen(false);            break;
         }
     }
 

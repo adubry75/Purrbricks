@@ -229,6 +229,7 @@
       "col": 10,
       "row": 6,
       "templateId": "blue"
-    }
+    },
+    { "col": 5, "row": 4, "templateId": "standard", "tint": "#FF3333", "powerupId": "FlipScreen" }
   ]
 }
