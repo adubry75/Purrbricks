@@ -20,6 +20,9 @@ public class PowerupManager : MonoBehaviour
     // Event so PowerupHUD can refresh
     public System.Action OnPowerupsChanged;
 
+    // Fired when a 2% inventory drop triggers — PowerupHUD plays the fly-in VFX
+    public System.Action<PowerupType> OnInventoryDrop;
+
     private PaddleController _paddle;
     private BallController[] _balls => FindObjectsByType<BallController>(FindObjectsSortMode.None);
 
@@ -127,6 +130,10 @@ public class PowerupManager : MonoBehaviour
         NotifyBadPowerupCount();
 
         OnPowerupsChanged?.Invoke();
+
+        // 2% inventory drop roll (not on ExtraLife/MultiBall — those early-return above)
+        if (PurrBucksManager.Instance != null && PurrBucksManager.Instance.RollInventoryDrop(type))
+            OnInventoryDrop?.Invoke(type);
     }
 
     /// <summary>Returns remaining seconds for an active powerup, or 0 if inactive.</summary>

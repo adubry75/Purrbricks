@@ -46,6 +46,7 @@ public class GameManager : MonoBehaviour
     private PauseMenuUI      _pauseMenuUI;
     private SettingsUI       _settingsUI;
     private LevelCodeEntryUI _levelCodeEntryUI;
+    private StoreUI          _storeUI;
 
     private int _currentLevelIndex = 0;
     private Coroutine _advanceRoutine;
@@ -76,6 +77,9 @@ public class GameManager : MonoBehaviour
 
     /// <summary>Total number of levels discovered at runtime from Resources/Levels/.</summary>
     public int LevelCount => _levelIds?.Length ?? 0;
+
+    /// <summary>Lives the player had at the start of the current level (for perfect-clear detection).</summary>
+    public int LivesAtLevelStart { get; private set; }
 
     // Pre-allocated buffer for Fury Strike overlap queries — avoids heap allocation
     private static readonly Collider2D[] s_furyBuffer = new Collider2D[128];
@@ -130,12 +134,13 @@ public class GameManager : MonoBehaviour
         _pauseMenuUI      = FindFirstObjectByType<PauseMenuUI>(FindObjectsInactive.Include);
         _settingsUI       = FindFirstObjectByType<SettingsUI>(FindObjectsInactive.Include);
         _levelCodeEntryUI = FindFirstObjectByType<LevelCodeEntryUI>(FindObjectsInactive.Include);
+        _storeUI          = FindFirstObjectByType<StoreUI>(FindObjectsInactive.Include);
 
         if (_mainMenuUI == null)   Debug.LogError("MainMenuUI not found! Run Purrbricks > Setup Scene.");
         if (_gameOverUI == null)   Debug.LogError("GameOverUI not found! Run Purrbricks > Setup Scene.");
         if (_victoryUI == null)    Debug.LogError("VictoryUI not found! Run Purrbricks > Setup Scene.");
         if (_highScoresUI == null) Debug.LogError("HighScoresUI not found! Run Purrbricks > Setup Scene.");
-        // LevelCodeEntryUI is optional — no error if missing
+        // LevelCodeEntryUI and StoreUI are optional — no error if missing
 
     }
 
@@ -276,6 +281,32 @@ public class GameManager : MonoBehaviour
     {
         _lives++;
         _hud?.SetLives(_lives);
+    }
+
+    public int GetLives() => _lives;
+
+    public bool IsPlayingOrReady() => _state == GameState.Playing || _state == GameState.Ready;
+
+    public void ShowStore()
+    {
+        _pauseMenuUI?.Hide();
+        if (_storeUI == null)
+            _storeUI = FindFirstObjectByType<StoreUI>(FindObjectsInactive.Include);
+        _storeUI?.Show();
+    }
+
+    public void HideStore()
+    {
+        _storeUI?.Hide();
+        // Only restore time/audio if the game was NOT already paused before the store opened.
+        // When coming from the Pause menu, the game stays paused and the pause menu re-appears.
+        if (_state != GameState.Paused)
+        {
+            Time.timeScale = 1f;
+            AudioListener.pause = false;
+        }
+        if (_state == GameState.Paused)
+            _pauseMenuUI?.Show();
     }
 
     public void SetScoreFrenzy(bool on)
@@ -591,9 +622,10 @@ public class GameManager : MonoBehaviour
 
 
         // Reset per-level score stats
-        _levelStartScore = _score;
-        _levelBestCombo  = 0;
-        _levelComboBonus = 0;
+        _levelStartScore  = _score;
+        _levelBestCombo   = 0;
+        _levelComboBonus  = 0;
+        LivesAtLevelStart = _lives;
 
         _levelStartTime = Time.realtimeSinceStartup;
         AchievementManager.Instance?.OnLevelStarted(_currentLevelIndex, _lives);
@@ -696,6 +728,7 @@ public class GameManager : MonoBehaviour
             case GameState.MainMenu:
                 SetCursorMenuMode();
                 _hud?.gameObject.SetActive(false);
+                PurrBucksManager.Instance?.SetVisible(false);
                 SfxPlayer.Instance?.MuteAll(true);
                 MusicPlayer.Instance?.PlayMenu();
                 break;
@@ -710,6 +743,7 @@ public class GameManager : MonoBehaviour
             case GameState.Ready:
                 SetCursorPlayMode();
                 _hud?.gameObject.SetActive(true);
+                PurrBucksManager.Instance?.SetVisible(true);
                 _hud?.SetState("Ready");
                 _hud?.ShowCenter("Hold Left Click to Aim\r\nRelease to Launch");
                 SfxPlayer.Instance?.MuteAll(false);

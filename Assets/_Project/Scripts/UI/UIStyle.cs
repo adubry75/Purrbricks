@@ -41,7 +41,7 @@ public static class UIStyle
         return s_cachedTemplate;
     }
 
-    // ── Global Variables TODO MOVE SOMEONE ELSE THIS DOESNT BELONG IN UI ───────────────────────────────────────────────────────────────
+    // ── Global Variables TODO MOVE SOMEWHERE ELSE THIS DOESNT BELONG IN UI ───────────────────────────────────────────────────────────────
     public static int TotalLevels => GameManager.Instance?.LevelCount ?? 0;
 
     // ── Factory ───────────────────────────────────────────────────────────────

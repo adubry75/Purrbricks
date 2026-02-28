@@ -55,7 +55,7 @@ public class PauseMenuUI : MonoBehaviour
         var cardRt = card.GetComponent<RectTransform>();
         cardRt.anchorMin        = new Vector2(0.5f, 0.5f);
         cardRt.anchorMax        = new Vector2(0.5f, 0.5f);
-        cardRt.sizeDelta        = new Vector2(480f, 620f);
+        cardRt.sizeDelta        = new Vector2(480f, 720f);
         cardRt.anchoredPosition = Vector2.zero;
 
         // Title
@@ -76,31 +76,33 @@ public class PauseMenuUI : MonoBehaviour
         titleRt.anchorMin        = new Vector2(0.5f, 0.5f);
         titleRt.anchorMax        = new Vector2(0.5f, 0.5f);
         titleRt.sizeDelta        = new Vector2(440f, 90f);
-        titleRt.anchoredPosition = new Vector2(0f, 245f);
+        titleRt.anchoredPosition = new Vector2(0f, 295f);
 
-        // Buttons — stacked vertically (5 buttons)
-        float btnY  = 138f;
-        float step  = 96f;
+        // Buttons — stacked vertically (6 buttons)
         const float W = 360f, H = 74f;
 
         UIStyle.CreateButton(card.transform, "Resume",
-            new Vector2(0f, btnY),          new Vector2(W, H),
+            new Vector2(0f, 188f), new Vector2(W, H),
             () => GameManager.Instance?.ResumeGame(), UIStyle.AccentGreen);
 
+        UIStyle.CreateButton(card.transform, "Store",
+            new Vector2(0f, 92f), new Vector2(W, H),
+            () => GameManager.Instance?.ShowStore(), UIStyle.AccentGold);
+
         UIStyle.CreateButton(card.transform, "Settings",
-            new Vector2(0f, btnY - step),   new Vector2(W, H),
+            new Vector2(0f, -4f), new Vector2(W, H),
             () => GameManager.Instance?.ShowSettings(fromPause: true), UIStyle.AccentBlue);
 
         UIStyle.CreateButton(card.transform, "Level Select",
-            new Vector2(0f, btnY - step*2), new Vector2(W, H),
+            new Vector2(0f, -100f), new Vector2(W, H),
             ShowLevelSelect, UIStyle.AccentBlue);
 
         UIStyle.CreateButton(card.transform, "Main Menu",
-            new Vector2(0f, btnY - step*3), new Vector2(W, H),
+            new Vector2(0f, -196f), new Vector2(W, H),
             () => GameManager.Instance?.ShowMainMenu(), UIStyle.AccentMagenta);
 
         UIStyle.CreateButton(card.transform, "Quit Game",
-            new Vector2(0f, btnY - step*4), new Vector2(W, H),
+            new Vector2(0f, -292f), new Vector2(W, H),
             OnQuitGame, UIStyle.AccentRed);
     }
 

@@ -18,6 +18,7 @@ public class VictoryUI : MonoBehaviour
     private Text _levelScoreText;
     private Text _comboBonusText;
     private Text _bestComboText;
+    private Text _purrBucksText;
 
     // Personal best banner (hidden unless score beats previous best)
     private GameObject _newBestBanner;
@@ -41,6 +42,21 @@ public class VictoryUI : MonoBehaviour
     {
         BuildUI();
         Hide();
+    }
+
+    private void Start()
+    {
+        if (PurrBucksManager.Instance != null)
+        {
+            PurrBucksManager.Instance.OnRankAwardResolved += amt =>
+            {
+                if (_purrBucksText != null)
+                {
+                    _purrBucksText.text = $"🐾 +{amt} Purr Bucks";
+                    _purrBucksText.gameObject.SetActive(true);
+                }
+            };
+        }
     }
 
     private void BuildUI()
@@ -74,6 +90,10 @@ public class VictoryUI : MonoBehaviour
         _levelScoreText = CreateTextGO(_panel, "Level Score:  0",  new Vector2(0f, 148f), 50, Color.white,                  "LevelScoreText").GetComponent<Text>();
         _comboBonusText = CreateTextGO(_panel, "Combo Bonus:  —",  new Vector2(0f,  90f), 36, new Color(1f, 0.85f, 0.15f), "ComboBonusText").GetComponent<Text>();
         _bestComboText  = CreateTextGO(_panel, "Best Combo:  —",   new Vector2(0f,  42f), 36, new Color(0.45f, 0.85f, 1f), "BestComboText").GetComponent<Text>();
+
+        // ── Purr Bucks award label (shown after rank resolves) ───────────────
+        _purrBucksText = CreateTextGO(_panel, "🐾 +?? PB", new Vector2(0f, -55f), 32, ColorGold, "PurrBucksText").GetComponent<Text>();
+        _purrBucksText.gameObject.SetActive(false);
 
         // ── Personal best banner (hidden by default) ──────────────────────────
         _newBestBanner = new GameObject("NewBestBanner");
@@ -191,6 +211,15 @@ public class VictoryUI : MonoBehaviour
         // Submit to Steam per-level leaderboard immediately (KeepBest)
         if (levelScore > 0 && !string.IsNullOrEmpty(levelId))
             SteamLeaderboardManager.Instance?.SubmitScore("Purrbricks_" + levelId, levelScore);
+
+        // Award Purr Bucks (async — OnRankAwardResolved fires when complete)
+        if (PurrBucksManager.Instance != null && !string.IsNullOrEmpty(levelId))
+        {
+            int livesLost = (GameManager.Instance?.LivesAtLevelStart ?? 0) - (GameManager.Instance?.GetLives() ?? 0);
+            bool perfectClear = livesLost <= 0;
+            _purrBucksText?.gameObject.SetActive(false);
+            PurrBucksManager.Instance.AwardLevelComplete(levelId, levelIndex, perfectClear, livesLost);
+        }
 
         gameObject.SetActive(true);
 

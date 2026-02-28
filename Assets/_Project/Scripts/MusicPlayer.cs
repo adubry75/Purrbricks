@@ -81,10 +81,10 @@ public class MusicPlayer : MonoBehaviour
 
         if (_gameplayTracks == null || _gameplayTracks.Length == 0)
             _trackIndex = 0;
-        else if (levelIndex == 0)
+        else if (levelIndex == 0)  // We always play this song for level 1, because it's good and will hook new players.
             _trackIndex = 0;
         else
-            _trackIndex = Random.Range(0, _gameplayTracks.Length);
+            _trackIndex = Random.Range(0, _gameplayTracks.Length); // Otherwise for any other level, randomly pick a song.
 
         Run(GameplayLoop());
     }

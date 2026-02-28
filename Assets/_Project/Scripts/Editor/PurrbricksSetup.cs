@@ -155,6 +155,30 @@ public static class PurrbricksSetup
             Debug.Log("Added HighScoreManager.");
         }
 
+        // ── 10b. PurrBucksManager ────────────────────────────────────────────
+        var purrBucksMgrGO = EnsureGO("PurrBucksManager");
+        if (purrBucksMgrGO.GetComponent<PurrBucksManager>() == null)
+        {
+            purrBucksMgrGO.AddComponent<PurrBucksManager>();
+            Debug.Log("Added PurrBucksManager.");
+        }
+
+        // ── 10c. StoreUI ─────────────────────────────────────────────────────
+        var storeUIGO = EnsureGO("StoreUI");
+        if (storeUIGO.GetComponent<StoreUI>() == null)
+        {
+            storeUIGO.AddComponent<StoreUI>();
+            Debug.Log("Added StoreUI.");
+        }
+
+        // ── 10d. InventoryRadialMenu ─────────────────────────────────────────
+        var radialMenuGO = EnsureGO("InventoryRadialMenu");
+        if (radialMenuGO.GetComponent<InventoryRadialMenu>() == null)
+        {
+            radialMenuGO.AddComponent<InventoryRadialMenu>();
+            Debug.Log("Added InventoryRadialMenu.");
+        }
+
         // ── 11a. PowerupManager ──────────────────────────────────────────────
         var puMgrGO = EnsureGO("PowerupManager");
         if (puMgrGO.GetComponent<PowerupManager>() == null)
