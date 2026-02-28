@@ -365,7 +365,6 @@ public class StoreUI : MonoBehaviour
     {
         gameObject.SetActive(true);
         Time.timeScale = 0f;
-        AudioListener.pause = true;
         RefreshBuyButtons();
         RefreshQtyLabels();
     }

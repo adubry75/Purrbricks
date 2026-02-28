@@ -303,7 +303,6 @@ public class GameManager : MonoBehaviour
         if (_state != GameState.Paused)
         {
             Time.timeScale = 1f;
-            AudioListener.pause = false;
         }
         if (_state == GameState.Paused)
             _pauseMenuUI?.Show();

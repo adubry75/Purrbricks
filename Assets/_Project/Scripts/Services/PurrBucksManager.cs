@@ -259,7 +259,7 @@ public class PurrBucksManager : MonoBehaviour
         rt.anchorMax        = new Vector2(1f, 1f);
         rt.pivot            = new Vector2(1f, 1f);
         rt.sizeDelta        = new Vector2(215f, 30f);
-        rt.anchoredPosition = new Vector2(-5f, -5f);
+        rt.anchoredPosition = new Vector2(-400f, -5f);
 
         // Button to open store
         var btn = _hudRoot.AddComponent<Button>();
