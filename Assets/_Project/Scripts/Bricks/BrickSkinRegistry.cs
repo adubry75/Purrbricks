@@ -5,6 +5,11 @@ public class BrickSkinRegistry : MonoBehaviour
 {
     public static BrickSkinRegistry Instance { get; private set; }
 
+    [Header("Default Brick Sprites")]
+    [Tooltip("Fallback sprites used for any brick that has no specific BrickSkin assigned.\n" +
+             "Index = HP lost:  0 = undamaged  1 = 1 HP lost  2 = 2 HP lost  3 = 3+ HP lost")]
+    [SerializeField] public Sprite[] DefaultBrickSprites; // 4 slots: brick-0 … brick-3
+
     [SerializeField] private BrickSkin[] _skins;
 
     private Dictionary<string, BrickSkin> _map;

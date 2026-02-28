@@ -540,9 +540,9 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: 'Build 0.1.1004
+  m_text: 'Build 0.1.1005
 
-    2/26 23:33'
+    2/27 23:11'
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
   m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
@@ -2176,24 +2176,24 @@ MonoBehaviour:
   - {fileID: 21300000, guid: 27a040de7544a6941acbc82fb44dde73, type: 3}
   - {fileID: 21300000, guid: 5e2effc60ac33cf4f9afd72e73162153, type: 3}
   - {fileID: 21300000, guid: 6f568c15f5b5c27418f0b54c1e0cc8f0, type: 3}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
+  - {fileID: 21300000, guid: 85eeb58ebb58b0048a9a46b0eb9f0667, type: 3}
+  - {fileID: 21300000, guid: 1b8f271a05e75f74684aabf2c793e355, type: 3}
+  - {fileID: 21300000, guid: 2712551c9a82206408a687001cdf59b0, type: 3}
+  - {fileID: 21300000, guid: a6240edaaea21dc4c957081f4011a6d7, type: 3}
+  - {fileID: -4954863647745454037, guid: f5c1afe51e87232449da5993cc38449f, type: 3}
+  - {fileID: -371211538989286289, guid: ac02fea8dd252e249968fa3bf7e586f4, type: 3}
+  - {fileID: 2530960393544533509, guid: 81a8ffb080542e144a768612f2b9a910, type: 3}
+  - {fileID: -2868216541894813996, guid: dcbef536c8585124e95e02acb57d413e, type: 3}
+  - {fileID: 21300000, guid: 76014bcbb04962642a17a4d844c179aa, type: 3}
+  - {fileID: 21300000, guid: 16c1bc4fef7669e4497658782390bf81, type: 3}
+  - {fileID: 21300000, guid: fb6b6761692d75046ad9dfb4bfaa4852, type: 3}
+  - {fileID: 21300000, guid: 7030dfee18856c344b6e5164527c4351, type: 3}
+  - {fileID: 21300000, guid: b801c197c38f091498afcf21fb065c60, type: 3}
+  - {fileID: 21300000, guid: 89d4f5d8fcf50094295e6201edb3f8c6, type: 3}
+  - {fileID: 21300000, guid: 5f07219b90e66c740b7a7e6f6b45677d, type: 3}
+  - {fileID: 21300000, guid: 08e2aedab55470d43b8480392236e5e1, type: 3}
+  - {fileID: 21300000, guid: 27d4e2d3059fc6045b62d6f56584cc90, type: 3}
+  - {fileID: 21300000, guid: 58bd1622f2b09b94dbbcf1161b69cb43, type: 3}
 --- !u!4 &978761950
 Transform:
   m_ObjectHideFlags: 0
@@ -3160,6 +3160,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 7fb9772280737654091937aa19782c7f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::BrickSkinRegistry
+  DefaultBrickSprites:
+  - {fileID: 21300000, guid: a107e57d099a6e94e9bbabbf97879335, type: 3}
+  - {fileID: 21300000, guid: 9fee5f036c9d9494ca7641af3e8aac81, type: 3}
+  - {fileID: 21300000, guid: 835a73a7b7c45b549a37c833b7387026, type: 3}
+  - {fileID: 21300000, guid: 0f6aa798a19b4a348b20c18f3ad15f92, type: 3}
   _skins: []
 --- !u!4 &1202018263
 Transform:

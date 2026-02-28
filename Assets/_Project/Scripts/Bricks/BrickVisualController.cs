@@ -69,10 +69,18 @@ public class BrickVisualController : MonoBehaviour
 
         if (_sr == null) _sr = GetComponent<SpriteRenderer>();
 
-        if (skin != null && skin.sprite != null)
+        // Priority: skin-specific sprite → default brick-0 art → procedural gradient
+        Sprite baseSprite = (skin != null && skin.sprite != null) ? skin.sprite : null;
+        if (baseSprite == null)
         {
-            _sr.sprite   = skin.sprite;
-            _sr.drawMode = SpriteDrawMode.Simple;
+            var def = BrickSkinRegistry.Instance?.DefaultBrickSprites;
+            if (def != null && def.Length > 0) baseSprite = def[0];
+        }
+
+        if (baseSprite != null)
+        {
+            _sr.sprite   = baseSprite;
+            _sr.drawMode = SpriteDrawMode.Sliced; // sr.size set by LevelLoader controls world size
             _sr.color    = tint;
         }
         else
@@ -93,29 +101,40 @@ public class BrickVisualController : MonoBehaviour
         _shimmerAmount = amount;
     }
 
-    /// <summary>Darkens the brick proportionally to damage taken.</summary>
+    /// <summary>Switches the brick sprite to reflect damage taken.</summary>
     public void UpdateDamageState(int currentHp, int maxHp)
     {
         if (_sr == null) return;
 
+        // 1. Skin-specific damage stages (fraction-based — any number of stages)
         if (_skin != null && _skin.damageSpriteStages != null && _skin.damageSpriteStages.Length > 0)
         {
-            float ratio     = 1f - (float)currentHp / Mathf.Max(1, maxHp);
-            int   stageIdx  = Mathf.Clamp(
+            float ratio    = 1f - (float)currentHp / Mathf.Max(1, maxHp);
+            int   stageIdx = Mathf.Clamp(
                 Mathf.FloorToInt(ratio * _skin.damageSpriteStages.Length),
                 0, _skin.damageSpriteStages.Length - 1);
 
             if (_skin.damageSpriteStages[stageIdx] != null)
                 _sr.sprite = _skin.damageSpriteStages[stageIdx];
+            return;
         }
-        else
+
+        // 2. Default brick damage sprites (HP-lost index: brick-0=undamaged, brick-1=1HP lost, …)
+        var defaults = BrickSkinRegistry.Instance?.DefaultBrickSprites;
+        if (defaults != null && defaults.Length > 0)
         {
-            // Procedural: shift color toward a dark "cracked" look as HP drops
-            float damageFraction = 1f - (float)currentHp / Mathf.Max(1, maxHp);
-            // Target: very dark brownish-gray when destroyed
-            Color damagedColor = new Color(0.20f, 0.08f, 0.04f);
-            _displayTint = Color.Lerp(_originalTint, damagedColor, damageFraction * 0.80f);
+            int hpLost = maxHp - currentHp;
+            int idx    = Mathf.Clamp(hpLost, 0, defaults.Length - 1);
+            if (defaults[idx] != null)
+                _sr.sprite = defaults[idx];
+            // Tint stays as-is — the art already shows the damage visually
+            return;
         }
+
+        // 3. Procedural fallback: shift color toward a dark "cracked" look as HP drops
+        float damageFraction = 1f - (float)currentHp / Mathf.Max(1, maxHp);
+        Color damagedColor   = new Color(0.20f, 0.08f, 0.04f);
+        _displayTint = Color.Lerp(_originalTint, damagedColor, damageFraction * 0.80f);
     }
 
     /// <summary>
