@@ -59,6 +59,11 @@ public static class PurrbricksSetup
         if (puRegGO.GetComponent<PowerupRegistry>() == null)
             puRegGO.AddComponent<PowerupRegistry>();
 
+        // ── 4b. PowerupIconRegistry ──────────────────────────────────────────
+        var iconRegGO = EnsureGO("PowerupIconRegistry");
+        if (iconRegGO.GetComponent<PowerupIconRegistry>() == null)
+            iconRegGO.AddComponent<PowerupIconRegistry>();
+
         // ── 5. LevelLoader ───────────────────────────────────────────────────
         var loaderGO = EnsureGO("LevelLoader");
         var loader = loaderGO.GetComponent<LevelLoader>();

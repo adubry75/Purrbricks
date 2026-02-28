@@ -11,6 +11,7 @@ public class PowerupPickup : MonoBehaviour
     private PowerupType _type;
     private SpriteRenderer _sr;
     private float _bobTimer;
+    private Vector3 _basePickupScale = Vector3.one; // base local scale of _sr's GO (may be non-uniform for sprite pickups)
 
     private static bool IsBad(PowerupType t)
         => PowerupRules.IsBad(t);
@@ -90,7 +91,7 @@ public class PowerupPickup : MonoBehaviour
         if (_sr != null)
         {
             float pulse = (1f - amp) + amp * Mathf.Sin(_bobTimer);
-            _sr.transform.localScale = Vector3.one * pulse;
+            _sr.transform.localScale = _basePickupScale * pulse;
         }
     }
 
@@ -108,13 +109,27 @@ public class PowerupPickup : MonoBehaviour
             Destroy(gameObject);
     }
 
+    // World size of a "normal" brick (level_00–level_09 standard grid).
+    // Falling pickups always use this size so tiny-brick levels still drop catchable items.
+    private const float PICKUP_W = 1.35f;
+    private const float PICKUP_H = 0.45f;
+
     private void BuildVisuals()
     {
         int   idx   = Mathf.Clamp((int)_type, 0, TypeColors.Length - 1);
         Color color = TypeColors[idx];
         bool  bad   = IsBad(_type);
 
-        // ── Outer glow ring ────────────────────────────────────────────────────
+        Sprite icon = PowerupIconRegistry.Instance?.GetIcon(_type);
+        if (icon != null)
+        {
+            BuildSpritePickup(icon, color, bad);
+            return;
+        }
+
+        // ── Fallback: procedural orb + label ──────────────────────────────────
+
+        // Outer glow ring
         var glowGO = new GameObject("Glow");
         glowGO.transform.SetParent(transform, false);
         var glowSr = glowGO.AddComponent<SpriteRenderer>();
@@ -123,14 +138,15 @@ public class PowerupPickup : MonoBehaviour
         glowSr.sortingOrder = 8;
         glowGO.transform.localScale = Vector3.one * (bad ? 1.9f : 1.6f);
 
-        // ── Filled orb ─────────────────────────────────────────────────────────
+        // Filled orb
         var orbGO = new GameObject("Orb");
         orbGO.transform.SetParent(transform, false);
-        _sr               = orbGO.AddComponent<SpriteRenderer>();
-        _sr.sprite        = CreateOrbSprite(color, bad);
-        _sr.sortingOrder  = 9;
+        _sr              = orbGO.AddComponent<SpriteRenderer>();
+        _sr.sprite       = CreateOrbSprite(color, bad);
+        _sr.sortingOrder = 9;
+        _basePickupScale = Vector3.one; // orb is uniformly scaled
 
-        // ── Label ──────────────────────────────────────────────────────────────
+        // Label
         var labelGO = new GameObject("Label");
         labelGO.transform.SetParent(transform, false);
         labelGO.transform.localPosition = new Vector3(0f, 0f, -0.1f);
@@ -147,6 +163,37 @@ public class PowerupPickup : MonoBehaviour
 
         var mr = labelGO.GetComponent<MeshRenderer>();
         mr.sortingOrder = 10;
+    }
+
+    private void BuildSpritePickup(Sprite icon, Color color, bool bad)
+    {
+        // ── Soft elliptical glow behind the card ──────────────────────────────
+        var glowGO = new GameObject("Glow");
+        glowGO.transform.SetParent(transform, false);
+        var glowSr = glowGO.AddComponent<SpriteRenderer>();
+        glowSr.sprite       = CreateCircleSprite(32, true);
+        glowSr.color        = new Color(color.r, color.g, color.b, bad ? 0.65f : 0.50f);
+        glowSr.sortingOrder = 8;
+        // Stretch the circular glow sprite into an ellipse that frames the pickup card
+        glowGO.transform.localScale = new Vector3(PICKUP_W * 1.15f, PICKUP_H * 1.8f, 1f);
+
+        // ── Art sprite at standard brick size ─────────────────────────────────
+        var spriteGO = new GameObject("Sprite");
+        spriteGO.transform.SetParent(transform, false);
+        _sr              = spriteGO.AddComponent<SpriteRenderer>();
+        _sr.sprite       = icon;
+        _sr.sortingOrder = 9;
+
+        float nativeW = icon.rect.width  / icon.pixelsPerUnit;
+        float nativeH = icon.rect.height / icon.pixelsPerUnit;
+        float scaleX  = PICKUP_W / nativeW;
+        float scaleY  = PICKUP_H / nativeH;
+        _basePickupScale = new Vector3(scaleX, scaleY, 1f);
+        spriteGO.transform.localScale = _basePickupScale;
+
+        // Widen collider to match the pickup card size
+        var col = GetComponent<CircleCollider2D>();
+        if (col != null) col.radius = PICKUP_H * 0.7f; // ~0.315, catches center-hits well
     }
 
     private void SpawnCollectEffect()
