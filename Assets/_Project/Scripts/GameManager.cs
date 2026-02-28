@@ -19,6 +19,11 @@ public class GameManager : MonoBehaviour
 {
     public static GameManager Instance { get; private set; }
 
+    [Header("Admin")]
+    [Tooltip("When ON: numpad cheats apply powerups directly, ignoring inventory.\n" +
+             "When OFF: numpad cheats consume from inventory like a normal player.")]
+    [SerializeField] private bool _adminMode = true;
+
     [Header("Round Settings")]
     [SerializeField] private int _startingLives = 3;
 
@@ -166,33 +171,33 @@ public class GameManager : MonoBehaviour
 
     private void Update()
     {
-        // Numpad debug: activate powerups
+        // Numpad cheats: activate powerups (admin = unlimited; non-admin = consumes inventory)
         if (_state == GameState.Playing && !(Input.GetKey(KeyCode.LeftControl) || Input.GetKey(KeyCode.RightControl)))
         {
-            if (Input.GetKeyDown(KeyCode.Keypad1)) PowerupManager.Instance?.Apply(PowerupType.WidePaddle);
-            if (Input.GetKeyDown(KeyCode.Keypad2)) PowerupManager.Instance?.Apply(PowerupType.MultiBall);
-            if (Input.GetKeyDown(KeyCode.Keypad3)) PowerupManager.Instance?.Apply(PowerupType.StickyBall);
-            if (Input.GetKeyDown(KeyCode.Keypad4)) PowerupManager.Instance?.Apply(PowerupType.SpeedBall);
-            if (Input.GetKeyDown(KeyCode.Keypad5)) PowerupManager.Instance?.Apply(PowerupType.ExtraLife);
-            if (Input.GetKeyDown(KeyCode.Keypad6)) PowerupManager.Instance?.Apply(PowerupType.Laser);
-            if (Input.GetKeyDown(KeyCode.Keypad7)) PowerupManager.Instance?.Apply(PowerupType.Fireball);
-            if (Input.GetKeyDown(KeyCode.Keypad8)) PowerupManager.Instance?.Apply(PowerupType.BombBrick);
-            if (Input.GetKeyDown(KeyCode.Keypad9)) PowerupManager.Instance?.Apply(PowerupType.ShieldWall);
-            if (Input.GetKeyDown(KeyCode.KeypadPlus)) PowerupManager.Instance?.Apply(PowerupType.BigBall);
-            if (Input.GetKeyDown(KeyCode.KeypadPeriod)) PowerupManager.Instance?.Apply(PowerupType.ScoreFrenzy);
+            if (Input.GetKeyDown(KeyCode.Keypad1))    CheatApply(PowerupType.WidePaddle);
+            if (Input.GetKeyDown(KeyCode.Keypad2))    CheatApply(PowerupType.MultiBall);
+            if (Input.GetKeyDown(KeyCode.Keypad3))    CheatApply(PowerupType.StickyBall);
+            if (Input.GetKeyDown(KeyCode.Keypad4))    CheatApply(PowerupType.SpeedBall);
+            if (Input.GetKeyDown(KeyCode.Keypad5))    CheatApply(PowerupType.ExtraLife);
+            if (Input.GetKeyDown(KeyCode.Keypad6))    CheatApply(PowerupType.Laser);
+            if (Input.GetKeyDown(KeyCode.Keypad7))    CheatApply(PowerupType.Fireball);
+            if (Input.GetKeyDown(KeyCode.Keypad8))    CheatApply(PowerupType.BombBrick);
+            if (Input.GetKeyDown(KeyCode.Keypad9))    CheatApply(PowerupType.ShieldWall);
+            if (Input.GetKeyDown(KeyCode.KeypadPlus)) CheatApply(PowerupType.BigBall);
+            if (Input.GetKeyDown(KeyCode.KeypadPeriod)) CheatApply(PowerupType.ScoreFrenzy);
         }
 
         if (_state == GameState.Playing && (Input.GetKey(KeyCode.LeftControl) || Input.GetKey(KeyCode.RightControl)))
         {
-            if (Input.GetKeyDown(KeyCode.Keypad1)) PowerupManager.Instance?.Apply(PowerupType.ShrinkPaddle);
-            if (Input.GetKeyDown(KeyCode.Keypad2)) PowerupManager.Instance?.Apply(PowerupType.ZipBall);
-            if (Input.GetKeyDown(KeyCode.Keypad3)) PowerupManager.Instance?.Apply(PowerupType.FlipControls);
-            if (Input.GetKeyDown(KeyCode.Keypad4)) PowerupManager.Instance?.Apply(PowerupType.CursedBall);
-            if (Input.GetKeyDown(KeyCode.Keypad5)) PowerupManager.Instance?.Apply(PowerupType.TinyBall);
-            if (Input.GetKeyDown(KeyCode.Keypad6)) PowerupManager.Instance?.Apply(PowerupType.InvisiBall);
-            if (Input.GetKeyDown(KeyCode.Keypad7)) PowerupManager.Instance?.Apply(PowerupType.DrunkenPaddle);
-            if (Input.GetKeyDown(KeyCode.Keypad8)) PowerupManager.Instance?.Apply(PowerupType.DrunkVision);
-            if (Input.GetKeyDown(KeyCode.Keypad9)) PowerupManager.Instance?.Apply(PowerupType.GremlinBounces);
+            if (Input.GetKeyDown(KeyCode.Keypad1)) CheatApply(PowerupType.ShrinkPaddle);
+            if (Input.GetKeyDown(KeyCode.Keypad2)) CheatApply(PowerupType.ZipBall);
+            if (Input.GetKeyDown(KeyCode.Keypad3)) CheatApply(PowerupType.FlipControls);
+            if (Input.GetKeyDown(KeyCode.Keypad4)) CheatApply(PowerupType.CursedBall);
+            if (Input.GetKeyDown(KeyCode.Keypad5)) CheatApply(PowerupType.TinyBall);
+            if (Input.GetKeyDown(KeyCode.Keypad6)) CheatApply(PowerupType.InvisiBall);
+            if (Input.GetKeyDown(KeyCode.Keypad7)) CheatApply(PowerupType.DrunkenPaddle);
+            if (Input.GetKeyDown(KeyCode.Keypad8)) CheatApply(PowerupType.DrunkVision);
+            if (Input.GetKeyDown(KeyCode.Keypad9)) CheatApply(PowerupType.GremlinBounces);
         }
 
         // Fury Strike: both mouse buttons pressed together when charge is full
@@ -306,6 +311,19 @@ public class GameManager : MonoBehaviour
         }
         if (_state == GameState.Paused)
             _pauseMenuUI?.Show();
+    }
+
+    /// <summary>
+    /// Applies a powerup via numpad cheat.
+    /// Admin mode: direct Apply (unlimited, ignores inventory).
+    /// Non-admin mode: TryUseFromInventory (must own it, consumes one).
+    /// </summary>
+    private void CheatApply(PowerupType type)
+    {
+        if (_adminMode)
+            PowerupManager.Instance?.Apply(type);
+        else
+            PurrBucksManager.Instance?.TryUseFromInventory(type);
     }
 
     public void SetScoreFrenzy(bool on)
