@@ -74,6 +74,9 @@ public class GameManager : MonoBehaviour
     /// <summary>Current game state — readable by other scripts (e.g. BallController).</summary>
     public GameState State => _state;
 
+    /// <summary>Total number of levels discovered at runtime from Resources/Levels/.</summary>
+    public int LevelCount => _levelIds?.Length ?? 0;
+
     // Pre-allocated buffer for Fury Strike overlap queries — avoids heap allocation
     private static readonly Collider2D[] s_furyBuffer = new Collider2D[128];
 
@@ -90,7 +93,31 @@ public class GameManager : MonoBehaviour
         Instance = this;
         DontDestroyOnLoad(gameObject);
 
+        RefreshLevelIds();
         FindOrCreateUIScreens();
+    }
+
+    /// <summary>
+    /// Dynamically populates _levelIds by scanning Resources/Levels/ at runtime.
+    /// This means adding new level JSON files is automatically picked up without
+    /// needing to re-run the Purrbricks > Setup Scene editor tool.
+    /// </summary>
+    private void RefreshLevelIds()
+    {
+        var allAssets = Resources.LoadAll<TextAsset>("Levels");
+        var rx = new System.Text.RegularExpressions.Regex(@"^level_(\d+)$",
+            System.Text.RegularExpressions.RegexOptions.IgnoreCase);
+        var found = new System.Collections.Generic.List<(int index, string id)>(allAssets.Length);
+        foreach (var asset in allAssets)
+        {
+            var m = rx.Match(asset.name);
+            if (m.Success && int.TryParse(m.Groups[1].Value, out int idx))
+                found.Add((idx, asset.name));
+        }
+        found.Sort((a, b) => a.index.CompareTo(b.index));
+        _levelIds = new string[found.Count];
+        for (int i = 0; i < found.Count; i++)
+            _levelIds[i] = found[i].id;
     }
 
     private void FindOrCreateUIScreens()

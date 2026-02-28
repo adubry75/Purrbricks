@@ -64,7 +64,6 @@ public class AchievementManager : MonoBehaviour
     // PlayerPrefs key prefix for per-level death counts
     private const string PrefixLevelDeaths = "lb_deaths_";
 
-    private const int TotalLevels = 80;
 
     // ── Session state ──────────────────────────────────────────────────────────
 
@@ -124,7 +123,7 @@ public class AchievementManager : MonoBehaviour
         if (humanLevel >= 25) Unlock(ID.ClawMarks);
         if (humanLevel >= 30) Unlock(ID.Halfway);
         if (humanLevel >= 60) Unlock(ID.Meow);
-        if (levelIndex == (TotalLevels - 1)) Unlock(ID.Purrfect); // final level
+        if (GameManager.Instance != null && levelIndex == (GameManager.Instance.LevelCount - 1)) Unlock(ID.Purrfect); // final level
 
         // ── Speed Runner ─────────────────────────────────────────────────────
         if (levelTime <= 30f) Unlock(ID.SpeedRunner);

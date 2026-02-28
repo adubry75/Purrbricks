@@ -42,7 +42,7 @@ public static class UIStyle
     }
 
     // ── Global Variables TODO MOVE SOMEONE ELSE THIS DOESNT BELONG IN UI ───────────────────────────────────────────────────────────────
-    public static readonly int TotalLevels = 84;
+    public static int TotalLevels => GameManager.Instance?.LevelCount ?? 0;
 
     // ── Factory ───────────────────────────────────────────────────────────────
 
