@@ -163,6 +163,23 @@ public static class PurrbricksSetup
             Debug.Log("Added PlayfieldFrame. Assign the frame sprite in the Inspector.");
         }
 
+        // ── 9c. HudController ────────────────────────────────────────────────
+        var hudGO = EnsureGO("HudController");
+        var hud = hudGO.GetComponent<HudController>();
+        if (hud == null)
+        {
+            hud = hudGO.AddComponent<HudController>();
+            Debug.Log("Added HudController.");
+        }
+
+        // Wire HudController to GameManager
+        if (gm != null)
+        {
+            var gmHudSo = new SerializedObject(gm);
+            gmHudSo.FindProperty("_hud").objectReferenceValue = hud;
+            gmHudSo.ApplyModifiedProperties();
+        }
+
         // ── 10. HighScoreManager ─────────────────────────────────────────────
         var scoresMgr = EnsureGO("HighScoreManager");
         if (scoresMgr.GetComponent<HighScoreManager>() == null)
@@ -463,24 +480,24 @@ public static class PurrbricksSetup
         }
 
         var mainMenuUI = Object.FindFirstObjectByType<MainMenuUI>(FindObjectsInactive.Include);
-        if (mainMenuUI != null)
-        {
-            var mmSo = new SerializedObject(mainMenuUI);
+        //if (mainMenuUI != null)
+        //{
+        //    var mmSo = new SerializedObject(mainMenuUI);
 
-            var sp1 = LoadButton("play-button.png");
-            var sp2 = LoadButton("highscores-button.png");
-            var spS = LoadButton("settings-button.png");
-            var sp3 = LoadButton("quit-button.png");
+        //    var sp1 = LoadButton("play-button.png");
+        //    var sp2 = LoadButton("highscores-button.png");
+        //    var spS = LoadButton("settings-button.png");
+        //    var sp3 = LoadButton("quit-button.png");
 
-            if (sp1 != null) mmSo.FindProperty("_playSprite").objectReferenceValue        = sp1;
-            if (sp2 != null) mmSo.FindProperty("_highScoresSprite").objectReferenceValue  = sp2;
-            if (spS != null) mmSo.FindProperty("_settingsSprite").objectReferenceValue    = spS;
-            if (sp3 != null) mmSo.FindProperty("_quitSprite").objectReferenceValue        = sp3;
-            mmSo.ApplyModifiedProperties();
+        //    if (sp1 != null) mmSo.FindProperty("_playSprite").objectReferenceValue        = sp1;
+        //    if (sp2 != null) mmSo.FindProperty("_highScoresSprite").objectReferenceValue  = sp2;
+        //    if (spS != null) mmSo.FindProperty("_settingsSprite").objectReferenceValue    = spS;
+        //    if (sp3 != null) mmSo.FindProperty("_quitSprite").objectReferenceValue        = sp3;
+        //    mmSo.ApplyModifiedProperties();
 
-            if (sp1 != null) Debug.Log("Assigned main menu button sprites.");
-            else Debug.LogWarning("Could not find button sprites in Assets/_Project/Art/Buttons/ (or legacy Assets/_Project/Art/).");
-        }
+        //    if (sp1 != null) Debug.Log("Assigned main menu button sprites.");
+        //    else Debug.LogWarning("Could not find button sprites in Assets/_Project/Art/Buttons/ (or legacy Assets/_Project/Art/).");
+        //}
 
         // Assign other UI button sprites (new art in Art/Buttons)
         var victoryUI = Object.FindFirstObjectByType<VictoryUI>(FindObjectsInactive.Include);

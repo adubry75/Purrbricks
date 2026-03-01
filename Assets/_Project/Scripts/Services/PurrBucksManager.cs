@@ -31,11 +31,6 @@ public class PurrBucksManager : MonoBehaviour
     private readonly Dictionary<PowerupType, int> _inventory = new Dictionary<PowerupType, int>();
     private int _pendingAward; // tracks amount awarded so far in current level-complete flow
 
-    // ── HUD overlay ───────────────────────────────────────────────────────────
-    private Canvas _hudCanvas;
-    private Text   _balanceText;
-    private GameObject _hudRoot;
-
     // ── Tutorial ──────────────────────────────────────────────────────────────
     private Coroutine _tutRoutine;
 
@@ -46,7 +41,6 @@ public class PurrBucksManager : MonoBehaviour
         DontDestroyOnLoad(gameObject);
 
         LoadPersistentData();
-        BuildHudOverlay();
     }
 
     // ── Persistence ───────────────────────────────────────────────────────────
@@ -233,102 +227,13 @@ public class PurrBucksManager : MonoBehaviour
     public bool HasSeenTutorial(string key) => PlayerPrefs.GetInt(key, 0) == 1;
     public void MarkTutorialSeen(string key) { PlayerPrefs.SetInt(key, 1); PlayerPrefs.Save(); }
 
-    // ── HUD Overlay ───────────────────────────────────────────────────────────
-
-    private void BuildHudOverlay()
-    {
-        _hudCanvas = gameObject.AddComponent<Canvas>();
-        _hudCanvas.renderMode   = RenderMode.ScreenSpaceOverlay;
-        _hudCanvas.sortingOrder = 51; // just above PowerupHUD (50)
-
-        var scaler = gameObject.AddComponent<CanvasScaler>();
-        scaler.uiScaleMode         = CanvasScaler.ScaleMode.ScaleWithScreenSize;
-        scaler.referenceResolution = new Vector2(1920, 1080);
-
-        gameObject.AddComponent<GraphicRaycaster>();
-
-        // Clickable container (top-right corner)
-        _hudRoot = new GameObject("PurrBucksBalance");
-        _hudRoot.transform.SetParent(transform, false);
-
-        var bg = _hudRoot.AddComponent<Image>();
-        bg.color = new Color(0f, 0f, 0f, 0.55f);
-
-        var rt = _hudRoot.GetComponent<RectTransform>();
-        rt.anchorMin        = new Vector2(1f, 1f);
-        rt.anchorMax        = new Vector2(1f, 1f);
-        rt.pivot            = new Vector2(1f, 1f);
-        rt.sizeDelta        = new Vector2(215f, 30f);
-        rt.anchoredPosition = new Vector2(-400f, -5f);
-
-        // Button to open store
-        var btn = _hudRoot.AddComponent<Button>();
-        var colors = btn.colors;
-        colors.normalColor      = Color.white;
-        colors.highlightedColor = new Color(1.2f, 1.2f, 1.2f);
-        colors.pressedColor     = new Color(0.85f, 0.85f, 0.85f);
-        btn.colors = colors;
-        btn.targetGraphic = bg;
-        btn.onClick.AddListener(() => GameManager.Instance?.ShowStore());
-
-        // Paw icon
-        var iconGO = new GameObject("Icon");
-        iconGO.transform.SetParent(_hudRoot.transform, false);
-        var iconTxt = iconGO.AddComponent<Text>();
-        iconTxt.text          = "🐾";
-        iconTxt.font          = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
-        iconTxt.fontSize      = 18;
-        iconTxt.alignment     = TextAnchor.MiddleLeft;
-        iconTxt.color         = new Color(1f, 0.85f, 0.10f);
-        iconTxt.raycastTarget = false;
-        var iconRt = iconTxt.GetComponent<RectTransform>();
-        iconRt.anchorMin        = new Vector2(0f, 0f);
-        iconRt.anchorMax        = new Vector2(0f, 1f);
-        iconRt.sizeDelta        = new Vector2(28f, 0f);
-        iconRt.anchoredPosition = new Vector2(14f, 0f);
-
-        // Balance text
-        var balGO = new GameObject("Balance");
-        balGO.transform.SetParent(_hudRoot.transform, false);
-        _balanceText = balGO.AddComponent<Text>();
-        _balanceText.font          = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
-        _balanceText.fontSize      = 18;
-        _balanceText.fontStyle     = FontStyle.Bold;
-        _balanceText.alignment     = TextAnchor.MiddleLeft;
-        _balanceText.color         = new Color(1f, 0.85f, 0.10f);
-        _balanceText.raycastTarget = false;
-        var balRt = _balanceText.GetComponent<RectTransform>();
-        balRt.anchorMin        = new Vector2(0f, 0f);
-        balRt.anchorMax        = new Vector2(1f, 1f);
-        balRt.offsetMin        = new Vector2(28f, 0f);
-        balRt.offsetMax        = new Vector2(-6f, 0f);
-
-        // Thin gold left border for visual distinction
-        var border = new GameObject("Border");
-        border.transform.SetParent(_hudRoot.transform, false);
-        var bImg = border.AddComponent<Image>();
-        bImg.color         = new Color(1f, 0.78f, 0.10f, 0.8f);
-        bImg.raycastTarget = false;
-        var bRt = border.GetComponent<RectTransform>();
-        bRt.anchorMin        = new Vector2(0f, 0f);
-        bRt.anchorMax        = new Vector2(0f, 1f);
-        bRt.sizeDelta        = new Vector2(4f, 0f);
-        bRt.anchoredPosition = new Vector2(2f, 0f);
-
-        RefreshBalanceText();
-    }
-
     private void RefreshBalanceText()
     {
-        if (_balanceText != null)
-            _balanceText.text = $"{Balance} PB";
+        HudController.Instance?.RefreshBalance();
     }
 
-    /// <summary>Show/hide the balance overlay — hide during MainMenu, GameOver, etc.</summary>
-    public void SetVisible(bool visible)
-    {
-        if (_hudRoot != null) _hudRoot.SetActive(visible);
-    }
+    /// <summary>Balance display is now handled by HudController — this is a no-op kept for call-site compatibility.</summary>
+    public void SetVisible(bool visible) { }
 
     // ── Tutorial callout ──────────────────────────────────────────────────────
 

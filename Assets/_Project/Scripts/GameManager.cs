@@ -479,13 +479,13 @@ public class GameManager : MonoBehaviour
         _cachedStateBeforeHighScores = _state;
         _cachedTimeScaleBeforeHighScores = Time.timeScale;
         _cachedIsDemoMode = _isDemoMode;
-        _cachedHudActive = _hud != null && _hud.gameObject.activeSelf;
+        _cachedHudActive = _hud != null && _hud.IsVisible;
         _cachedBallActive = _ball != null && _ball.gameObject.activeSelf;
         _cachedPaddleActive = _paddle != null && _paddle.gameObject.activeSelf;
 
         _levelLoader?.ClearLevel();
 
-        if (_hud != null) _hud.gameObject.SetActive(false);
+        _hud?.SetVisible(false);
         if (_ball != null) _ball.gameObject.SetActive(false);
         if (_paddle != null) _paddle.gameObject.SetActive(false);
     }
@@ -498,7 +498,7 @@ public class GameManager : MonoBehaviour
         _isDemoMode = _cachedIsDemoMode;
         _paddle?.SetDemoMode(_isDemoMode);
 
-        if (_hud != null) _hud.gameObject.SetActive(_cachedHudActive);
+        _hud?.SetVisible(_cachedHudActive);
         if (_ball != null) _ball.gameObject.SetActive(_cachedBallActive);
         if (_paddle != null) _paddle.gameObject.SetActive(_cachedPaddleActive);
     }
@@ -885,7 +885,8 @@ public class GameManager : MonoBehaviour
         {
             case GameState.MainMenu:
                 SetCursorMenuMode();
-                _hud?.gameObject.SetActive(false);
+                _hud?.SetVisible(false);
+                PowerupHUD.Instance?.SetVisible(false);
                 PurrBucksManager.Instance?.SetVisible(false);
                 SfxPlayer.Instance?.MuteAll(true);
                 MusicPlayer.Instance?.PlayMenu();
@@ -893,14 +894,16 @@ public class GameManager : MonoBehaviour
 
             case GameState.HighScores:
                 SetCursorMenuMode();
-                _hud?.gameObject.SetActive(false);
+                _hud?.SetVisible(false);
+                PowerupHUD.Instance?.SetVisible(false);
                 SfxPlayer.Instance?.MuteAll(true);
                 // Menu music continues — no change needed
                 break;
 
             case GameState.Ready:
                 SetCursorPlayMode();
-                _hud?.gameObject.SetActive(true);
+                _hud?.SetVisible(true);
+                PowerupHUD.Instance?.SetVisible(true);
                 PurrBucksManager.Instance?.SetVisible(!_isEditorTestMode);
                 _hud?.SetState("Ready");
                 _hud?.ShowCenter("Hold Left Click to Aim\r\nRelease to Launch");

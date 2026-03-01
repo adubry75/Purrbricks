@@ -129,7 +129,12 @@ public class InventoryRadialMenu : MonoBehaviour
         }
         else
         {
-            if (Input.GetMouseButtonUp(2))
+            // Escape or right-click cancels without activating anything
+            if (Input.GetKeyDown(KeyCode.Escape) || Input.GetMouseButtonDown(1))
+            {
+                CloseRadial(activate: false);
+            }
+            else if (Input.GetMouseButtonUp(2))
             {
                 CloseRadial(activate: true);
             }
