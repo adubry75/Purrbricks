@@ -1452,10 +1452,10 @@ MonoBehaviour:
   _starsAlpha: 0.6
   _nebulaAlpha: 0.1
   _dustAlpha: 0.05
-  _starsSpeedX: 0.24
-  _nebulaSpeedX: 0.56
-  _dustSpeedX: 1.1
-  _driftY: 0.2
+  _starsSpeedX: 0.2
+  _nebulaSpeedX: 0.5
+  _dustSpeedX: 1
+  _driftY: 0.1
   _layerCount: 3
   _starsPerLayer: 80
   _starColor: {r: 0.9, g: 0.95, b: 1, a: 1}

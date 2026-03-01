@@ -27,24 +27,50 @@ public class ParallaxBackground : MonoBehaviour
 
     private sealed class ScrollingLayer
     {
-        public Transform a;
-        public Transform b;
+        public Transform a, b;   // top horizontal pair   (initial y = 0)
+        public Transform c, d;   // bottom horizontal pair (initial y = -height)
         public float width;
+        public float height;
         public Vector2 vel;
 
         public void Tick(float dt)
         {
-            if (a == null || b == null) return;
+            if (a == null || b == null || c == null || d == null) return;
 
             Vector3 dv = new Vector3(vel.x, vel.y, 0f) * dt;
             a.position += dv;
             b.position += dv;
+            c.position += dv;
+            d.position += dv;
 
-            // Wrap on X (leftward scroll). Keep them stitched.
+            // ── Wrap X — top row ─────────────────────────────────────────────
             if (a.position.x <= -width)
                 a.position = new Vector3(b.position.x + width, a.position.y, a.position.z);
             if (b.position.x <= -width)
                 b.position = new Vector3(a.position.x + width, b.position.y, b.position.z);
+
+            // ── Wrap X — bottom row ──────────────────────────────────────────
+            if (c.position.x <= -width)
+                c.position = new Vector3(d.position.x + width, c.position.y, c.position.z);
+            if (d.position.x <= -width)
+                d.position = new Vector3(c.position.x + width, d.position.y, d.position.z);
+
+            // ── Wrap Y (upward drift) ────────────────────────────────────────
+            // Two rows are always 'height' apart. When the top row has drifted a
+            // full tile-height above its origin, leapfrog it below the bottom row —
+            // identical logic to the X leapfrog, just on the Y axis.
+            if (a.position.y >= height)
+            {
+                float newY = c.position.y - height;
+                a.position = new Vector3(a.position.x, newY, a.position.z);
+                b.position = new Vector3(b.position.x, newY, b.position.z);
+            }
+            if (c.position.y >= height)
+            {
+                float newY = a.position.y - height;
+                c.position = new Vector3(c.position.x, newY, c.position.z);
+                d.position = new Vector3(d.position.x, newY, d.position.z);
+            }
         }
     }
 
@@ -107,30 +133,35 @@ public class ParallaxBackground : MonoBehaviour
         root.transform.SetParent(transform, worldPositionStays: false);
         root.transform.localPosition = new Vector3(0f, 0f, z);
 
+        // Scale to comfortably cover the view.
+        float baseH   = Mathf.Max(0.0001f, sprite.bounds.size.y);
+        float desiredH = viewH * 1.35f;
+        float scale   = desiredH / baseH;
+
+        float width  = Mathf.Max(0.01f, sprite.bounds.size.x * scale);
+        float height = desiredH; // world-space tile height
+
+        // 2×2 grid: top row (a,b) at y=0, bottom row (c,d) at y=-height.
+        // X-stitching keeps horizontal coverage seamless; Y-stitching keeps
+        // vertical coverage seamless as the layer drifts upward.
         var a = CreateSpriteTile(root.transform, sprite, alpha, order, "A");
         var b = CreateSpriteTile(root.transform, sprite, alpha, order, "B");
+        var c = CreateSpriteTile(root.transform, sprite, alpha, order, "C");
+        var d = CreateSpriteTile(root.transform, sprite, alpha, order, "D");
 
-        // Scale to comfortably cover the view.
-        float baseH = Mathf.Max(0.0001f, sprite.bounds.size.y);
-        float desiredH = viewH * 1.35f;
-        float scale = desiredH / baseH;
-        a.localScale = b.localScale = Vector3.one * scale;
+        a.localScale = b.localScale = c.localScale = d.localScale = Vector3.one * scale;
 
-        float width = Mathf.Max(0.01f, sprite.bounds.size.x * scale);
-
-        // Centered tiles stitched horizontally.
-        a.position = new Vector3(0f, 0f, z);
-        b.position = new Vector3(width, 0f, z);
-
-        // If the sprite is very narrow, tile more aggressively by increasing speed wrap width.
-        // (Two tiles still works; it'll just repeat more often.)
+        a.position = new Vector3(0f,     0f,       z);
+        b.position = new Vector3(width,  0f,       z);
+        c.position = new Vector3(0f,    -height,   z);
+        d.position = new Vector3(width, -height,   z);
 
         return new ScrollingLayer
         {
-            a = a,
-            b = b,
-            width = width,
-            vel = velocity
+            a = a, b = b, c = c, d = d,
+            width  = width,
+            height = height,
+            vel    = velocity
         };
     }
 
