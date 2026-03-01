@@ -29,6 +29,26 @@ public class LevelLoader : MonoBehaviour
 
     public LevelData CurrentLevel { get; private set; }
 
+    /// <summary>
+    /// Loads a level directly from in-memory <see cref="LevelData"/> (e.g. Level Editor test play),
+    /// bypassing Resources/Levels/*.json.
+    /// </summary>
+    public void LoadLevelData(LevelData data)
+    {
+        if (data == null)
+        {
+            Debug.LogError("LevelLoader: LoadLevelData called with null data");
+            return;
+        }
+
+        Debug.Log("LevelLoader: Loading level from in-memory data");
+        ClearBricks();
+
+        CurrentLevel = data;
+        SpawnBricks(data);
+        SpawnPrismGates(data);
+    }
+
     public void LoadLevel(string levelId)
     {
         Debug.Log($"LevelLoader: Loading '{levelId}'");

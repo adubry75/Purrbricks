@@ -9,6 +9,15 @@ using UnityEngine.UI;
 public class PauseMenuUI : MonoBehaviour
 {
     private Canvas _canvas;
+    private Text _titleTxt;
+
+    private Button _resumeBtn;
+    private Button _storeBtn;
+    private Button _settingsBtn;
+    private Button _levelSelectBtn;
+    private Button _mainMenuBtn;
+    private Button _quitBtn;
+    private Button _backToEditorBtn;
 
     [Header("Button Sprites")]
     [SerializeField] private Sprite _resumeSprite;
@@ -61,18 +70,18 @@ public class PauseMenuUI : MonoBehaviour
         // Title
         var titleGO = new GameObject("Title");
         titleGO.transform.SetParent(card.transform, false);
-        var titleTxt = titleGO.AddComponent<Text>();
-        titleTxt.text          = "PAUSED";
-        titleTxt.font          = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
-        titleTxt.fontSize      = 72;
-        titleTxt.fontStyle     = FontStyle.Bold;
-        titleTxt.alignment     = TextAnchor.MiddleCenter;
-        titleTxt.color         = UIStyle.AccentGold;
-        titleTxt.raycastTarget = false;
+        _titleTxt = titleGO.AddComponent<Text>();
+        _titleTxt.text          = "PAUSED";
+        _titleTxt.font          = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
+        _titleTxt.fontSize      = 72;
+        _titleTxt.fontStyle     = FontStyle.Bold;
+        _titleTxt.alignment     = TextAnchor.MiddleCenter;
+        _titleTxt.color         = UIStyle.AccentGold;
+        _titleTxt.raycastTarget = false;
         var titleOl = titleGO.AddComponent<Outline>();
         titleOl.effectColor    = Color.black;
         titleOl.effectDistance = new Vector2(4f, -4f);
-        var titleRt = titleGO.GetComponent<RectTransform>();
+        var titleRt = _titleTxt.GetComponent<RectTransform>();
         titleRt.anchorMin        = new Vector2(0.5f, 0.5f);
         titleRt.anchorMax        = new Vector2(0.5f, 0.5f);
         titleRt.sizeDelta        = new Vector2(440f, 90f);
@@ -81,36 +90,59 @@ public class PauseMenuUI : MonoBehaviour
         // Buttons — stacked vertically (6 buttons)
         const float W = 360f, H = 74f;
 
-        UIStyle.CreateButton(card.transform, "Resume",
+        _resumeBtn = UIStyle.CreateButton(card.transform, "Resume",
             new Vector2(0f, 188f), new Vector2(W, H),
             () => GameManager.Instance?.ResumeGame(), UIStyle.AccentGreen);
 
-        UIStyle.CreateButton(card.transform, "Store",
+        _storeBtn = UIStyle.CreateButton(card.transform, "Store",
             new Vector2(0f, 92f), new Vector2(W, H),
             () => GameManager.Instance?.ShowStore(), UIStyle.AccentGold);
 
-        UIStyle.CreateButton(card.transform, "Settings",
+        _settingsBtn = UIStyle.CreateButton(card.transform, "Settings",
             new Vector2(0f, -4f), new Vector2(W, H),
             () => GameManager.Instance?.ShowSettings(fromPause: true), UIStyle.AccentBlue);
 
-        UIStyle.CreateButton(card.transform, "Level Select",
+        _levelSelectBtn = UIStyle.CreateButton(card.transform, "Level Select",
             new Vector2(0f, -100f), new Vector2(W, H),
             ShowLevelSelect, UIStyle.AccentBlue);
 
-        UIStyle.CreateButton(card.transform, "Main Menu",
+        _mainMenuBtn = UIStyle.CreateButton(card.transform, "Main Menu",
             new Vector2(0f, -196f), new Vector2(W, H),
             () => GameManager.Instance?.ShowMainMenu(), UIStyle.AccentMagenta);
 
-        UIStyle.CreateButton(card.transform, "Quit Game",
+        _quitBtn = UIStyle.CreateButton(card.transform, "Quit Game",
             new Vector2(0f, -292f), new Vector2(W, H),
             OnQuitGame, UIStyle.AccentRed);
+
+        _backToEditorBtn = UIStyle.CreateButton(card.transform, "Back To Editor",
+            new Vector2(0f, 40f), new Vector2(W, H),
+            () => GameManager.Instance?.ReturnToEditorFromTest(), UIStyle.AccentGreen);
+        _backToEditorBtn.gameObject.SetActive(false);
     }
 
     private void Update()
     {
         if (!gameObject.activeSelf) return;
         if (Input.GetKeyDown(KeyCode.Escape))
-            GameManager.Instance?.ResumeGame();
+        {
+            if (GameManager.Instance != null && GameManager.Instance.IsEditorTestMode)
+                GameManager.Instance.ReturnToEditorFromTest();
+            else
+                GameManager.Instance?.ResumeGame();
+        }
+    }
+
+    private void ApplyMode()
+    {
+        bool isEditorTest = GameManager.Instance != null && GameManager.Instance.IsEditorTestMode;
+
+        if (_resumeBtn != null)      _resumeBtn.gameObject.SetActive(!isEditorTest);
+        if (_storeBtn != null)       _storeBtn.gameObject.SetActive(!isEditorTest);
+        if (_settingsBtn != null)    _settingsBtn.gameObject.SetActive(!isEditorTest);
+        if (_levelSelectBtn != null) _levelSelectBtn.gameObject.SetActive(!isEditorTest);
+        if (_mainMenuBtn != null)    _mainMenuBtn.gameObject.SetActive(!isEditorTest);
+        if (_quitBtn != null)        _quitBtn.gameObject.SetActive(!isEditorTest);
+        if (_backToEditorBtn != null) _backToEditorBtn.gameObject.SetActive(isEditorTest);
     }
 
     private void ShowLevelSelect()
@@ -137,6 +169,10 @@ public class PauseMenuUI : MonoBehaviour
 #endif
     }
 
-    public void Show() { gameObject.SetActive(true); }
+    public void Show()
+    {
+        ApplyMode();
+        gameObject.SetActive(true);
+    }
     public void Hide() { gameObject.SetActive(false); }
 }

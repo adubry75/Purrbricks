@@ -517,6 +517,15 @@ public class LevelEditorUI : MonoBehaviour
         LeftAnchorBtn(addAnotherBtn, y - 18f, RIGHT_W - 16f, 36f);
         y -= 46f;
 
+        // ── Test Level ────────────────────────────────────────────────────────
+        y -= 8f;
+        PropSectionDivider(T, "── TEST ──", ref y);
+        var testBtn = UIStyle.CreateButton(T, "▶ Test Level",
+            new Vector2(0f, y - 18f), new Vector2(RIGHT_W - 16f, 36f),
+            TestLevel, UIStyle.AccentGreen);
+        LeftAnchorBtn(testBtn, y - 18f, RIGHT_W - 16f, 36f);
+        y -= 46f;
+
         // ── Prism Gates ───────────────────────────────────────────────────────
         y -= 8f;
         PropSectionDivider(T, "── PRISM GATES ──", ref y);
@@ -1223,9 +1232,7 @@ public class LevelEditorUI : MonoBehaviour
     {
         if (_data == null) return;
 
-        // Apply top-bar metadata
-        _data.displayName = _fieldName.text?.Trim() ?? _levelId;
-        if (float.TryParse(_fieldSpeed.text, out float spd)) _data.ballSpeed = spd;
+        ApplyTopBarMetadata(_data);
 
         var settings = new JsonSerializerSettings
         {
@@ -1247,6 +1254,44 @@ public class LevelEditorUI : MonoBehaviour
 #else
         Debug.LogWarning("[LevelEditor] Save is only available in the Unity Editor.");
 #endif
+    }
+
+    private void ApplyTopBarMetadata(LevelData target)
+    {
+        if (target == null) return;
+        target.displayName = _fieldName.text?.Trim() ?? _levelId;
+        if (float.TryParse(_fieldSpeed.text, out float spd)) target.ballSpeed = spd;
+    }
+
+    private void TestLevel()
+    {
+        if (_data == null) return;
+
+        // Commit any pending property edits for the currently selected brick.
+        ApplyProps();
+
+        // Test should reflect the current top-bar values without saving to disk.
+        var clone = CloneLevelData(_data);
+        ApplyTopBarMetadata(clone);
+
+        GameManager.Instance?.StartEditorTestLevel(clone, _levelId, this);
+    }
+
+    private static LevelData CloneLevelData(LevelData src)
+    {
+        if (src == null) return null;
+
+        try
+        {
+            // Simple deep clone for editor test play (avoids gameplay mutating the editor's live data).
+            string json = JsonConvert.SerializeObject(src);
+            return JsonConvert.DeserializeObject<LevelData>(json);
+        }
+        catch
+        {
+            // Fallback: last resort, use the original reference.
+            return src;
+        }
     }
 
     private void ConfirmCancel()

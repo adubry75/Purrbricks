@@ -91,6 +91,14 @@ public class GameManager : MonoBehaviour
 
     [SerializeField] private GameState _state = GameState.MainMenu;
 
+    // ── Level Editor test-play session ───────────────────────────────────────
+    private bool _isEditorTestMode;
+    private GameState _cachedStateBeforeEditorTest;
+    private bool _cachedIsDemoModeBeforeEditorTest;
+    private LevelEditorUI _editorTestEditorUI;
+
+    public bool IsEditorTestMode => _isEditorTestMode;
+
     private void Awake()
     {
         if (Instance != null && Instance != this)
@@ -367,6 +375,7 @@ public class GameManager : MonoBehaviour
 
     public void StartGame()
     {
+        _isEditorTestMode = false;
         RestoreGameplayAfterHighScores();
         _isDemoMode = false;
         _paddle?.SetDemoMode(false);
@@ -386,7 +395,8 @@ public class GameManager : MonoBehaviour
         _hud?.SetLives(_lives);
         _hud?.SetCombo(_combo);
 
-        AchievementManager.Instance?.OnGameStarted();
+        if (!_isEditorTestMode)
+            AchievementManager.Instance?.OnGameStarted();
 
         LoadLevel(_currentLevelIndex);
         MusicPlayer.Instance?.PlayGameplay(0);
@@ -398,6 +408,7 @@ public class GameManager : MonoBehaviour
 
     public void ShowMainMenu()
     {
+        _isEditorTestMode = false;
         RestoreGameplayAfterHighScores();
         _isDemoMode = true;
         _paddle?.SetDemoMode(true);
@@ -414,6 +425,7 @@ public class GameManager : MonoBehaviour
 
     public void ShowHighScores()
     {
+        _isEditorTestMode = false;
         RestoreGameplayAfterHighScores();
         _isDemoMode = true;
         _paddle?.SetDemoMode(true);
@@ -497,6 +509,133 @@ public class GameManager : MonoBehaviour
         _pauseMenuUI?.Hide();
         _settingsUI?.Hide();
         SetState(GameState.Playing);
+    }
+
+    /// <summary>Starts a temporary play session from the in-game level editor.</summary>
+    public void StartEditorTestLevel(LevelData editorLevelData, string levelId, LevelEditorUI editorUI)
+    {
+        if (editorLevelData == null)
+        {
+            Debug.LogError("GameManager: StartEditorTestLevel called with null level data.");
+            return;
+        }
+
+        if (editorUI == null)
+        {
+            Debug.LogError("GameManager: StartEditorTestLevel called with null editor UI.");
+            return;
+        }
+
+        // Cache and enter test mode
+        _cachedStateBeforeEditorTest = _state;
+        _cachedIsDemoModeBeforeEditorTest = _isDemoMode;
+        _editorTestEditorUI = editorUI;
+        _isEditorTestMode = true;
+
+        // Stop any pending level-advance routine from previous gameplay
+        if (_advanceRoutine != null) StopCoroutine(_advanceRoutine);
+        _advanceRoutine = null;
+        _isAdvancingLevel = false;
+
+        // Hide editor/browser UI
+        _editorTestEditorUI.Hide();
+        var browser = Object.FindFirstObjectByType<LevelEditorBrowserUI>(FindObjectsInactive.Include);
+        browser?.Hide();
+
+        // Reset a clean test run (no progression, no store/purr bucks)
+        RestoreGameplayAfterHighScores();
+        _isDemoMode = false;
+        _paddle?.SetDemoMode(false);
+
+        PowerupManager.Instance?.ResetAll();
+        ClearAllParticles();
+
+        _score = 0;
+        _combo = 0;
+        _comboTimer = 0f;
+        _lives = _startingLives;
+        _scoreFrenzyActive = false;
+        _cachedFuryCharge = 0f;
+
+        _hud?.SetScore(_score);
+        _hud?.SetLives(_lives);
+        _hud?.SetCombo(_combo);
+
+        _mainMenuUI?.Hide();
+        _highScoresUI?.Hide();
+        _gameOverUI?.Hide();
+        _victoryUI?.Hide();
+        _pauseMenuUI?.Hide();
+        _settingsUI?.Hide();
+        _storeUI?.Hide();
+
+        if (_levelLoader == null)
+            _levelLoader = FindFirstObjectByType<LevelLoader>();
+
+        if (_levelLoader == null)
+        {
+            Debug.LogError("GameManager: No LevelLoader found for editor test play.");
+            ReturnToEditorFromTest();
+            return;
+        }
+
+        _levelLoader.LoadLevelData(editorLevelData);
+
+        // Reset balls/paddle like normal gameplay
+        _primaryBallOnHold = false;
+        _activeClonesCount = 0;
+        if (_ball != null) _ball.gameObject.SetActive(true);
+        var allBalls = Object.FindObjectsByType<BallController>(FindObjectsSortMode.None);
+        foreach (var b in allBalls)
+            if (b != _ball) Destroy(b.gameObject);
+
+        _ball?.ResetToPaddle();
+        _paddle?.ResetPosition();
+
+        // HUD: show "LEVEL TEST" instead of a numbered level
+        string levelTitle = _levelLoader?.CurrentLevel?.displayName ?? "";
+        _hud?.SetLevelInfo(0, string.IsNullOrEmpty(levelTitle) ? (levelId ?? "TEST") : levelTitle);
+        _hud?.SetLevelCode("");
+
+        AudioListener.pause = false;
+
+        MusicPlayer.Instance?.PlayGameplay(0);
+        SetState(GameState.Ready);
+    }
+
+    /// <summary>Returns from editor test-play back to the LevelEditorUI (no victory/gameover screens).</summary>
+    public void ReturnToEditorFromTest()
+    {
+        if (!_isEditorTestMode) return;
+
+        _isEditorTestMode = false;
+
+        if (_advanceRoutine != null) StopCoroutine(_advanceRoutine);
+        _advanceRoutine = null;
+        _isAdvancingLevel = false;
+
+        _pauseMenuUI?.Hide();
+        _settingsUI?.Hide();
+        _storeUI?.Hide();
+        _gameOverUI?.Hide();
+        _victoryUI?.Hide();
+
+        Time.timeScale = 1f;
+        AudioListener.pause = true;
+
+        // Clean up gameplay objects created during test play
+        _levelLoader?.ClearLevel();
+        PowerupManager.Instance?.ResetAll();
+
+        // Restore menu/demo mode background as it was before test (editor sits on top)
+        _isDemoMode = _cachedIsDemoModeBeforeEditorTest;
+        _paddle?.SetDemoMode(_isDemoMode);
+        if (_isDemoMode)
+            LoadDemoLevel();
+        SetState(_cachedStateBeforeEditorTest);
+
+        _editorTestEditorUI?.Show();
+        _editorTestEditorUI = null;
     }
 
     /// <summary>Opens the pause menu without changing game state (called internally by Paused state).</summary>
@@ -645,7 +784,8 @@ public class GameManager : MonoBehaviour
         LivesAtLevelStart = _lives;
 
         _levelStartTime = Time.realtimeSinceStartup;
-        AchievementManager.Instance?.OnLevelStarted(_currentLevelIndex, _lives);
+        if (!_isEditorTestMode)
+            AchievementManager.Instance?.OnLevelStarted(_currentLevelIndex, _lives);
 
         // Reset powerups between levels
         PowerupManager.Instance?.ResetAll();
@@ -719,7 +859,8 @@ public class GameManager : MonoBehaviour
         _hud?.SetLives(_lives);
         _hud?.SetCombo(_combo);
 
-        AchievementManager.Instance?.OnGameStarted();
+        if (!_isEditorTestMode)
+            AchievementManager.Instance?.OnGameStarted();
 
         LoadLevel(levelIndex);
         MusicPlayer.Instance?.PlayGameplay(levelIndex);
@@ -760,7 +901,7 @@ public class GameManager : MonoBehaviour
             case GameState.Ready:
                 SetCursorPlayMode();
                 _hud?.gameObject.SetActive(true);
-                PurrBucksManager.Instance?.SetVisible(true);
+                PurrBucksManager.Instance?.SetVisible(!_isEditorTestMode);
                 _hud?.SetState("Ready");
                 _hud?.ShowCenter("Hold Left Click to Aim\r\nRelease to Launch");
                 SfxPlayer.Instance?.MuteAll(false);
@@ -772,6 +913,8 @@ public class GameManager : MonoBehaviour
                 _hud?.HideCenter();
                 _pauseMenuUI?.Hide();
                 _settingsUI?.Hide();
+                if (_isEditorTestMode)
+                    PurrBucksManager.Instance?.SetVisible(false);
                 break;
 
             case GameState.Paused:
@@ -783,6 +926,11 @@ public class GameManager : MonoBehaviour
                 break;
 
             case GameState.GameOver:
+                if (_isEditorTestMode)
+                {
+                    ReturnToEditorFromTest();
+                    break;
+                }
                 SetCursorMenuMode();
                 Time.timeScale = 0f;
                 SfxPlayer.Instance?.PlayGameOver();
@@ -800,6 +948,11 @@ public class GameManager : MonoBehaviour
 
             case GameState.Victory:
             {
+                if (_isEditorTestMode)
+                {
+                    ReturnToEditorFromTest();
+                    break;
+                }
                 SetCursorMenuMode();
                 Time.timeScale = 0f;
                 string levelId = (_levelIds != null && _currentLevelIndex < _levelIds.Length)
@@ -811,11 +964,14 @@ public class GameManager : MonoBehaviour
                 bool invis   = PowerupManager.Instance?.IsActive(PowerupType.InvisiBall)    ?? false;
                 bool tiny    = PowerupManager.Instance?.IsActive(PowerupType.TinyBall)      ?? false;
                 bool drunk   = PowerupManager.Instance?.IsActive(PowerupType.DrunkenPaddle) ?? false;
-                AchievementManager.Instance?.OnLevelCompleted(
-                    _currentLevelIndex, levelTime, _lives,
-                    invisiBallActive: invis, tinyBallActive: tiny, drunkenPaddleActive: drunk);
-                break;
-            }
+                 if (!_isEditorTestMode)
+                 {
+                     AchievementManager.Instance?.OnLevelCompleted(
+                         _currentLevelIndex, levelTime, _lives,
+                         invisiBallActive: invis, tinyBallActive: tiny, drunkenPaddleActive: drunk);
+                 }
+                 break;
+             }
         }
     }
 
@@ -894,7 +1050,8 @@ public class GameManager : MonoBehaviour
         ScreenEffects.Instance?.FlashRed();
         CameraShake.Instance?.Shake(0.30f, 0.55f);
 
-        AchievementManager.Instance?.OnLifeLostOnLevel(_currentLevelIndex);
+        if (!_isEditorTestMode)
+            AchievementManager.Instance?.OnLifeLostOnLevel(_currentLevelIndex);
 
         _lives--;
         _hud?.SetLives(_lives);
@@ -903,7 +1060,14 @@ public class GameManager : MonoBehaviour
 
         if (_lives <= 0)
         {
-            AchievementManager.Instance?.OnGameOver(_score, _currentLevelIndex);
+            if (_isEditorTestMode)
+            {
+                ReturnToEditorFromTest();
+                return;
+            }
+
+            if (!_isEditorTestMode)
+                AchievementManager.Instance?.OnGameOver(_score, _currentLevelIndex);
             SetState(GameState.GameOver);
             return;
         }
@@ -917,6 +1081,11 @@ public class GameManager : MonoBehaviour
     {
         if (_isAdvancingLevel) return;
         if (_state == GameState.Cleared || _state == GameState.Victory || _state == GameState.GameOver) return;
+        if (_isEditorTestMode)
+        {
+            ReturnToEditorFromTest();
+            return;
+        }
         if (_isDemoMode)
         {
             // Demo mode: silently restart level
@@ -970,7 +1139,8 @@ public class GameManager : MonoBehaviour
         _hud?.SetScore(_score);
         _comboTimer = _comboResetSeconds;
 
-        AchievementManager.Instance?.OnScoreChanged(_score);
+        if (!_isEditorTestMode)
+            AchievementManager.Instance?.OnScoreChanged(_score);
 
         return points;
     }
@@ -982,7 +1152,8 @@ public class GameManager : MonoBehaviour
         _hud?.SetCombo(_combo);
         _comboTimer = _comboResetSeconds;
 
-        AchievementManager.Instance?.OnComboChanged(_combo, _scoreFrenzyActive);
+        if (!_isEditorTestMode)
+            AchievementManager.Instance?.OnComboChanged(_combo, _scoreFrenzyActive);
 
         // Show combo feedback at milestones
         if (_combo == 2 || _combo % 5 == 0)
@@ -1019,7 +1190,8 @@ public class GameManager : MonoBehaviour
 
         if (targets.Count == 0) { _furyRoutine = null; yield break; }
 
-        AchievementManager.Instance?.OnFuryStrikeStarted(allBalls.Length);
+        if (!_isEditorTestMode)
+            AchievementManager.Instance?.OnFuryStrikeStarted(allBalls.Length);
 
         targets.Sort((a, b2) =>
         {
@@ -1102,7 +1274,8 @@ public class GameManager : MonoBehaviour
 
         // Final big shake as the dust settles
         CameraShake.Instance?.Shake(0.45f, 0.55f);
-        AchievementManager.Instance?.OnFuryStrikeFinished();
+        if (!_isEditorTestMode)
+            AchievementManager.Instance?.OnFuryStrikeFinished();
         yield return new WaitForSecondsRealtime(0.22f);
 
         // Clean up laser beams
