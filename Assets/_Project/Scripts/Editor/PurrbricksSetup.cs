@@ -152,6 +152,17 @@ public static class PurrbricksSetup
             Debug.Log("Added ParallaxBackground.");
         }
 
+        // ── 9b. PlayfieldFrame ───────────────────────────────────────────────
+        var frameGO = EnsureGO("PlayfieldFrame");
+        if (frameGO.GetComponent<PlayfieldFrame>() == null)
+        {
+            frameGO.AddComponent<PlayfieldFrame>();
+            // SpriteRenderer is required — add it if missing so Inspector shows fields
+            if (frameGO.GetComponent<SpriteRenderer>() == null)
+                frameGO.AddComponent<SpriteRenderer>();
+            Debug.Log("Added PlayfieldFrame. Assign the frame sprite in the Inspector.");
+        }
+
         // ── 10. HighScoreManager ─────────────────────────────────────────────
         var scoresMgr = EnsureGO("HighScoreManager");
         if (scoresMgr.GetComponent<HighScoreManager>() == null)
