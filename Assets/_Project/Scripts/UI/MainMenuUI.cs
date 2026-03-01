@@ -11,10 +11,6 @@ using UnityEngine.UI;
 public class MainMenuUI : MonoBehaviour
 {
     [SerializeField] private Sprite _titleGfx;
-    [SerializeField] private Sprite _playSprite;
-    [SerializeField] private Sprite _highScoresSprite;
-    [SerializeField] private Sprite _settingsSprite;
-    [SerializeField] private Sprite _quitSprite;
 
     private Canvas _canvas;
     private GameObject _panel;
@@ -82,7 +78,7 @@ public class MainMenuUI : MonoBehaviour
         _panel.transform.SetParent(transform, false);
 
         var panelImg = _panel.AddComponent<Image>();
-        panelImg.color = new Color(0f, 0f, 0f, 0.72f);
+        panelImg.color = new Color(0f, 0f, 0f, 0f);
 
         var panelRt = _panel.GetComponent<RectTransform>();
         panelRt.anchorMin = Vector2.zero;

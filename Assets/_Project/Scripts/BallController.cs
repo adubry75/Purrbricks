@@ -602,7 +602,7 @@ public class BallController : MonoBehaviour
     {
         if (collision.collider.gameObject.name == _paddleObjectName)
         {
-            Debug.Log($"PADDLE COLLISION at t={Time.time} vel={_rb.linearVelocity}");
+            //Debug.Log($"PADDLE COLLISION at t={Time.time} vel={_rb.linearVelocity}");
             if (Time.time < _ignorePaddleBounceUntil)
                 return;
         }

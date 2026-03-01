@@ -1452,10 +1452,10 @@ MonoBehaviour:
   _starsAlpha: 0.6
   _nebulaAlpha: 0.1
   _dustAlpha: 0.05
-  _starsSpeedX: 0.12
-  _nebulaSpeedX: 0.28
-  _dustSpeedX: 0.55
-  _driftY: 0.02
+  _starsSpeedX: 0.24
+  _nebulaSpeedX: 0.56
+  _dustSpeedX: 1.1
+  _driftY: 0.2
   _layerCount: 3
   _starsPerLayer: 80
   _starColor: {r: 0.9, g: 0.95, b: 1, a: 1}
@@ -3134,10 +3134,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::MainMenuUI
   _titleGfx: {fileID: 21300000, guid: fe194171ed7865e49aa1cc38e6d8931c, type: 3}
-  _playSprite: {fileID: 21300000, guid: e8ccf9ee4fc1d484994dbfd820b627c3, type: 3}
-  _highScoresSprite: {fileID: 21300000, guid: f2c70f9834fc92e40a471190c2779052, type: 3}
-  _settingsSprite: {fileID: 1857805116173471359, guid: 072e2aad497b7464787ce48236d289dd, type: 3}
-  _quitSprite: {fileID: 21300000, guid: 9d7d2b5805c6e144ab386c6ee5c63405, type: 3}
 --- !u!4 &1606839530
 Transform:
   m_ObjectHideFlags: 0
