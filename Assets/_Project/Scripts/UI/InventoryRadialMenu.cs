@@ -5,7 +5,9 @@ using UnityEngine.UI;
 
 /// <summary>
 /// Middle-mouse radial selector for the powerup inventory.
-/// Hold MMB to open, move mouse to choose slot, release to activate.
+/// Hold MMB to open; hover a tile and release to activate.
+/// Good powerups appear on the outer ring, bad/cursed on the inner ring.
+/// Releasing while not hovering any tile aborts without activating.
 /// </summary>
 public class InventoryRadialMenu : MonoBehaviour
 {
@@ -14,89 +16,102 @@ public class InventoryRadialMenu : MonoBehaviour
     // Canvas
     private Canvas _canvas;
 
-    // Radial state
+    // State
     private bool _isOpen;
-    private List<(PowerupType type, int qty)> _slots = new List<(PowerupType, int)>();
-    private int _hoveredIndex = -1;
-    private readonly List<GameObject> _slotGOs = new List<GameObject>();
-    private readonly List<Image> _slotImages = new List<Image>();
-    private readonly List<Text> _slotLabels = new List<Text>();
-    private readonly List<Text> _slotQtyBadges = new List<Text>();
+    private int  _hoveredIndex = -1;
+
+    // Slot info (rebuilt each open)
+    private struct SlotInfo
+    {
+        public PowerupType type;
+        public int         qty;
+        public bool        isInner;
+    }
+    private readonly List<SlotInfo>      _allSlots  = new List<SlotInfo>();
+    private readonly List<GameObject>    _slotGOs   = new List<GameObject>();
+    private readonly List<RectTransform> _slotRTs   = new List<RectTransform>();
+    private readonly List<Image>         _slotBgs   = new List<Image>(); // main bg circle per slot
 
     // Animation
-    private Coroutine _animRoutine;
-    private GameObject _radialRoot;
+    private Coroutine   _animRoutine;
+    private Coroutine   _hintRoutine;
+    private GameObject  _radialRoot;
     private CanvasGroup _radialGroup;
 
-    // Config
-    private const float RADIUS = 180f;
-    private const float OPEN_DURATION = 0.12f;
-    private const float CLOSE_DURATION = 0.08f;
-    private const float HIGHLIGHT_SCALE = 1.15f;
-    private const float SLOT_SIZE = 80f;
+    // Layout
+    private const float OUTER_RADIUS    = 230f;
+    private const float INNER_RADIUS    = 120f;
+    private const float OUTER_SLOT_SIZE = 88f;
+    private const float INNER_SLOT_SIZE = 72f;
+    private const float HIGHLIGHT_SCALE = 1.18f;
+    private const float OPEN_DURATION   = 0.14f;
+    private const float CLOSE_DURATION  = 0.09f;
 
-    // First-time hint
-    private Coroutine _hintRoutine;
+    // Cached procedural sprites
+    private static Sprite _circleSprite;
+    private static Sprite _ringSprite;
 
-    // Colors from PowerupHUD (we inline the essential ones here)
-    private static readonly Color[] TypeColors = new Color[]
+    // ── Colour / label tables ─────────────────────────────────────────────────
+
+    private static readonly Color[] TypeColors =
     {
-        new Color(0.00f, 0.85f, 1.00f), // WidePaddle (0)
-        new Color(1.00f, 0.55f, 0.00f), // MultiBall (1)
-        new Color(0.20f, 1.00f, 0.40f), // StickyBall (2)
-        new Color(1.00f, 0.80f, 0.00f), // SpeedBall (3)
-        new Color(1.00f, 0.20f, 0.20f), // ExtraLife (4)
-        new Color(0.30f, 0.70f, 1.00f), // Laser (5)
-        new Color(1.00f, 0.40f, 0.10f), // Fireball (6)
-        new Color(1.00f, 0.65f, 0.10f), // BombBrick (7)
-        new Color(0.10f, 0.90f, 0.90f), // ShieldWall (8)
-        new Color(0.55f, 0.30f, 1.00f), // BigBall (9)
-        new Color(1.00f, 0.85f, 0.00f), // ScoreFrenzy (10)
-        new Color(0.90f, 0.20f, 0.20f), // ShrinkPaddle (11)
-        new Color(0.80f, 0.10f, 0.80f), // ZipBall (12)
-        new Color(0.70f, 0.00f, 1.00f), // FlipControls (13)
-        new Color(0.50f, 0.00f, 0.90f), // CursedBall (14)
-        new Color(0.80f, 0.30f, 0.30f), // TinyBall (15)
-        new Color(0.40f, 0.40f, 0.40f), // InvisiBall (16)
-        new Color(0.30f, 0.70f, 0.30f), // DrunkenPaddle (17)
-        new Color(0.60f, 0.40f, 1.00f), // PermanentStickyBall (18)
-        new Color(0.20f, 0.60f, 1.00f), // DrunkVision (19)
-        new Color(0.10f, 0.80f, 0.50f), // GremlinBounces (20)
-        new Color(0.80f, 0.10f, 0.10f), // FlipScreen (21)
+        new Color(0.00f, 0.85f, 1.00f), // 0  WidePaddle
+        new Color(1.00f, 0.55f, 0.00f), // 1  MultiBall
+        new Color(0.20f, 1.00f, 0.40f), // 2  StickyBall
+        new Color(1.00f, 0.80f, 0.00f), // 3  SpeedBall
+        new Color(1.00f, 0.20f, 0.20f), // 4  ExtraLife
+        new Color(0.30f, 0.70f, 1.00f), // 5  Laser
+        new Color(1.00f, 0.40f, 0.10f), // 6  Fireball
+        new Color(1.00f, 0.65f, 0.10f), // 7  BombBrick
+        new Color(0.10f, 0.90f, 0.90f), // 8  ShieldWall
+        new Color(0.55f, 0.30f, 1.00f), // 9  BigBall
+        new Color(1.00f, 0.85f, 0.00f), // 10 ScoreFrenzy
+        new Color(0.90f, 0.20f, 0.20f), // 11 ShrinkPaddle
+        new Color(0.80f, 0.10f, 0.80f), // 12 ZipBall
+        new Color(0.70f, 0.00f, 1.00f), // 13 FlipControls
+        new Color(0.50f, 0.00f, 0.90f), // 14 CursedBall
+        new Color(0.80f, 0.30f, 0.30f), // 15 TinyBall
+        new Color(0.40f, 0.40f, 0.40f), // 16 InvisiBall
+        new Color(0.30f, 0.70f, 0.30f), // 17 DrunkenPaddle
+        new Color(0.60f, 0.40f, 1.00f), // 18 PermanentStickyBall
+        new Color(0.20f, 0.60f, 1.00f), // 19 DrunkVision
+        new Color(0.10f, 0.80f, 0.50f), // 20 GremlinBounces
+        new Color(0.80f, 0.10f, 0.10f), // 21 FlipScreen
     };
 
-    private static readonly string[] TypeLabels = new string[]
+    private static readonly string[] TypeLabels =
     {
-        "WIDE",       // WidePaddle (0)
-        "MULTIBALL",  // MultiBall (1)
-        "STICKY",     // StickyBall (2)
-        "SPEED",      // SpeedBall (3)
-        "EXTRA LIFE", // ExtraLife (4)
-        "LASER",      // Laser (5)
-        "FIREBALL",   // Fireball (6)
-        "BOMB",       // BombBrick (7)
-        "SHIELD",     // ShieldWall (8)
-        "BIG BALL",   // BigBall (9)
-        "FRENZY",     // ScoreFrenzy (10)
-        "SHRINK",     // ShrinkPaddle (11)
-        "ZIP",        // ZipBall (12)
-        "FLIP CTRL",  // FlipControls (13)
-        "CURSED",     // CursedBall (14)
-        "TINY",       // TinyBall (15)
-        "INVISI",     // InvisiBall (16)
-        "DRUNK PDL",  // DrunkenPaddle (17)
-        "PERM STICKY",// PermanentStickyBall (18)
-        "DRUNK VIS",  // DrunkVision (19)
-        "GREMLIN",    // GremlinBounces (20)
-        "FLIP SCR",   // FlipScreen (21)
+        "WIDE PADDLE",  // 0
+        "MULTI-BALL",   // 1
+        "STICKY BALL",  // 2
+        "SPEED BALL",   // 3
+        "EXTRA LIFE",   // 4
+        "LASER",        // 5
+        "FIREBALL",     // 6
+        "BOMB BRICK",   // 7
+        "SHIELD",       // 8
+        "BIG BALL",     // 9
+        "FRENZY",       // 10
+        "⚠ SHRINK",     // 11
+        "⚠ ZIP BALL",   // 12
+        "⚠ FLIP CTRL",  // 13
+        "⚠ CURSED",     // 14
+        "⚠ TINY BALL",  // 15
+        "⚠ INVISI",     // 16
+        "⚠ DRUNK PAD",  // 17
+        "STICKY ∞",     // 18
+        "⚠ DRUNK VIS",  // 19
+        "⚠ GREMLIN",    // 20
+        "⚠ FLIP SCR",   // 21
     };
+
+    // ── Lifecycle ─────────────────────────────────────────────────────────────
 
     private void Awake()
     {
         if (Instance != null && Instance != this) { Destroy(gameObject); return; }
         Instance = this;
         DontDestroyOnLoad(gameObject);
-
         BuildCanvas();
     }
 
@@ -117,7 +132,6 @@ public class InventoryRadialMenu : MonoBehaviour
     {
         if (PurrBucksManager.Instance == null) return;
 
-        // Only allow radial in Playing or Ready states
         var gm = GameManager.Instance;
         if (gm == null) return;
         if (gm.State != GameState.Playing && gm.State != GameState.Ready) return;
@@ -129,256 +143,367 @@ public class InventoryRadialMenu : MonoBehaviour
         }
         else
         {
-            // Escape or right-click cancels without activating anything
             if (Input.GetKeyDown(KeyCode.Escape) || Input.GetMouseButtonDown(1))
-            {
                 CloseRadial(activate: false);
-            }
             else if (Input.GetMouseButtonUp(2))
-            {
                 CloseRadial(activate: true);
-            }
             else
-            {
                 UpdateHover();
-            }
         }
     }
+
+    // ── Open ──────────────────────────────────────────────────────────────────
 
     private void OpenRadial()
     {
         var inv = PurrBucksManager.Instance?.GetAllInventory();
         if (inv == null || inv.Count == 0) return;
 
-        // Collect up to 10 types with qty > 0
-        _slots.Clear();
-        int count = 0;
+        var outerList = new List<(PowerupType type, int qty)>();
+        var innerList = new List<(PowerupType type, int qty)>();
+
         foreach (var kvp in inv)
         {
-            if (kvp.Value > 0)
-            {
-                _slots.Add((kvp.Key, kvp.Value));
-                count++;
-                if (count >= 10) break;
-            }
+            if (kvp.Value <= 0) continue;
+            if (PowerupRules.IsBad(kvp.Key))
+                innerList.Add((kvp.Key, kvp.Value));
+            else
+                outerList.Add((kvp.Key, kvp.Value));
         }
-        if (_slots.Count == 0) return;
+
+        // Fallback: if no good powerups, display bad ones on the outer ring
+        if (outerList.Count == 0)
+        {
+            outerList.AddRange(innerList);
+            innerList.Clear();
+        }
+
+        if (outerList.Count == 0) return;
+
+        _allSlots.Clear();
+        foreach (var s in outerList) _allSlots.Add(new SlotInfo { type = s.type, qty = s.qty, isInner = false });
+        foreach (var s in innerList) _allSlots.Add(new SlotInfo { type = s.type, qty = s.qty, isInner = true  });
 
         _isOpen = true;
         Time.timeScale = 0f;
         Cursor.visible = true;
 
-        BuildSlots();
+        BuildSlots(outerList.Count, innerList.Count);
 
         if (_animRoutine != null) StopCoroutine(_animRoutine);
         _animRoutine = StartCoroutine(AnimateOpen());
     }
 
-    private void BuildSlots()
+    // ── Build UI ──────────────────────────────────────────────────────────────
+
+    private void BuildSlots(int outerCount, int innerCount)
     {
-        // Clear old slots
         if (_radialRoot != null) Destroy(_radialRoot);
         _slotGOs.Clear();
-        _slotImages.Clear();
-        _slotLabels.Clear();
-        _slotQtyBadges.Clear();
+        _slotRTs.Clear();
+        _slotBgs.Clear();
 
         _radialRoot = new GameObject("RadialRoot");
         _radialRoot.transform.SetParent(transform, false);
 
-        // Center on screen
-        var rt = _radialRoot.AddComponent<RectTransform>();
-        rt.anchorMin = new Vector2(0.5f, 0.5f);
-        rt.anchorMax = new Vector2(0.5f, 0.5f);
-        rt.pivot = new Vector2(0.5f, 0.5f);
-        rt.sizeDelta = Vector2.zero;
-        rt.anchoredPosition = Vector2.zero;
+        var rootRt = _radialRoot.AddComponent<RectTransform>();
+        rootRt.anchorMin = rootRt.anchorMax = rootRt.pivot = new Vector2(0.5f, 0.5f);
+        rootRt.sizeDelta = rootRt.anchoredPosition = Vector2.zero;
 
         _radialGroup = _radialRoot.AddComponent<CanvasGroup>();
         _radialGroup.alpha = 0f;
         _radialGroup.interactable = false;
         _radialGroup.blocksRaycasts = false;
 
-        // Dark background disk
-        var bgDisk = new GameObject("BgDisk");
-        bgDisk.transform.SetParent(_radialRoot.transform, false);
-        var bgImg = bgDisk.AddComponent<Image>();
-        bgImg.color = new Color(0f, 0f, 0f, 0.55f);
-        var bgRt = bgDisk.GetComponent<RectTransform>();
-        bgRt.anchorMin = new Vector2(0.5f, 0.5f);
-        bgRt.anchorMax = new Vector2(0.5f, 0.5f);
-        bgRt.pivot = new Vector2(0.5f, 0.5f);
-        float diskSize = RADIUS * 2f + SLOT_SIZE + 20f;
-        bgRt.sizeDelta = new Vector2(diskSize, diskSize);
-        bgRt.anchoredPosition = Vector2.zero;
+        // ── Dark background disk ──────────────────────────────────────────────
+        float diskSize = OUTER_RADIUS * 2f + OUTER_SLOT_SIZE + 44f;
+        MakeCircleDecal(_radialRoot.transform, "BgDisk",
+                        new Color(0.04f, 0.06f, 0.15f, 0.90f), diskSize);
 
-        int slotCount = _slots.Count;
-        for (int i = 0; i < slotCount; i++)
+        // ── Subtle ring guide lines ───────────────────────────────────────────
+        float outerGuide = OUTER_RADIUS * 2f + OUTER_SLOT_SIZE * 0.35f;
+        MakeRingDecal(_radialRoot.transform, "OuterGuide",
+                      new Color(1f, 1f, 1f, 0.06f), outerGuide);
+
+        if (innerCount > 0)
         {
-            float angle = (360f / slotCount) * i - 90f; // start from top
-            float rad = angle * Mathf.Deg2Rad;
-            Vector2 pos = new Vector2(Mathf.Cos(rad) * RADIUS, Mathf.Sin(rad) * RADIUS);
+            float innerGuide = INNER_RADIUS * 2f + INNER_SLOT_SIZE * 0.35f;
+            MakeRingDecal(_radialRoot.transform, "InnerGuide",
+                          new Color(1f, 0.35f, 0.20f, 0.09f), innerGuide);
+        }
 
-            var slotGO = new GameObject($"Slot_{i}");
-            slotGO.transform.SetParent(_radialRoot.transform, false);
+        // ── Center label ──────────────────────────────────────────────────────
+        MakeCenterLabel(_radialRoot.transform, innerCount > 0);
 
-            var slotRt = slotGO.AddComponent<RectTransform>();
-            slotRt.anchorMin = new Vector2(0.5f, 0.5f);
-            slotRt.anchorMax = new Vector2(0.5f, 0.5f);
-            slotRt.pivot = new Vector2(0.5f, 0.5f);
-            slotRt.sizeDelta = new Vector2(SLOT_SIZE, SLOT_SIZE);
-            slotRt.anchoredPosition = pos;
+        // ── Outer ring ────────────────────────────────────────────────────────
+        for (int i = 0; i < outerCount; i++)
+        {
+            float angle = 360f / outerCount * i - 90f;
+            float rad   = angle * Mathf.Deg2Rad;
+            var   pos   = new Vector2(Mathf.Cos(rad) * OUTER_RADIUS,
+                                      Mathf.Sin(rad) * OUTER_RADIUS);
+            BuildSlotGO(i, pos, _allSlots[i], OUTER_SLOT_SIZE);
+        }
 
-            // Background circle
-            var bgSlot = slotGO.AddComponent<Image>();
-            var ptype = _slots[i].type;
-            int typeIndex = (int)ptype;
-            Color col = typeIndex < TypeColors.Length ? TypeColors[typeIndex] : Color.white;
-            bgSlot.color = new Color(col.r * 0.4f, col.g * 0.4f, col.b * 0.4f, 0.9f);
-
-            // Color strip at top
-            var strip = new GameObject("Strip");
-            strip.transform.SetParent(slotGO.transform, false);
-            var stripImg = strip.AddComponent<Image>();
-            stripImg.color = col;
-            var stripRt = strip.GetComponent<RectTransform>();
-            stripRt.anchorMin = new Vector2(0f, 1f);
-            stripRt.anchorMax = new Vector2(1f, 1f);
-            stripRt.pivot = new Vector2(0.5f, 1f);
-            stripRt.sizeDelta = new Vector2(0f, 6f);
-            stripRt.anchoredPosition = Vector2.zero;
-
-            // Name label
-            var labelGO = new GameObject("Label");
-            labelGO.transform.SetParent(slotGO.transform, false);
-            var labelTxt = labelGO.AddComponent<Text>();
-            string label = typeIndex < TypeLabels.Length ? TypeLabels[typeIndex] : ptype.ToString().ToUpper();
-            labelTxt.text = label;
-            labelTxt.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
-            labelTxt.fontSize = 11;
-            labelTxt.fontStyle = FontStyle.Bold;
-            labelTxt.alignment = TextAnchor.MiddleCenter;
-            labelTxt.color = Color.white;
-            labelTxt.raycastTarget = false;
-            var labelRt = labelGO.GetComponent<RectTransform>();
-            labelRt.anchorMin = Vector2.zero;
-            labelRt.anchorMax = Vector2.one;
-            labelRt.offsetMin = new Vector2(2f, 10f);
-            labelRt.offsetMax = new Vector2(-2f, -8f);
-
-            // Qty badge (gold, top-right)
-            var badgeGO = new GameObject("Badge");
-            badgeGO.transform.SetParent(slotGO.transform, false);
-            var badgeTxt = badgeGO.AddComponent<Text>();
-            badgeTxt.text = $"×{_slots[i].qty}";
-            badgeTxt.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
-            badgeTxt.fontSize = 14;
-            badgeTxt.fontStyle = FontStyle.Bold;
-            badgeTxt.alignment = TextAnchor.UpperRight;
-            badgeTxt.color = new Color(1f, 0.85f, 0.10f);
-            badgeTxt.raycastTarget = false;
-            var badgeRt = badgeGO.GetComponent<RectTransform>();
-            badgeRt.anchorMin = Vector2.zero;
-            badgeRt.anchorMax = Vector2.one;
-            badgeRt.offsetMin = new Vector2(2f, 2f);
-            badgeRt.offsetMax = new Vector2(-2f, -2f);
-
-            _slotGOs.Add(slotGO);
-            _slotImages.Add(bgSlot);
-            _slotLabels.Add(labelTxt);
-            _slotQtyBadges.Add(badgeTxt);
+        // ── Inner ring ────────────────────────────────────────────────────────
+        for (int i = 0; i < innerCount; i++)
+        {
+            int   allIdx = outerCount + i;
+            float angle  = 360f / innerCount * i - 90f;
+            float rad    = angle * Mathf.Deg2Rad;
+            var   pos    = new Vector2(Mathf.Cos(rad) * INNER_RADIUS,
+                                       Mathf.Sin(rad) * INNER_RADIUS);
+            BuildSlotGO(allIdx, pos, _allSlots[allIdx], INNER_SLOT_SIZE);
         }
 
         _hoveredIndex = -1;
     }
 
+    private void BuildSlotGO(int index, Vector2 anchoredPos, SlotInfo info, float slotSize)
+    {
+        int    typeIdx = (int)info.type;
+        Color  col     = typeIdx < TypeColors.Length ? TypeColors[typeIdx] : Color.white;
+        string label   = typeIdx < TypeLabels.Length ? TypeLabels[typeIdx] : info.type.ToString().ToUpper();
+
+        var slotGO = new GameObject($"Slot_{index}");
+        slotGO.transform.SetParent(_radialRoot.transform, false);
+
+        var slotRt = slotGO.AddComponent<RectTransform>();
+        slotRt.anchorMin = slotRt.anchorMax = slotRt.pivot = new Vector2(0.5f, 0.5f);
+        slotRt.sizeDelta = new Vector2(slotSize, slotSize);
+        slotRt.anchoredPosition = anchoredPos;
+
+        // Rim (slightly larger circle, accent color, sits visually behind bg)
+        var rimGO = new GameObject("Rim");
+        rimGO.transform.SetParent(slotGO.transform, false);
+        var rimImg = rimGO.AddComponent<Image>();
+        rimImg.sprite       = GetCircleSprite();
+        rimImg.color        = new Color(col.r, col.g, col.b, 0.50f);
+        rimImg.raycastTarget = false;
+        var rimRt = rimGO.GetComponent<RectTransform>();
+        rimRt.anchorMin = rimRt.anchorMax = rimRt.pivot = new Vector2(0.5f, 0.5f);
+        rimRt.sizeDelta         = new Vector2(slotSize + 7f, slotSize + 7f);
+        rimRt.anchoredPosition  = Vector2.zero;
+
+        // Main background circle (dark, tracked for hover highlights)
+        var bgGO = new GameObject("Bg");
+        bgGO.transform.SetParent(slotGO.transform, false);
+        var bgImg = bgGO.AddComponent<Image>();
+        bgImg.sprite       = GetCircleSprite();
+        bgImg.color        = new Color(col.r * 0.22f, col.g * 0.22f, col.b * 0.22f, 0.95f);
+        bgImg.raycastTarget = false;
+        var bgRt = bgGO.GetComponent<RectTransform>();
+        bgRt.anchorMin = bgRt.anchorMax = bgRt.pivot = new Vector2(0.5f, 0.5f);
+        bgRt.sizeDelta        = new Vector2(slotSize, slotSize);
+        bgRt.anchoredPosition = Vector2.zero;
+
+        // Icon (upper portion of tile)
+        Sprite icon = PowerupIconRegistry.Instance?.GetIcon(info.type);
+        if (icon != null)
+        {
+            var iconGO = new GameObject("Icon");
+            iconGO.transform.SetParent(slotGO.transform, false);
+            var iconImg = iconGO.AddComponent<Image>();
+            iconImg.sprite         = icon;
+            iconImg.preserveAspect = true;
+            iconImg.raycastTarget  = false;
+            var iconRt = iconGO.GetComponent<RectTransform>();
+            iconRt.anchorMin = new Vector2(0.14f, 0.36f);
+            iconRt.anchorMax = new Vector2(0.86f, 0.91f);
+            iconRt.offsetMin = iconRt.offsetMax = Vector2.zero;
+        }
+
+        // Name label (bottom portion)
+        var labelGO = new GameObject("Label");
+        labelGO.transform.SetParent(slotGO.transform, false);
+        var labelTxt = labelGO.AddComponent<Text>();
+        labelTxt.text        = label;
+        labelTxt.font        = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
+        labelTxt.fontSize    = info.isInner ? 8 : 9;
+        labelTxt.fontStyle   = FontStyle.Bold;
+        labelTxt.alignment   = TextAnchor.LowerCenter;
+        labelTxt.color       = Color.white;
+        labelTxt.raycastTarget = false;
+        var labelRt = labelGO.GetComponent<RectTransform>();
+        if (icon != null)
+        {
+            labelRt.anchorMin = new Vector2(0.05f, 0.04f);
+            labelRt.anchorMax = new Vector2(0.95f, 0.38f);
+        }
+        else
+        {
+            labelRt.anchorMin = new Vector2(0.05f, 0.18f);
+            labelRt.anchorMax = new Vector2(0.95f, 0.82f);
+        }
+        labelRt.offsetMin = labelRt.offsetMax = Vector2.zero;
+
+        // Quantity badge (top-right, gold)
+        var badgeGO = new GameObject("Badge");
+        badgeGO.transform.SetParent(slotGO.transform, false);
+        var badgeTxt = badgeGO.AddComponent<Text>();
+        badgeTxt.text        = $"×{info.qty}";
+        badgeTxt.font        = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
+        badgeTxt.fontSize    = info.isInner ? 11 : 13;
+        badgeTxt.fontStyle   = FontStyle.Bold;
+        badgeTxt.alignment   = TextAnchor.UpperRight;
+        badgeTxt.color       = new Color(1f, 0.88f, 0.10f);
+        badgeTxt.raycastTarget = false;
+        var badgeRt = badgeGO.GetComponent<RectTransform>();
+        badgeRt.anchorMin = new Vector2(0.52f, 0.60f);
+        badgeRt.anchorMax = new Vector2(0.97f, 0.97f);
+        badgeRt.offsetMin = badgeRt.offsetMax = Vector2.zero;
+
+        _slotGOs.Add(slotGO);
+        _slotRTs.Add(slotRt);
+        _slotBgs.Add(bgImg);
+    }
+
+    // ── Decorative helpers ────────────────────────────────────────────────────
+
+    private static void MakeCircleDecal(Transform parent, string name, Color color, float size)
+    {
+        var go = new GameObject(name);
+        go.transform.SetParent(parent, false);
+        var img = go.AddComponent<Image>();
+        img.sprite       = GetCircleSprite();
+        img.color        = color;
+        img.raycastTarget = false;
+        var rt = go.GetComponent<RectTransform>();
+        rt.anchorMin = rt.anchorMax = rt.pivot = new Vector2(0.5f, 0.5f);
+        rt.sizeDelta = new Vector2(size, size);
+        rt.anchoredPosition = Vector2.zero;
+    }
+
+    private static void MakeRingDecal(Transform parent, string name, Color color, float size)
+    {
+        var go = new GameObject(name);
+        go.transform.SetParent(parent, false);
+        var img = go.AddComponent<Image>();
+        img.sprite       = GetRingSprite();
+        img.color        = color;
+        img.raycastTarget = false;
+        var rt = go.GetComponent<RectTransform>();
+        rt.anchorMin = rt.anchorMax = rt.pivot = new Vector2(0.5f, 0.5f);
+        rt.sizeDelta = new Vector2(size, size);
+        rt.anchoredPosition = Vector2.zero;
+    }
+
+    private static void MakeCenterLabel(Transform parent, bool hasInnerRing)
+    {
+        var go = new GameObject("CenterLabel");
+        go.transform.SetParent(parent, false);
+        var txt = go.AddComponent<Text>();
+        txt.text         = hasInnerRing ? "POWER-UPS" : "INVENTORY";
+        txt.font         = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
+        txt.fontSize     = 11;
+        txt.fontStyle    = FontStyle.Bold;
+        txt.alignment    = TextAnchor.MiddleCenter;
+        txt.color        = new Color(1f, 1f, 1f, 0.28f);
+        txt.raycastTarget = false;
+        var rt = go.GetComponent<RectTransform>();
+        rt.anchorMin = rt.anchorMax = rt.pivot = new Vector2(0.5f, 0.5f);
+        rt.sizeDelta        = new Vector2(110f, 28f);
+        rt.anchoredPosition = hasInnerRing ? new Vector2(0f, 22f) : Vector2.zero;
+
+        if (!hasInnerRing) return;
+
+        // Second label "⚠ CURSED" below center for inner ring
+        var go2 = new GameObject("CursedLabel");
+        go2.transform.SetParent(parent, false);
+        var txt2 = go2.AddComponent<Text>();
+        txt2.text         = "⚠ CURSED";
+        txt2.font         = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
+        txt2.fontSize     = 10;
+        txt2.fontStyle    = FontStyle.Bold;
+        txt2.alignment    = TextAnchor.MiddleCenter;
+        txt2.color        = new Color(1f, 0.45f, 0.25f, 0.40f);
+        txt2.raycastTarget = false;
+        var rt2 = go2.GetComponent<RectTransform>();
+        rt2.anchorMin = rt2.anchorMax = rt2.pivot = new Vector2(0.5f, 0.5f);
+        rt2.sizeDelta        = new Vector2(90f, 24f);
+        rt2.anchoredPosition = new Vector2(0f, -18f);
+    }
+
+    // ── Hover (mouse must physically be over a tile) ───────────────────────────
+
     private void UpdateHover()
     {
-        if (_slots.Count == 0) return;
+        if (_slotRTs.Count == 0) return;
 
-        // Vector from screen center to mouse
         Vector2 screenCenter = new Vector2(Screen.width * 0.5f, Screen.height * 0.5f);
-        Vector2 delta = (Vector2)Input.mousePosition - screenCenter;
-
-        // Only update hover if mouse has moved away from center
-        if (delta.magnitude < 20f) return;
-
-        float mouseAngle = Mathf.Atan2(delta.y, delta.x) * Mathf.Rad2Deg;
-        // Adjust: slots start from top (-90 deg), going clockwise
-        // Our slot angle calc: angle = (360/n)*i - 90, using cos/sin (standard math coords)
-        int slotCount = _slots.Count;
-        float halfStep = 360f / slotCount * 0.5f;
+        // Convert mouse screen-pixel delta to canvas units
+        Vector2 mouseCanvas = ((Vector2)Input.mousePosition - screenCenter) / _canvas.scaleFactor;
 
         int newHovered = -1;
-        float minDiff = float.MaxValue;
-        for (int i = 0; i < slotCount; i++)
+        for (int i = 0; i < _slotRTs.Count; i++)
         {
-            float slotAngle = (360f / slotCount) * i - 90f;
-            float diff = Mathf.Abs(Mathf.DeltaAngle(mouseAngle, slotAngle));
-            if (diff < halfStep && diff < minDiff)
+            float radius = (_allSlots[i].isInner ? INNER_SLOT_SIZE : OUTER_SLOT_SIZE) * 0.5f;
+            Vector2 delta = mouseCanvas - _slotRTs[i].anchoredPosition;
+            if (delta.sqrMagnitude <= radius * radius)
             {
-                minDiff = diff;
                 newHovered = i;
+                break;
             }
         }
 
         if (newHovered != _hoveredIndex)
         {
             _hoveredIndex = newHovered;
-            RefreshSlotHighlights();
+            RefreshHighlights();
         }
     }
 
-    private void RefreshSlotHighlights()
+    private void RefreshHighlights()
     {
-        for (int i = 0; i < _slotGOs.Count; i++)
+        for (int i = 0; i < _slotBgs.Count; i++)
         {
-            bool isHovered = (i == _hoveredIndex);
-            int typeIndex = (int)_slots[i].type;
-            Color col = typeIndex < TypeColors.Length ? TypeColors[typeIndex] : Color.white;
+            int   typeIdx  = (int)_allSlots[i].type;
+            Color col      = typeIdx < TypeColors.Length ? TypeColors[typeIdx] : Color.white;
+            bool  hovered  = (i == _hoveredIndex);
 
-            if (isHovered)
-            {
-                _slotImages[i].color = new Color(col.r * 0.7f, col.g * 0.7f, col.b * 0.7f, 1f);
-                _slotGOs[i].transform.localScale = Vector3.one * HIGHLIGHT_SCALE;
-            }
-            else
-            {
-                _slotImages[i].color = new Color(col.r * 0.4f, col.g * 0.4f, col.b * 0.4f, 0.9f);
-                _slotGOs[i].transform.localScale = Vector3.one;
-            }
+            _slotBgs[i].color            = hovered
+                ? new Color(col.r * 0.72f, col.g * 0.72f, col.b * 0.72f, 1f)
+                : new Color(col.r * 0.22f, col.g * 0.22f, col.b * 0.22f, 0.95f);
+            _slotGOs[i].transform.localScale = hovered
+                ? Vector3.one * HIGHLIGHT_SCALE
+                : Vector3.one;
         }
     }
+
+    // ── Close ─────────────────────────────────────────────────────────────────
 
     private void CloseRadial(bool activate)
     {
         if (!_isOpen) return;
         _isOpen = false;
 
-        int activateIndex = _hoveredIndex;
-        PowerupType? activateType = (activate && activateIndex >= 0 && activateIndex < _slots.Count)
-            ? _slots[activateIndex].type
-            : (PowerupType?)null;
+        // Only activate if the cursor is actually hovering a tile
+        PowerupType? activateType = null;
+        if (activate && _hoveredIndex >= 0 && _hoveredIndex < _allSlots.Count)
+            activateType = _allSlots[_hoveredIndex].type;
 
         if (_animRoutine != null) StopCoroutine(_animRoutine);
         _animRoutine = StartCoroutine(AnimateClose(activateType));
     }
 
+    // ── Animation ─────────────────────────────────────────────────────────────
+
     private IEnumerator AnimateOpen()
     {
         if (_radialGroup == null) yield break;
-
-        float t = 0f;
         _radialRoot.transform.localScale = Vector3.zero;
+        float t = 0f;
         while (t < OPEN_DURATION)
         {
             t += Time.unscaledDeltaTime;
             float p = Mathf.Clamp01(t / OPEN_DURATION);
-            _radialGroup.alpha = p;
-            _radialRoot.transform.localScale = Vector3.one * p;
+            // Ease out with slight overshoot
+            float s = 1f - Mathf.Pow(1f - p, 3f);
+            _radialGroup.alpha                = Mathf.Clamp01(p * 3f);
+            _radialRoot.transform.localScale  = Vector3.one * Mathf.Min(s * 1.06f, 1f + (1f - p) * 0.06f);
             yield return null;
         }
-        _radialGroup.alpha = 1f;
+        _radialGroup.alpha               = 1f;
         _radialRoot.transform.localScale = Vector3.one;
         _animRoutine = null;
     }
@@ -392,7 +517,7 @@ public class InventoryRadialMenu : MonoBehaviour
             {
                 t += Time.unscaledDeltaTime;
                 float p = 1f - Mathf.Clamp01(t / CLOSE_DURATION);
-                _radialGroup.alpha = p;
+                _radialGroup.alpha               = p;
                 _radialRoot.transform.localScale = Vector3.one * p;
                 yield return null;
             }
@@ -401,23 +526,15 @@ public class InventoryRadialMenu : MonoBehaviour
         Time.timeScale = 1f;
         Cursor.visible = false;
 
-        if (_radialRoot != null)
-        {
-            Destroy(_radialRoot);
-            _radialRoot = null;
-            _radialGroup = null;
-        }
+        if (_radialRoot != null) { Destroy(_radialRoot); _radialRoot = null; _radialGroup = null; }
         _slotGOs.Clear();
-        _slotImages.Clear();
-        _slotLabels.Clear();
-        _slotQtyBadges.Clear();
+        _slotRTs.Clear();
+        _slotBgs.Clear();
+        _allSlots.Clear();
         _hoveredIndex = -1;
 
-        // Activate powerup after restoring time
         if (typeToActivate.HasValue)
-        {
             PurrBucksManager.Instance?.TryUseFromInventory(typeToActivate.Value);
-        }
 
         // First-time hint
         if (PurrBucksManager.Instance != null &&
@@ -425,11 +542,13 @@ public class InventoryRadialMenu : MonoBehaviour
         {
             PurrBucksManager.Instance.MarkTutorialSeen("tut_radial_opened");
             if (_hintRoutine != null) StopCoroutine(_hintRoutine);
-            _hintRoutine = StartCoroutine(ShowHint("HOLD MIDDLE MOUSE + MOVE → RELEASE TO ACTIVATE"));
+            _hintRoutine = StartCoroutine(ShowHint("HOLD MMB  →  HOVER A POWER-UP  →  RELEASE TO USE"));
         }
 
         _animRoutine = null;
     }
+
+    // ── Hint ──────────────────────────────────────────────────────────────────
 
     private IEnumerator ShowHint(string message)
     {
@@ -440,26 +559,24 @@ public class InventoryRadialMenu : MonoBehaviour
         bg.color = new Color(0.05f, 0.10f, 0.20f, 0.90f);
 
         var rt = go.GetComponent<RectTransform>();
-        rt.anchorMin = new Vector2(0.5f, 0.5f);
-        rt.anchorMax = new Vector2(0.5f, 0.5f);
-        rt.pivot = new Vector2(0.5f, 0.5f);
-        rt.sizeDelta = new Vector2(520f, 48f);
-        rt.anchoredPosition = new Vector2(0f, -160f);
+        rt.anchorMin = rt.anchorMax = rt.pivot = new Vector2(0.5f, 0.5f);
+        rt.sizeDelta        = new Vector2(560f, 48f);
+        rt.anchoredPosition = new Vector2(0f, -220f);
 
         var outline = go.AddComponent<Outline>();
-        outline.effectColor = new Color(1f, 0.78f, 0.10f, 0.6f);
+        outline.effectColor    = new Color(1f, 0.78f, 0.10f, 0.6f);
         outline.effectDistance = new Vector2(2f, -2f);
 
         var txtGO = new GameObject("Txt");
         txtGO.transform.SetParent(go.transform, false);
         var txt = txtGO.AddComponent<Text>();
-        txt.text = message;
-        txt.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
-        txt.fontSize = 15;
-        txt.fontStyle = FontStyle.Bold;
-        txt.alignment = TextAnchor.MiddleCenter;
-        txt.color = new Color(1f, 0.92f, 0.40f);
-        txt.raycastTarget = false;
+        txt.text           = message;
+        txt.font           = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
+        txt.fontSize       = 15;
+        txt.fontStyle      = FontStyle.Bold;
+        txt.alignment      = TextAnchor.MiddleCenter;
+        txt.color          = new Color(1f, 0.92f, 0.40f);
+        txt.raycastTarget  = false;
         var txtRt = txtGO.GetComponent<RectTransform>();
         txtRt.anchorMin = Vector2.zero;
         txtRt.anchorMax = Vector2.one;
@@ -468,20 +585,63 @@ public class InventoryRadialMenu : MonoBehaviour
         var cg = go.AddComponent<CanvasGroup>();
         cg.alpha = 0f;
 
-        // Fade in
         float t = 0f;
         while (t < 0.3f) { t += Time.unscaledDeltaTime; cg.alpha = t / 0.3f; yield return null; }
         cg.alpha = 1f;
-
-        yield return new WaitForSecondsRealtime(2.5f);
-
-        // Fade out
+        yield return new WaitForSecondsRealtime(2.8f);
         t = 0f;
         while (t < 0.4f) { t += Time.unscaledDeltaTime; cg.alpha = 1f - t / 0.4f; yield return null; }
 
         Destroy(go);
         _hintRoutine = null;
     }
+
+    // ── Procedural sprites ────────────────────────────────────────────────────
+
+    private static Sprite GetCircleSprite()
+    {
+        if (_circleSprite != null) return _circleSprite;
+        const int D = 128;
+        float r = D * 0.5f;
+        var tex = new Texture2D(D, D, TextureFormat.RGBA32, false);
+        tex.filterMode = FilterMode.Bilinear;
+        var px = new Color32[D * D];
+        for (int y = 0; y < D; y++)
+            for (int x = 0; x < D; x++)
+            {
+                float dx = x - r + 0.5f, dy = y - r + 0.5f;
+                float a = Mathf.Clamp01(r - Mathf.Sqrt(dx * dx + dy * dy));
+                px[y * D + x] = new Color32(255, 255, 255, (byte)(a * 255));
+            }
+        tex.SetPixels32(px);
+        tex.Apply();
+        _circleSprite = Sprite.Create(tex, new Rect(0, 0, D, D), new Vector2(0.5f, 0.5f));
+        return _circleSprite;
+    }
+
+    private static Sprite GetRingSprite()
+    {
+        if (_ringSprite != null) return _ringSprite;
+        const int D = 128;
+        float r = D * 0.5f, inner = r * 0.84f;
+        var tex = new Texture2D(D, D, TextureFormat.RGBA32, false);
+        tex.filterMode = FilterMode.Bilinear;
+        var px = new Color32[D * D];
+        for (int y = 0; y < D; y++)
+            for (int x = 0; x < D; x++)
+            {
+                float dx = x - r + 0.5f, dy = y - r + 0.5f;
+                float dist = Mathf.Sqrt(dx * dx + dy * dy);
+                float a = Mathf.Clamp01(r - dist) * Mathf.Clamp01(dist - inner);
+                px[y * D + x] = new Color32(255, 255, 255, (byte)(a * 255));
+            }
+        tex.SetPixels32(px);
+        tex.Apply();
+        _ringSprite = Sprite.Create(tex, new Rect(0, 0, D, D), new Vector2(0.5f, 0.5f));
+        return _ringSprite;
+    }
+
+    // ── Cleanup ───────────────────────────────────────────────────────────────
 
     private void OnDestroy()
     {
