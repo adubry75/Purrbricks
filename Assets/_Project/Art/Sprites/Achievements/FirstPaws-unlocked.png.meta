@@ -116,10 +116,10 @@ TextureImporter:
       name: FirstPaws-unlocked_0
       rect:
         serializedVersion: 2
-        x: 37
-        y: 17
-        width: 182
-        height: 217
+        x: 0
+        y: 0
+        width: 256
+        height: 256
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}

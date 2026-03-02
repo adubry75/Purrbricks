@@ -1,10 +1,10 @@
 fileFormatVersion: 2
-guid: f1c291d2322b17040bdddd348687e939
+guid: 5bd851e23b8725a40b5e375bc8ed4343
 TextureImporter:
   internalIDToNameTable:
   - first:
-      213: -219360250204608282
-    second: playfield_frame_0
+      213: -1760490371581009287
+    second: screenshot4_0
   externalObjects: {}
   serializedVersion: 13
   mipmaps:
@@ -113,13 +113,13 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: playfield_frame_0
+      name: screenshot4_0
       rect:
         serializedVersion: 2
         x: 0
         y: 0
-        width: 1147
-        height: 769
+        width: 3536
+        height: 1980
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -128,8 +128,8 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: 6e8a6b0c30da4fcf0800000000000000
-      internalID: -219360250204608282
+      spriteID: 9722b63a55b7197e0800000000000000
+      internalID: -1760490371581009287
       vertices: []
       indices: 
       edges: []
@@ -148,7 +148,7 @@ TextureImporter:
     spriteCustomMetadata:
       entries: []
     nameFileIdTable:
-      playfield_frame_0: -219360250204608282
+      screenshot4_0: -1760490371581009287
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 
