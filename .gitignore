@@ -22,3 +22,4 @@ Thumbs.db
 
 # Server-side credentials (never commit — copy config.example.php → config.php and fill in)
 Server/config.php
+/.dotnet_home/.dotnet
