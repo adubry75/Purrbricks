@@ -51,6 +51,11 @@ public class LevelEditorBrowserUI : MonoBehaviour
     private LevelEditorUI  _editorUI;
     private System.Action  _onBack;
 
+    // Runtime state to restore when closing the browser (varies based on caller).
+    private float _prevTimeScale = 1f;
+    private bool  _prevAudioPaused;
+    private bool  _hasSavedRuntimeState;
+
     private readonly List<(string id, LevelData data)> _levels =
         new List<(string, LevelData)>();
     private int _page;
@@ -95,6 +100,11 @@ public class LevelEditorBrowserUI : MonoBehaviour
     /// <summary>Show the browser and freeze the game behind it.</summary>
     public void Show()
     {
+        // Save runtime state so Back can restore correctly (Victory/Pause both run at timeScale=0).
+        _prevTimeScale       = Time.timeScale;
+        _prevAudioPaused     = AudioListener.pause;
+        _hasSavedRuntimeState = true;
+
         // Freeze the demo running in the background
         Time.timeScale = 0f;
         AudioListener.pause = true;
@@ -115,6 +125,14 @@ public class LevelEditorBrowserUI : MonoBehaviour
     }
 
     public void Hide() => gameObject.SetActive(false);
+
+    private void ResetToEditorMode()
+    {
+        _isLevelSelectMode = false;
+        _onLevelSelected   = null;
+        if (_headerTitle != null) _headerTitle.text = "LEVEL EDITOR";
+        if (_newLevelBtn != null) _newLevelBtn.gameObject.SetActive(true);
+    }
 
     // ── Canvas setup ──────────────────────────────────────────────────────────
     private void SetupCanvas()
@@ -510,7 +528,12 @@ public class LevelEditorBrowserUI : MonoBehaviour
         {
             if (_isLevelSelectMode)
             {
-                if (!isLocked) { Hide(); _onLevelSelected?.Invoke(levelIndex); }
+                if (!isLocked)
+                {
+                    Hide();
+                    _onLevelSelected?.Invoke(levelIndex);
+                    ResetToEditorMode();
+                }
             }
             else
             {
@@ -607,15 +630,21 @@ public class LevelEditorBrowserUI : MonoBehaviour
     // ── Navigation ────────────────────────────────────────────────────────────
     private void GoBack()
     {
-        // Reset level-select mode so the next Show() behaves as editor again
-        _isLevelSelectMode = false;
-        _onLevelSelected   = null;
-        if (_headerTitle != null) _headerTitle.text = "LEVEL EDITOR";
-        if (_newLevelBtn != null) _newLevelBtn.gameObject.SetActive(true);
+        // Reset level-select mode so the next open behaves as editor again.
+        ResetToEditorMode();
 
-        // Unfreeze the game
-        Time.timeScale = 1f;
-        AudioListener.pause = false;
+        // Restore runtime state (don't assume we're returning to a running game).
+        if (_hasSavedRuntimeState)
+        {
+            Time.timeScale     = _prevTimeScale;
+            AudioListener.pause = _prevAudioPaused;
+        }
+        else
+        {
+            Time.timeScale     = 1f;
+            AudioListener.pause = false;
+        }
+        _hasSavedRuntimeState = false;
 
         Hide();
         _onBack?.Invoke();

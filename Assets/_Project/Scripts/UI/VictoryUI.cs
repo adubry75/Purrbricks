@@ -263,6 +263,7 @@ public class VictoryUI : MonoBehaviour
         var browser = Object.FindFirstObjectByType<LevelEditorBrowserUI>(FindObjectsInactive.Include);
         if (browser == null) return;
         Hide();
+        browser.SetBackAction(Show);
         browser.ShowAsLevelSelect(levelIndex =>
         {
             browser.Hide();

@@ -707,6 +707,7 @@ public class GameManager : MonoBehaviour
         PowerupManager.Instance?.ResetAll();
 
         LoadLevel(levelIndex);
+        MusicPlayer.Instance?.PlayGameplay(levelIndex);
         SetState(GameState.Ready);
     }
 
