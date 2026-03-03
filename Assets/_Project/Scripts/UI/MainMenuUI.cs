@@ -84,7 +84,9 @@ public class MainMenuUI : MonoBehaviour
         panelRt.anchorMin = Vector2.zero;
         panelRt.anchorMax = Vector2.one;
         panelRt.sizeDelta = Vector2.zero;
-        panelRt.anchoredPosition = new Vector2(-160f, 0f);
+        //panelRt.anchoredPosition = new Vector2(0f, 0f);
+        panelRt.offsetMin = new Vector2(-320f, panelRt.offsetMin.y);
+        panelRt.offsetMax = new Vector2(0f, panelRt.offsetMax.y);
 
         CreateTitle();
 

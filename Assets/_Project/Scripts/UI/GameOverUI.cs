@@ -106,8 +106,21 @@ public class GameOverUI : MonoBehaviour
         }
         if (_scoreText != null) _scoreText.text = $"Final Score: {finalScore:N0}";
 
-        // Auto-submit to Steam global board (KeepBest — no name needed)
-        SteamLeaderboardManager.Instance?.SubmitScore("Purrbricks_HighScores", finalScore);
+        // Auto-submit to Steam global boards (KeepBest)
+        if (finalScore > 0)
+        {
+            string allTimeBoard = PurrbricksLeaderboards.OverallAllTime;
+            string weeklyBoard  = PurrbricksLeaderboards.Scoped(allTimeBoard, LeaderboardTimeScope.Weekly);
+            string dailyBoard   = PurrbricksLeaderboards.Scoped(allTimeBoard, LeaderboardTimeScope.Daily);
+
+            SteamLeaderboardManager.Instance?.SubmitScore(allTimeBoard, finalScore);
+            SteamLeaderboardManager.Instance?.SubmitScore(weeklyBoard,  finalScore);
+            SteamLeaderboardManager.Instance?.SubmitScore(dailyBoard,   finalScore);
+
+            LeaderboardTestData.RerollForBoard(allTimeBoard);
+            LeaderboardTestData.RerollForBoard(weeklyBoard);
+            LeaderboardTestData.RerollForBoard(dailyBoard);
+        }
     }
 
     public void ShowGameComplete(int finalScore)
@@ -121,7 +134,20 @@ public class GameOverUI : MonoBehaviour
         }
         if (_scoreText != null) _scoreText.text = $"Final Score: {finalScore:N0}";
 
-        SteamLeaderboardManager.Instance?.SubmitScore("Purrbricks_HighScores", finalScore);
+        if (finalScore > 0)
+        {
+            string allTimeBoard = PurrbricksLeaderboards.OverallAllTime;
+            string weeklyBoard  = PurrbricksLeaderboards.Scoped(allTimeBoard, LeaderboardTimeScope.Weekly);
+            string dailyBoard   = PurrbricksLeaderboards.Scoped(allTimeBoard, LeaderboardTimeScope.Daily);
+
+            SteamLeaderboardManager.Instance?.SubmitScore(allTimeBoard, finalScore);
+            SteamLeaderboardManager.Instance?.SubmitScore(weeklyBoard,  finalScore);
+            SteamLeaderboardManager.Instance?.SubmitScore(dailyBoard,   finalScore);
+
+            LeaderboardTestData.RerollForBoard(allTimeBoard);
+            LeaderboardTestData.RerollForBoard(weeklyBoard);
+            LeaderboardTestData.RerollForBoard(dailyBoard);
+        }
     }
 
     private void OnLeaderboard() => GameManager.Instance?.ShowHighScoresAfterGameOver();

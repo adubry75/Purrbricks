@@ -44,19 +44,26 @@ public class VictoryUI : MonoBehaviour
         Hide();
     }
 
-    private void Start()
+    // Subscribe/unsubscribe per-activation so the handler is guaranteed to be live
+    // when ShowVictory calls AwardLevelComplete (which fires OnRankAwardResolved
+    // synchronously in debug builds — Start() would be too late).
+    private void OnEnable()
     {
         if (PurrBucksManager.Instance != null)
-        {
-            PurrBucksManager.Instance.OnRankAwardResolved += amt =>
-            {
-                if (_purrBucksText != null)
-                {
-                    _purrBucksText.text = $"🐾 +{amt} Purr Bucks";
-                    _purrBucksText.gameObject.SetActive(true);
-                }
-            };
-        }
+            PurrBucksManager.Instance.OnRankAwardResolved += OnRankAwardResolvedHandler;
+    }
+
+    private void OnDisable()
+    {
+        if (PurrBucksManager.Instance != null)
+            PurrBucksManager.Instance.OnRankAwardResolved -= OnRankAwardResolvedHandler;
+    }
+
+    private void OnRankAwardResolvedHandler(int amt)
+    {
+        if (_purrBucksText == null) return;
+        _purrBucksText.text = $"🐾 +{amt} Purr Bucks";
+        _purrBucksText.gameObject.SetActive(true);
     }
 
     private void BuildUI()
@@ -81,7 +88,9 @@ public class VictoryUI : MonoBehaviour
         panelRt.anchorMin        = Vector2.zero;
         panelRt.anchorMax        = Vector2.one;
         panelRt.sizeDelta        = Vector2.zero;
-        panelRt.anchoredPosition = new Vector2(-160f, 0f);
+        panelRt.offsetMin = new Vector2(-320f, panelRt.offsetMin.y);
+        panelRt.offsetMax = new Vector2(0f, panelRt.offsetMax.y);
+
 
         // ── Title ────────────────────────────────────────────────────────────
         CreateText(_panel, "LEVEL COMPLETE!", new Vector2(0f, 230f), 80, ColorGreen);
@@ -208,11 +217,27 @@ public class VictoryUI : MonoBehaviour
         _currentLevelId    = levelId;
         _currentLevelIndex = levelIndex;
 
-        // Submit to Steam per-level leaderboard immediately (KeepBest)
-        if (levelScore > 0 && !string.IsNullOrEmpty(levelId))
-            SteamLeaderboardManager.Instance?.SubmitScore("Purrbricks_" + levelId, levelScore);
+        // Activate first so OnEnable subscribes to OnRankAwardResolved before
+        // AwardLevelComplete fires it (synchronously in debug builds).
+        gameObject.SetActive(true);
 
-        // Award Purr Bucks (async — OnRankAwardResolved fires when complete)
+        // Submit to Steam per-level leaderboards immediately (KeepBest)
+        if (levelScore > 0)
+        {
+            string allTimeBoard = PurrbricksLeaderboards.LevelAllTime(levelIndex);
+            string weeklyBoard  = PurrbricksLeaderboards.Scoped(allTimeBoard, LeaderboardTimeScope.Weekly);
+            string dailyBoard   = PurrbricksLeaderboards.Scoped(allTimeBoard, LeaderboardTimeScope.Daily);
+
+            SteamLeaderboardManager.Instance?.SubmitScore(allTimeBoard, levelScore);
+            SteamLeaderboardManager.Instance?.SubmitScore(weeklyBoard,  levelScore);
+            SteamLeaderboardManager.Instance?.SubmitScore(dailyBoard,   levelScore);
+
+            LeaderboardTestData.RerollForBoard(allTimeBoard);
+            LeaderboardTestData.RerollForBoard(weeklyBoard);
+            LeaderboardTestData.RerollForBoard(dailyBoard);
+        }
+
+        // Award Purr Bucks (OnEnable already subscribed above)
         if (PurrBucksManager.Instance != null && !string.IsNullOrEmpty(levelId))
         {
             int livesLost = (GameManager.Instance?.LivesAtLevelStart ?? 0) - (GameManager.Instance?.GetLives() ?? 0);
@@ -220,8 +245,6 @@ public class VictoryUI : MonoBehaviour
             _purrBucksText?.gameObject.SetActive(false);
             PurrBucksManager.Instance.AwardLevelComplete(levelId, levelIndex, perfectClear, livesLost);
         }
-
-        gameObject.SetActive(true);
 
         if (_levelScoreText != null) _levelScoreText.text = $"Level Score:  {levelScore:N0}";
         if (_comboBonusText != null) _comboBonusText.text = comboBonus > 0

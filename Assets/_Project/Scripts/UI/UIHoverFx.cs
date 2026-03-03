@@ -26,7 +26,9 @@ public sealed class UIHoverFx : MonoBehaviour, IPointerEnterHandler, IPointerExi
     private void OnEnable()
     {
         if (_rt == null) _rt = GetComponent<RectTransform>();
-        if (_rt != null) _baseScale = _rt.localScale;
+        // Don't "learn" the current scale here — if the GO was disabled mid-lerp
+        // (or while pressed/hovered), capturing that value causes cumulative drift.
+        if (_rt != null) _rt.localScale = _baseScale;
         _hover = _down = false;
         _targetMul = 1f;
     }
@@ -72,4 +74,3 @@ public sealed class UIHoverFx : MonoBehaviour, IPointerEnterHandler, IPointerExi
         else _targetMul = 1f;
     }
 }
-

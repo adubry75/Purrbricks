@@ -176,43 +176,89 @@ public class PurrBucksManager : MonoBehaviour
         _pendingAward = immediate;
         AddCurrency(immediate);
 
+        // Show something immediately (rank/bonus may resolve later).
+        OnRankAwardResolved?.Invoke(_pendingAward);
+
+        // ── Rank bonus ────────────────────────────────────────────────────────
+        if (LeaderboardTestData.Enabled)
+        {
+            // In debug builds we simulate ranks locally so the Victory UI updates instantly.
+            string allTimeBoard = PurrbricksLeaderboards.LevelAllTime(levelIndex);
+            string weeklyBoard  = PurrbricksLeaderboards.Scoped(allTimeBoard, LeaderboardTimeScope.Weekly);
+            string dailyBoard   = PurrbricksLeaderboards.Scoped(allTimeBoard, LeaderboardTimeScope.Daily);
+
+            int allTimeRank = LeaderboardTestData.GetOrRollDesiredRank(allTimeBoard);
+            int weeklyRank  = LeaderboardTestData.GetOrRollDesiredRank(weeklyBoard);
+            int dailyRank   = LeaderboardTestData.GetOrRollDesiredRank(dailyBoard);
+
+            int allTimeBonus = GetRankBonus(allTimeRank);
+            int weeklyBonus  = Mathf.RoundToInt(GetRankBonus(weeklyRank) * 0.60f);
+            int dailyBonus   = Mathf.RoundToInt(GetRankBonus(dailyRank)  * 0.40f);
+
+            int rankBonus = allTimeBonus + weeklyBonus + dailyBonus;
+            if (rankBonus > 0)
+            {
+                _pendingAward += rankBonus;
+                AddCurrency(rankBonus);
+            }
+
+            OnRankAwardResolved?.Invoke(_pendingAward);
+            return;
+        }
+
         // ── Async Steam rank ──────────────────────────────────────────────────
         StartCoroutine(FetchRankAndAward(levelIndex));
     }
 
     private IEnumerator FetchRankAndAward(int levelIndex)
     {
-        // Give Steam time to process the score upload before querying rank
-        yield return new WaitForSecondsRealtime(2f);
+        // Give Steam time to finish uploading the score before we query rank.
+        yield return new WaitForSecondsRealtime(1.5f);
 
-        string boardName = $"Purrbricks_level_{levelIndex:D2}";
+        string allTimeBoard = PurrbricksLeaderboards.LevelAllTime(levelIndex);
+        string weeklyBoard  = PurrbricksLeaderboards.Scoped(allTimeBoard, LeaderboardTimeScope.Weekly);
+        string dailyBoard   = PurrbricksLeaderboards.Scoped(allTimeBoard, LeaderboardTimeScope.Daily);
 
-        bool resolved = false;
-        int rankBonus = 0;
+        int allTimeRank = 0;
+        int weeklyRank  = 0;
+        int dailyRank   = 0;
 
         if (SteamLeaderboardManager.Instance != null)
         {
-            SteamLeaderboardManager.Instance.FetchAroundMe(boardName, 0, entries =>
+            // Kick off all three fetches simultaneously so they can pipeline through the
+            // SteamLeaderboardManager queue rather than timing out one-by-one.
+            bool allTimeDone = false, weeklyDone = false, dailyDone = false;
+
+            SteamLeaderboardManager.Instance.FetchAroundMe(allTimeBoard, 0, entries =>
             {
-                if (entries != null && entries.Count > 0)
-                {
-                    int rank = entries[0].Rank;
-                    if      (rank == 1) rankBonus = PurrBucksConfig.REWARD_FIRST_PLACE  - PurrBucksConfig.REWARD_PARTICIPATION;
-                    else if (rank == 2) rankBonus = PurrBucksConfig.REWARD_SECOND_PLACE - PurrBucksConfig.REWARD_PARTICIPATION;
-                    else if (rank == 3) rankBonus = PurrBucksConfig.REWARD_THIRD_PLACE  - PurrBucksConfig.REWARD_PARTICIPATION;
-                }
-                resolved = true;
+                if (entries != null && entries.Count > 0) allTimeRank = entries[0].Rank;
+                allTimeDone = true;
+            });
+            SteamLeaderboardManager.Instance.FetchAroundMe(weeklyBoard, 0, entries =>
+            {
+                if (entries != null && entries.Count > 0) weeklyRank = entries[0].Rank;
+                weeklyDone = true;
+            });
+            SteamLeaderboardManager.Instance.FetchAroundMe(dailyBoard, 0, entries =>
+            {
+                if (entries != null && entries.Count > 0) dailyRank = entries[0].Rank;
+                dailyDone = true;
             });
 
-            // Wait for callback, timeout after 5 seconds
+            // Wait up to 8 s for all three to complete (new boards need FindOrCreateLeaderboard).
             float elapsed = 0f;
-            while (!resolved && elapsed < 5f)
+            while ((!allTimeDone || !weeklyDone || !dailyDone) && elapsed < 8f)
             {
                 elapsed += Time.unscaledDeltaTime;
                 yield return null;
             }
         }
 
+        int allTimeBonus = GetRankBonus(allTimeRank);
+        int weeklyBonus  = Mathf.RoundToInt(GetRankBonus(weeklyRank) * 0.60f);
+        int dailyBonus   = Mathf.RoundToInt(GetRankBonus(dailyRank)  * 0.40f);
+
+        int rankBonus = allTimeBonus + weeklyBonus + dailyBonus;
         if (rankBonus > 0)
         {
             _pendingAward += rankBonus;
@@ -220,6 +266,14 @@ public class PurrBucksManager : MonoBehaviour
         }
 
         OnRankAwardResolved?.Invoke(_pendingAward);
+    }
+
+    private static int GetRankBonus(int rank)
+    {
+        if      (rank == 1) return PurrBucksConfig.REWARD_FIRST_PLACE  - PurrBucksConfig.REWARD_PARTICIPATION;
+        else if (rank == 2) return PurrBucksConfig.REWARD_SECOND_PLACE - PurrBucksConfig.REWARD_PARTICIPATION;
+        else if (rank == 3) return PurrBucksConfig.REWARD_THIRD_PLACE  - PurrBucksConfig.REWARD_PARTICIPATION;
+        return 0;
     }
 
     // ── Tutorial helpers ──────────────────────────────────────────────────────

@@ -1,3 +1,4 @@
+using System.Collections;
 using System.Collections.Generic;
 using Newtonsoft.Json.Linq;
 using Steamworks;
@@ -7,15 +8,12 @@ using UnityEngine.UI;
 /// <summary>
 /// Steam-only leaderboard screen.
 ///
-/// Board selector: OVERALL (global all-time) + Level 01–80 (per-level).
-/// Mode toggle: NEARBY (around current user, default) / TOP (top of board, paginated).
-///
-/// NEARBY automatically falls back to TOP when the user has no score on a board.
+/// Board selector: OVERALL + Level 01–80 (per-level).
+/// Scope toggle: ALL TIME / WEEKLY / DAILY.
+/// Results show all scores in a scroll view and auto-focus around the current user when possible.
 /// </summary>
 public class HighScoresUI : MonoBehaviour
 {
-    private enum Mode { Nearby, Top }
-
     private Canvas _canvas;
 
     [Header("Button Sprites")]
@@ -25,29 +23,37 @@ public class HighScoresUI : MonoBehaviour
     private Text       _boardLabel;
     private Button     _prevBoardBtn;
     private Button     _nextBoardBtn;
-    private Image      _nearbyTabBg;
-    private Text       _nearbyTabText;
-    private Image      _topTabBg;
-    private Text       _topTabText;
+    private Image      _allTimeTabBg;
+    private Text       _allTimeTabText;
+    private Image      _weeklyTabBg;
+    private Text       _weeklyTabText;
+    private Image      _dailyTabBg;
+    private Text       _dailyTabText;
+    private ScrollRect _scrollRect;
+    private RectTransform _contentRt;
     private GameObject _rowContainer;
     private Text       _statusText;
-    private Button     _prevPageBtn;
-    private Button     _nextPageBtn;
-    private Text       _pageLabel;
     private Button     _mainMenuBtn;
     private Button     _backToGameBtn;
     private bool       _returnToVictory;
 
     // State
     private int  _boardIndex; // 0 = OVERALL, 1..N = level 00..(N-1)
-    private Mode _mode;
-    private int  _page;       // 1-based, TOP mode only
+    private LeaderboardTimeScope _scope;
     private bool _fetching;
+    private int  _fetchToken;
+
+    // Cached player data – filled from a successful AllTime fetch so Weekly/Daily
+    // can generate test data using the same score baseline.
+    private int      _cachedMyScore;
+    private CSteamID _cachedMySteamId;
+    private string   _cachedMyName = "You";
 
     // 0 = overall + one board per level_XX
     private const int TOTAL_BOARDS = 85;
-    private const int PAGE_SIZE    = 10;
-    private const int AROUND_RANGE = 5;    // 5 above + you + 5 below = 11 entries
+    private const float ROW_HEIGHT = 44f;
+    private const float ROW_SPACING = 4f;
+    private const float ROW_PITCH = ROW_HEIGHT + ROW_SPACING;
 
     private static readonly Color TabActiveColor   = new Color(0.10f, 0.38f, 0.85f, 0.95f);
     private static readonly Color TabInactiveColor = new Color(0.07f, 0.10f, 0.20f, 0.80f);
@@ -100,9 +106,10 @@ public class HighScoresUI : MonoBehaviour
         var boardLabelGO = MakeText(panel.transform, "OVERALL", new Vector2(0f, 340f), 34, Color.white, false);
         _boardLabel = boardLabelGO.GetComponent<Text>();
 
-        // ── Mode tabs ─────────────────────────────────────────────────────────
-        BuildModeTab(panel.transform, "NEARBY", new Vector2(-130f, 272f), out _nearbyTabBg, out _nearbyTabText, OnNearbyMode);
-        BuildModeTab(panel.transform, "TOP",    new Vector2( 130f, 272f), out _topTabBg,   out _topTabText,    OnTopMode);
+        // ── Scope tabs ────────────────────────────────────────────────────────
+        BuildModeTab(panel.transform, "ALL TIME", new Vector2(-240f, 272f), out _allTimeTabBg, out _allTimeTabText, OnAllTimeScope);
+        BuildModeTab(panel.transform, "WEEKLY",   new Vector2(   0f, 272f), out _weeklyTabBg,  out _weeklyTabText,  OnWeeklyScope);
+        BuildModeTab(panel.transform, "DAILY",    new Vector2( 240f, 272f), out _dailyTabBg,   out _dailyTabText,   OnDailyScope);
 
         // ── Column headers ─────────────────────────────────────────────────────
         MakeText(panel.transform, "#",      new Vector2(-310f, 210f), 26, new Color(0.55f, 0.75f, 1f, 0.70f), true);
@@ -119,17 +126,66 @@ public class HighScoresUI : MonoBehaviour
         divRt.sizeDelta        = new Vector2(760f, 2f);
         divRt.anchoredPosition = new Vector2(0f, 192f);
 
-        // ── Row container ──────────────────────────────────────────────────────
-        _rowContainer = new GameObject("Rows");
-        _rowContainer.transform.SetParent(panel.transform, false);
-        var rcRt = _rowContainer.AddComponent<RectTransform>();
-        rcRt.anchorMin = rcRt.anchorMax = new Vector2(0.5f, 0.5f);
-        rcRt.sizeDelta        = new Vector2(800f, 700f);
-        rcRt.anchoredPosition = Vector2.zero;
+        // ── Scroll view ────────────────────────────────────────────────────────
+        var scrollGO = new GameObject("ScrollView");
+        scrollGO.transform.SetParent(panel.transform, false);
+        var scrollRt = scrollGO.AddComponent<RectTransform>();
+        scrollRt.anchorMin = scrollRt.anchorMax = new Vector2(0.5f, 0.5f);
+        // Keep the scroll region below the header/divider (so rows appear under the column headers).
+        scrollRt.sizeDelta        = new Vector2(800f, 560f);
+        scrollRt.anchoredPosition = new Vector2(0f, -100f);
 
-        // Status text (loading / empty / error)
+        var scrollImg = scrollGO.AddComponent<Image>();
+        scrollImg.color = new Color(0f, 0f, 0f, 0.0f);
+        scrollImg.raycastTarget = false;
+
+        _scrollRect = scrollGO.AddComponent<ScrollRect>();
+        _scrollRect.horizontal = false;
+        _scrollRect.vertical = true;
+        _scrollRect.movementType = ScrollRect.MovementType.Clamped;
+        _scrollRect.scrollSensitivity = 30f;
+
+        var viewportGO = new GameObject("Viewport");
+        viewportGO.transform.SetParent(scrollGO.transform, false);
+        var viewportRt = viewportGO.AddComponent<RectTransform>();
+        viewportRt.anchorMin = Vector2.zero;
+        viewportRt.anchorMax = Vector2.one;
+        viewportRt.sizeDelta = Vector2.zero;
+        viewportRt.anchoredPosition = Vector2.zero;
+        var viewportImg = viewportGO.AddComponent<Image>();
+        viewportImg.color = new Color(0f, 0f, 0f, 0.0f);
+        viewportImg.raycastTarget = true;
+        // RectMask2D avoids stencil/shader edge-cases some pipelines hit with Mask.
+        viewportGO.AddComponent<RectMask2D>();
+
+        _rowContainer = new GameObject("Content");
+        _rowContainer.transform.SetParent(viewportGO.transform, false);
+        _contentRt = _rowContainer.AddComponent<RectTransform>();
+        _contentRt.anchorMin = new Vector2(0f, 1f);
+        _contentRt.anchorMax = new Vector2(1f, 1f);
+        _contentRt.pivot = new Vector2(0.5f, 1f);
+        _contentRt.sizeDelta = new Vector2(0f, 0f);
+        _contentRt.anchoredPosition = Vector2.zero;
+
+        var vlg = _rowContainer.AddComponent<VerticalLayoutGroup>();
+        vlg.childAlignment = TextAnchor.UpperCenter;
+        vlg.childControlHeight = true;
+        vlg.childControlWidth = true;
+        vlg.childForceExpandHeight = false;
+        vlg.childForceExpandWidth = true;
+        vlg.spacing = ROW_SPACING;
+        vlg.padding = new RectOffset(0, 0, 0, 0);
+
+        var csf = _rowContainer.AddComponent<ContentSizeFitter>();
+        csf.horizontalFit = ContentSizeFitter.FitMode.Unconstrained;
+        csf.verticalFit = ContentSizeFitter.FitMode.PreferredSize;
+
+        _scrollRect.viewport = viewportRt;
+        _scrollRect.content = _contentRt;
+
+        // Status text (loading / empty / error) (non-scrolling)
         var statusGO = new GameObject("Status");
-        statusGO.transform.SetParent(_rowContainer.transform, false);
+        statusGO.transform.SetParent(scrollGO.transform, false);
         _statusText                = statusGO.AddComponent<Text>();
         _statusText.font           = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
         _statusText.fontSize       = 30;
@@ -140,23 +196,6 @@ public class HighScoresUI : MonoBehaviour
         statusRt.anchorMin = statusRt.anchorMax = new Vector2(0.5f, 0.5f);
         statusRt.sizeDelta        = new Vector2(700f, 80f);
         statusRt.anchoredPosition = new Vector2(0f, 100f);
-
-        // ── Pagination (TOP mode only) ─────────────────────────────────────────
-        _prevPageBtn = MakeArrowButton(panel.transform, "◄ Prev", new Vector2(-130f, -388f), OnPrevPage);
-        _nextPageBtn = MakeArrowButton(panel.transform, "Next ►", new Vector2( 130f, -388f), OnNextPage);
-
-        var pageGO = new GameObject("PageLabel");
-        pageGO.transform.SetParent(panel.transform, false);
-        _pageLabel                = pageGO.AddComponent<Text>();
-        _pageLabel.font           = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
-        _pageLabel.fontSize       = 24;
-        _pageLabel.alignment      = TextAnchor.MiddleCenter;
-        _pageLabel.color          = new Color(0.6f, 0.7f, 0.9f, 0.8f);
-        _pageLabel.raycastTarget  = false;
-        var pageRt = pageGO.GetComponent<RectTransform>();
-        pageRt.anchorMin = pageRt.anchorMax = new Vector2(0.5f, 0.5f);
-        pageRt.sizeDelta        = new Vector2(200f, 40f);
-        pageRt.anchoredPosition = new Vector2(0f, -388f);
 
         // ── Exit buttons ──────────────────────────────────────────────────────
         _mainMenuBtn = UIStyle.CreateButton(panel.transform, "Main Menu",
@@ -182,82 +221,100 @@ public class HighScoresUI : MonoBehaviour
     private void OnPrevBoard()
     {
         _boardIndex = (_boardIndex - 1 + TOTAL_BOARDS) % TOTAL_BOARDS;
-        ResetToNearby();
+        ResetAndFetch();
     }
 
     private void OnNextBoard()
     {
         _boardIndex = (_boardIndex + 1) % TOTAL_BOARDS;
-        ResetToNearby();
+        ResetAndFetch();
     }
 
-    private void OnNearbyMode()
+    private void OnAllTimeScope()
     {
-        if (_mode == Mode.Nearby) return;
-        _mode = Mode.Nearby;
-        UpdateModeTabVisuals();
+        if (_scope == LeaderboardTimeScope.AllTime) return;
+        _scope = LeaderboardTimeScope.AllTime;
+        UpdateScopeTabVisuals();
         Fetch();
     }
 
-    private void OnTopMode()
+    private void OnWeeklyScope()
     {
-        if (_mode == Mode.Top) return;
-        _mode = Mode.Top;
-        _page = 1;
-        UpdateModeTabVisuals();
+        if (_scope == LeaderboardTimeScope.Weekly) return;
+        _scope = LeaderboardTimeScope.Weekly;
+        UpdateScopeTabVisuals();
         Fetch();
     }
 
-    private void OnPrevPage()
+    private void OnDailyScope()
     {
-        if (_page <= 1 || _fetching) return;
-        _page--;
-        Fetch();
-    }
-
-    private void OnNextPage()
-    {
-        if (_fetching) return;
-        _page++;
+        if (_scope == LeaderboardTimeScope.Daily) return;
+        _scope = LeaderboardTimeScope.Daily;
+        UpdateScopeTabVisuals();
         Fetch();
     }
 
     // ── Fetch logic ───────────────────────────────────────────────────────────
 
-    private void ResetToNearby()
+    private void ResetAndFetch()
     {
-        _mode = Mode.Nearby;
-        _page = 1;
         UpdateBoardLabel();
-        UpdateModeTabVisuals();
+        UpdateScopeTabVisuals();
         Fetch();
     }
 
     private void Fetch()
     {
-        if (_fetching) return;
+        // Always start a new fetch — increment token so any in-flight callbacks from the previous
+        // fetch will see a mismatch and return early without clobbering the new results.
+        _fetchToken++;
+        int token = _fetchToken;
         _fetching = true;
         SetStatus("Loading...");
         ClearRows();
 
         string board = BoardName();
+        if (Debug.isDebugBuild)
+            Debug.Log($"HighScoresUI: Fetch board='{board}' scope={_scope}");
 
-        if (_mode == Mode.Nearby)
-            SteamLeaderboardManager.Instance?.FetchAroundMe(board, AROUND_RANGE, OnFetchedNearby);
-        else
-            SteamLeaderboardManager.Instance?.FetchRange(board,
-                (_page - 1) * PAGE_SIZE + 1, _page * PAGE_SIZE, OnFetchedTop);
+        // In debug builds, Weekly/Daily boards are generated locally so we never block on a
+        // slow FindOrCreateLeaderboard round-trip for date-encoded board names.
+        if (LeaderboardTestData.Enabled && _scope != LeaderboardTimeScope.AllTime)
+        {
+            _fetching = false;
+            GenerateTestData(board);
+            return;
+        }
 
         if (SteamLeaderboardManager.Instance == null)
         {
             _fetching = false;
             SetStatus("Leaderboard service unavailable.\nRun Purrbricks > Setup Scene.");
+            return;
         }
+
+        SteamLeaderboardManager.Instance.FetchAroundMe(board, 0,
+            entries => OnFetchedAroundMe(token, board, entries));
+        StartCoroutine(FetchTimeout(token));
     }
 
-    private void OnFetchedNearby(List<LeaderboardEntryModel> entries)
+    private IEnumerator FetchTimeout(int token)
     {
+        yield return new WaitForSecondsRealtime(8f);
+        if (!_fetching) yield break;
+        if (token != _fetchToken) yield break;
+
         _fetching = false;
+        SetStatus("Timed out loading leaderboard.\n(See console for Steam callback logs.)");
+    }
+
+    private void OnFetchedAroundMe(int token, string boardName, List<LeaderboardEntryModel> entries)
+    {
+        if (token != _fetchToken) return; // stale callback — a newer fetch has already started
+        _fetching = false;
+
+        if (Debug.isDebugBuild)
+            Debug.Log($"HighScoresUI: Fetched board='{boardName}' entries={(entries == null ? -1 : entries.Count)}");
 
         if (entries == null)
         {
@@ -267,45 +324,64 @@ public class HighScoresUI : MonoBehaviour
 
         if (entries.Count == 0)
         {
-            // No score on this board — fall back to TOP silently
-            _mode = Mode.Top;
-            _page = 1;
-            UpdateModeTabVisuals();
-            Fetch();
+            // User has no score on this board yet.
+            // In debug builds generate synthetic data rather than showing "No scores yet".
+            if (LeaderboardTestData.Enabled)
+            {
+                GenerateTestData(boardName);
+                return;
+            }
+            // Production: fall back to the top of the board so at least something is visible.
+            _fetching = true;
+            SteamLeaderboardManager.Instance?.FetchRange(boardName, 1, 10,
+                top => OnFetchedTop(token, boardName, top));
+            return;
+        }
+
+        // FetchAroundMe(range=0) always returns the current user's entry as entries[0].
+        var me = entries[0];
+
+        // Cache the player's score from the AllTime board so Weekly/Daily simulation can
+        // use the same baseline score even before those boards have a real Steam entry.
+        if (_scope == LeaderboardTimeScope.AllTime)
+        {
+            _cachedMyScore    = me.Score;
+            _cachedMySteamId  = me.SteamId;
+            _cachedMyName     = me.DisplayName;
+        }
+
+        if (LeaderboardTestData.Enabled && SteamworksBootstrap.Instance?.IsSteamAvailable == true)
+        {
+            var simulated = LeaderboardTestData.BuildSimulatedBoard(boardName, me);
+            if (simulated != null) entries = simulated;
+        }
+
+        SetStatus("");
+        PopulateRows(entries, highlightMe: true);
+    }
+
+    private void OnFetchedTop(int token, string boardName, List<LeaderboardEntryModel> entries)
+    {
+        if (token != _fetchToken) return; // stale callback
+        _fetching = false;
+
+        if (Debug.isDebugBuild)
+            Debug.Log($"HighScoresUI: FetchedTop board='{boardName}' entries={(entries == null ? -1 : entries.Count)}");
+
+        if (entries == null)
+        {
+            SetStatus("Steam is not available.\nRun Steam to view leaderboards.");
+            return;
+        }
+
+        if (entries.Count == 0)
+        {
+            SetStatus("No scores yet — be the first!");
             return;
         }
 
         SetStatus("");
         PopulateRows(entries, highlightMe: true);
-        UpdatePagination(visible: false, hasMore: false);
-    }
-
-    private void OnFetchedTop(List<LeaderboardEntryModel> entries)
-    {
-        _fetching = false;
-
-        if (entries == null)
-        {
-            SetStatus("Steam is not available.\nRun Steam to view leaderboards.");
-            return;
-        }
-
-        if (entries.Count == 0)
-        {
-            if (_page == 1)
-                SetStatus("No scores yet — be the first!");
-            else
-            {
-                // Went past the end — back up
-                _page = Mathf.Max(1, _page - 1);
-                Fetch();
-            }
-            return;
-        }
-
-        SetStatus("");
-        PopulateRows(entries, highlightMe: false);
-        UpdatePagination(visible: true, hasMore: entries.Count >= PAGE_SIZE);
     }
 
     // ── Row rendering ─────────────────────────────────────────────────────────
@@ -316,30 +392,38 @@ public class HighScoresUI : MonoBehaviour
             ? SteamUser.GetSteamID()
             : CSteamID.Nil;
 
+        int myIndex = -1;
         for (int i = 0; i < entries.Count; i++)
         {
             var e    = entries[i];
             bool isMe = e.SteamId == mySteamId && mySteamId != CSteamID.Nil;
+            if (isMe) myIndex = i;
 
-            float yPos = 160f - i * 48f;
-            CreateRow(e.Rank, e.DisplayName, e.Score, yPos, isMe);
+            CreateRow(e.Rank, e.DisplayName, e.Score, isMe);
         }
+
+        ScrollToIndex(myIndex >= 0 ? myIndex : 0);
     }
 
-    private void CreateRow(int rank, string playerName, int score, float yPos, bool isMe)
+    private void CreateRow(int rank, string playerName, int score, bool isMe)
     {
         var rowGO = new GameObject($"Row{rank}");
         rowGO.transform.SetParent(_rowContainer.transform, false);
 
         var rowImg = rowGO.AddComponent<Image>();
+        rowImg.raycastTarget = false;
         rowImg.color = isMe
             ? new Color(0.60f, 0.50f, 0.05f, 0.25f)   // gold tint for current user
             : (rank % 2 == 0 ? ColorRowAlt : Color.clear);
 
         var rowRt = rowGO.GetComponent<RectTransform>();
-        rowRt.anchorMin = rowRt.anchorMax = new Vector2(0.5f, 0.5f);
-        rowRt.sizeDelta        = new Vector2(760f, 44f);
-        rowRt.anchoredPosition = new Vector2(0f, yPos);
+        rowRt.anchorMin = new Vector2(0.5f, 1f);
+        rowRt.anchorMax = new Vector2(0.5f, 1f);
+        rowRt.pivot = new Vector2(0.5f, 1f);
+        rowRt.sizeDelta = new Vector2(760f, ROW_HEIGHT);
+
+        var le = rowGO.AddComponent<LayoutElement>();
+        le.preferredHeight = ROW_HEIGHT;
 
         Color rankColor = rank switch
         {
@@ -380,8 +464,41 @@ public class HighScoresUI : MonoBehaviour
     private void ClearRows()
     {
         foreach (Transform child in _rowContainer.transform)
-            if (child.gameObject != _statusText.gameObject)
-                Destroy(child.gameObject);
+            Destroy(child.gameObject);
+    }
+
+    // ── Test-data generator (debug builds only) ───────────────────────────────
+
+    /// <summary>
+    /// Builds a simulated leaderboard populated with fake competitors.
+    /// Used in debug builds when the Steam board is empty or for Weekly/Daily scopes
+    /// where the real Steam entry may not exist yet (board newly created, upload race).
+    /// Falls back to the cached AllTime score so the board is never blank in testing.
+    /// </summary>
+    private void GenerateTestData(string boardName)
+    {
+        int      score   = _cachedMyScore > 0 ? _cachedMyScore : 80_000;
+        CSteamID steamId = _cachedMySteamId;
+        string   name    = _cachedMyName;
+
+        if (SteamworksBootstrap.Instance?.IsSteamAvailable == true)
+        {
+            steamId = SteamUser.GetSteamID();
+            string steamName = SteamFriends.GetPersonaName();
+            if (!string.IsNullOrEmpty(steamName)) name = steamName;
+        }
+
+        var fakeMe    = new LeaderboardEntryModel(0, score, steamId, name);
+        var simulated = LeaderboardTestData.BuildSimulatedBoard(boardName, fakeMe);
+        if (simulated != null)
+        {
+            SetStatus("");
+            PopulateRows(simulated, highlightMe: true);
+        }
+        else
+        {
+            SetStatus("No scores yet — be the first!");
+        }
     }
 
     // ── UI helpers ────────────────────────────────────────────────────────────
@@ -399,32 +516,51 @@ public class HighScoresUI : MonoBehaviour
         _boardLabel.text = GetBoardLabel();
     }
 
-    private void UpdateModeTabVisuals()
+    private void UpdateScopeTabVisuals()
     {
-        bool nearby = _mode == Mode.Nearby;
-        if (_nearbyTabBg  != null) _nearbyTabBg.color  = nearby ? TabActiveColor   : TabInactiveColor;
-        if (_topTabBg     != null) _topTabBg.color     = nearby ? TabInactiveColor : TabActiveColor;
-        if (_nearbyTabText != null) _nearbyTabText.color = nearby ? TabActiveText   : TabInactiveText;
-        if (_topTabText   != null) _topTabText.color   = nearby ? TabInactiveText  : TabActiveText;
+        bool allTime = _scope == LeaderboardTimeScope.AllTime;
+        bool weekly  = _scope == LeaderboardTimeScope.Weekly;
+        bool daily   = _scope == LeaderboardTimeScope.Daily;
+
+        if (_allTimeTabBg != null) _allTimeTabBg.color = allTime ? TabActiveColor : TabInactiveColor;
+        if (_weeklyTabBg  != null) _weeklyTabBg.color  = weekly  ? TabActiveColor : TabInactiveColor;
+        if (_dailyTabBg   != null) _dailyTabBg.color   = daily   ? TabActiveColor : TabInactiveColor;
+
+        if (_allTimeTabText != null) _allTimeTabText.color = allTime ? TabActiveText : TabInactiveText;
+        if (_weeklyTabText  != null) _weeklyTabText.color  = weekly  ? TabActiveText : TabInactiveText;
+        if (_dailyTabText   != null) _dailyTabText.color   = daily   ? TabActiveText : TabInactiveText;
     }
 
-    private void UpdatePagination(bool visible, bool hasMore)
+    private void ScrollToIndex(int index)
     {
-        if (_prevPageBtn != null) { _prevPageBtn.gameObject.SetActive(visible); _prevPageBtn.interactable = _page > 1; }
-        if (_nextPageBtn != null) { _nextPageBtn.gameObject.SetActive(visible); _nextPageBtn.interactable = hasMore; }
-        if (_pageLabel   != null)
+        if (_scrollRect == null || _scrollRect.viewport == null || _scrollRect.content == null) return;
+
+        Canvas.ForceUpdateCanvases();
+
+        var viewportHeight = ((RectTransform)_scrollRect.viewport).rect.height;
+        var contentHeight  = ((RectTransform)_scrollRect.content).rect.height;
+        if (contentHeight <= viewportHeight + 0.01f)
         {
-            _pageLabel.gameObject.SetActive(visible);
-            _pageLabel.text = visible ? $"Page {_page}" : "";
+            _scrollRect.verticalNormalizedPosition = 1f;
+            return;
         }
+
+        float rowCenterFromTop = index * ROW_PITCH + (ROW_HEIGHT * 0.5f);
+        float desiredTopScroll = rowCenterFromTop - (viewportHeight * 0.5f);
+        float maxScroll        = contentHeight - viewportHeight;
+        float t                = Mathf.Clamp01(desiredTopScroll / maxScroll);
+        _scrollRect.verticalNormalizedPosition = 1f - t;
     }
 
     // ── Board naming ──────────────────────────────────────────────────────────
 
     private string BoardName()
     {
-        if (_boardIndex == 0) return "Purrbricks_HighScores";
-        return $"Purrbricks_level_{_boardIndex - 1:D2}";
+        string allTime = _boardIndex == 0
+            ? PurrbricksLeaderboards.OverallAllTime
+            : PurrbricksLeaderboards.LevelAllTime(_boardIndex - 1);
+
+        return PurrbricksLeaderboards.Scoped(allTime, _scope);
     }
 
     private string GetBoardLabel()
@@ -551,25 +687,27 @@ public class HighScoresUI : MonoBehaviour
 
     // ── Public API ────────────────────────────────────────────────────────────
 
-    /// <summary>Opens on the OVERALL board in NEARBY mode.</summary>
+    /// <summary>Opens on the OVERALL board.</summary>
     public void Show()
     {
         SetReturnToVictory(false);
         gameObject.SetActive(true);
         _boardIndex = 0;
-        ResetToNearby();
+        _scope = LeaderboardTimeScope.AllTime;
+        ResetAndFetch();
     }
 
     /// <summary>Alias kept for GameManager compatibility.</summary>
     public void ShowGlobalTab() => Show();
 
-    /// <summary>Opens directly on a specific level's board in NEARBY mode.</summary>
+    /// <summary>Opens directly on a specific level's board.</summary>
     public void ShowForLevel(int levelIndex, bool returnToVictory = false)
     {
         SetReturnToVictory(returnToVictory);
         gameObject.SetActive(true);
         _boardIndex = Mathf.Clamp(levelIndex + 1, 0, TOTAL_BOARDS - 1);
-        ResetToNearby();
+        _scope = LeaderboardTimeScope.AllTime;
+        ResetAndFetch();
     }
 
     public void Hide() { gameObject.SetActive(false); }

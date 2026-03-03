@@ -14,6 +14,8 @@ public class SteamLeaderboardManager : MonoBehaviour
 
     public event Action<string> OnError;
 
+    private const int FETCH_ALL_PAGE_SIZE = 100;
+
     // ── Per-board state ───────────────────────────────────────────────────────
 
     private class BoardEntry
@@ -24,6 +26,8 @@ public class SteamLeaderboardManager : MonoBehaviour
             = new Queue<(int, ELeaderboardUploadScoreMethod)>();
         public readonly Queue<(ELeaderboardDataRequest reqType, int rangeStart, int rangeEnd, Action<List<LeaderboardEntryModel>> cb)> PendingFetches
             = new Queue<(ELeaderboardDataRequest, int, int, Action<List<LeaderboardEntryModel>>)>();
+        public readonly Queue<Action<List<LeaderboardEntryModel>>> PendingFetchAll
+            = new Queue<Action<List<LeaderboardEntryModel>>>();
     }
 
     private struct DownloadRequest
@@ -129,6 +133,24 @@ public class SteamLeaderboardManager : MonoBehaviour
         EnqueueOrPend(boardName, ELeaderboardDataRequest.k_ELeaderboardDataRequestGlobalAroundUser, -range, range, callback);
     }
 
+    /// <summary>
+    /// Fetch all scores currently on the leaderboard.
+    /// <paramref name="callback"/> is invoked with an empty list when the board has no entries, or <c>null</c> on error.
+    /// </summary>
+    public void FetchAll(string boardName, Action<List<LeaderboardEntryModel>> callback)
+    {
+        if (!IsSteamReady()) { callback?.Invoke(null); return; }
+
+        var entry = GetOrCreate(boardName);
+        if (entry.IsReady)
+            EnqueueFetchAllNow(entry, callback);
+        else
+        {
+            entry.PendingFetchAll.Enqueue(callback);
+            EnsureInit(boardName);
+        }
+    }
+
     private void EnqueueOrPend(string boardName, ELeaderboardDataRequest reqType,
         int rangeStart, int rangeEnd, Action<List<LeaderboardEntryModel>> callback)
     {
@@ -207,7 +229,37 @@ public class SteamLeaderboardManager : MonoBehaviour
             EnqueueDownload(entry.Handle, reqType, rangeStart, rangeEnd, cb);
         }
 
+        while (entry.PendingFetchAll.Count > 0)
+        {
+            var cb = entry.PendingFetchAll.Dequeue();
+            EnqueueFetchAllNow(entry, cb);
+        }
+
         TryStartNextInit();
+    }
+
+    private void EnqueueFetchAllNow(BoardEntry entry, Action<List<LeaderboardEntryModel>> callback)
+    {
+        // Avoid relying on GetLeaderboardEntryCount (can be unreliable on some boards until after first download).
+        // Page until a page returns fewer than FETCH_ALL_PAGE_SIZE entries.
+        FetchAllPaged(entry.Handle, 1, new List<LeaderboardEntryModel>(), callback);
+    }
+
+    private void FetchAllPaged(SteamLeaderboard_t handle, int startRank, List<LeaderboardEntryModel> acc, Action<List<LeaderboardEntryModel>> callback)
+    {
+        int endRank = startRank + FETCH_ALL_PAGE_SIZE - 1;
+        EnqueueDownload(handle, ELeaderboardDataRequest.k_ELeaderboardDataRequestGlobal, startRank, endRank, page =>
+        {
+            if (page == null) { callback?.Invoke(null); return; }
+            if (page.Count == 0) { callback?.Invoke(acc); return; }
+
+            acc.AddRange(page);
+
+            if (page.Count < FETCH_ALL_PAGE_SIZE)
+                callback?.Invoke(acc);
+            else
+                FetchAllPaged(handle, startRank + FETCH_ALL_PAGE_SIZE, acc, callback);
+        });
     }
 
     // ── Uploads ───────────────────────────────────────────────────────────────
@@ -271,6 +323,9 @@ public class SteamLeaderboardManager : MonoBehaviour
         _downloading = false;
         var cb = _downloadCallback;
         _downloadCallback = null;
+
+        if (Debug.isDebugBuild)
+            Debug.Log($"SteamLeaderboardManager: Download complete failure={failure} entries={result.m_cEntryCount}");
 
         if (failure)
         {

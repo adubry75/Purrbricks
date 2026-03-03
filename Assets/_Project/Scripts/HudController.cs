@@ -281,18 +281,30 @@ public class HudController : MonoBehaviour
         return go;
     }
 
-    private static TMP_Text MakeTMP(Transform parent, string text, int fontSize, Color color, TextAlignmentOptions align)
+    private static TMP_Text MakeTMP(
+    Transform parent,
+    string text,
+    int fontSize,
+    Color color,
+    TextAlignmentOptions align
+    )
     {
         var go = new GameObject("TMP");
         go.transform.SetParent(parent, false);
         go.AddComponent<RectTransform>();
+
+        var font = Resources.Load<TMP_FontAsset>("Fonts & Materials/Orbitron-VariableFont_wght SDF");
+
         var t = go.AddComponent<TextMeshProUGUI>();
-        t.text      = text;
-        t.fontSize  = fontSize;
-        t.color     = color;
+        t.font = font;          // 👈 THIS is the missing piece
+        t.text = text;
+        t.fontSize = fontSize;
+        t.color = color;
         t.alignment = align;
+
         t.enableWordWrapping = false;
         t.overflowMode = TextOverflowModes.Ellipsis;
+
         return t;
     }
 
