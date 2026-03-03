@@ -319,6 +319,9 @@ public class GameManager : MonoBehaviour
 
     public int GetLives() => _lives;
 
+    /// <summary>Score earned on the current (or most-recently completed) level only.</summary>
+    public int GetLevelScore() => Mathf.Max(0, _score - _levelStartScore);
+
     public bool IsPlayingOrReady() => _state == GameState.Playing || _state == GameState.Ready;
 
     public void ShowStore()

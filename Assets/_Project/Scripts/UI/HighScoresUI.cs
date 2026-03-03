@@ -477,7 +477,31 @@ public class HighScoresUI : MonoBehaviour
     /// </summary>
     private void GenerateTestData(string boardName)
     {
-        int      score   = _cachedMyScore > 0 ? _cachedMyScore : 80_000;
+        int score = 0;
+
+        if (_boardIndex > 0)
+        {
+            // Level board — use the score from the current play session.
+            // GameManager keeps (_score - _levelStartScore) valid through the Victory screen,
+            // so this is the actual score the player just earned, not their all-time best.
+            int sessionScore = GameManager.Instance?.GetLevelScore() ?? 0;
+            if (sessionScore > 0) score = sessionScore;
+
+            // If the game hasn't been played yet this session, fall back to the local personal best.
+            if (score <= 0 && HighScoreManager.Instance != null)
+            {
+                string levelId = $"level_{(_boardIndex - 1):D2}";
+                int pb = HighScoreManager.Instance.GetPersonalBest(levelId);
+                if (pb > 0) score = pb;
+            }
+        }
+
+        // Overall board (or level board with no session/PB data): use the Steam-cached score.
+        if (score <= 0) score = _cachedMyScore;
+
+        // Absolute last resort.
+        if (score <= 0) score = 80_000;
+
         CSteamID steamId = _cachedMySteamId;
         string   name    = _cachedMyName;
 

@@ -44,23 +44,28 @@ public static class LeaderboardTestData
         var rng = new System.Random(StableHash32(boardName) ^ myScore);
         var items = new List<LeaderboardEntryModel>(FakeCompetitorCount + 1);
 
-        // Scores strictly above me (so my rank is desiredRank)
+        // Scores above me: spread from myScore+1 up to 5× myScore (or +100k, whichever is bigger).
         int higherCount = desiredRank - 1;
+        int topScore    = Math.Max(myScore * 5, myScore + 100_000);
+        int aboveRange  = topScore - myScore; // always > 0
+
         for (int i = 0; i < higherCount; i++)
         {
-            int delta = 1 + rng.Next(25, 2500);
-            int score = myScore + delta + i; // ensure unique and strictly greater
+            int score = myScore + 1 + rng.Next(aboveRange);
             items.Add(new LeaderboardEntryModel(0, score, FakeSteamId(boardName, i), FakeName(rng, i)));
         }
 
         // My entry (Steam-backed)
         items.Add(new LeaderboardEntryModel(0, myScore, meEntry.SteamId, meEntry.DisplayName));
 
-        // Scores at/below me
+        // Scores below me: spread from 1 000 (or myScore/5, whichever is bigger) up to myScore-1.
+        int botScore   = Math.Max(1_000, myScore / 5);
+        if (botScore >= myScore) botScore = Math.Max(1, myScore - 1); // edge case: very low score
+        int belowRange = Math.Max(1, myScore - 1 - botScore);
+
         for (int i = higherCount; i < FakeCompetitorCount; i++)
         {
-            int delta = 1 + rng.Next(10, 2000);
-            int score = myScore - delta - (i - higherCount);
+            int score = botScore + rng.Next(belowRange + 1);
             items.Add(new LeaderboardEntryModel(0, score, FakeSteamId(boardName, i), FakeName(rng, i)));
         }
 
@@ -89,11 +94,32 @@ public static class LeaderboardTestData
 
     private static string FakeName(System.Random rng, int i)
     {
-        string[] prefixes = { "PurrBot", "Cat", "Meow", "Whiskers", "Nyan", "Paw", "Furball", "Tuna", "Mittens", "Claw" };
-        string[] suffixes = { "Ace", "Pro", "King", "Queen", "Ninja", "Wizard", "Hero", "Ranger", "Bandit", "Prime" };
-        string p = prefixes[rng.Next(prefixes.Length)];
-        string s = suffixes[rng.Next(suffixes.Length)];
-        return $"{p}{s}{i + 1:000}";
+        string[] adj = {
+            "Salty", "Spicy", "Crispy", "Soggy", "Crusty", "Flakey", "Chunky", "Sloppy",
+            "Wobbly", "Sticky", "Gloomy", "Grumpy", "Dizzy", "Fuzzy", "Rusty", "Sneaky",
+            "Chaotic", "Blazing", "Glitchy", "Toxic", "Creamy", "Squishy", "Wicked",
+            "Crunchy", "Sweaty", "Stinky", "Funky", "Zippy", "Nasty", "Fancy",
+            "Turbo", "Ultra", "Mega", "Dark", "Wild", "Shady", "Gritty", "Slippery",
+            "Buttery", "Clammy", "Drenched", "Frosty", "Grimy", "Hollow", "Itchy",
+        };
+        string[] noun = {
+            "Biscuit", "Waffle", "Noodle", "Ferret", "Muffin", "Tortilla", "Narwhal",
+            "Walrus", "Baguette", "Cheddar", "Bandit", "Goblin", "Spatula", "Hedgehog",
+            "Dongle", "Nugget", "Taco", "Burrito", "Pickle", "Potato", "Cabbage",
+            "Salmon", "Turnip", "Bagel", "Pretzel", "Kipper", "Onion", "Crouton",
+            "Pancake", "Nacho", "Chimichanga", "Calzone", "Stromboli", "Hoagie",
+            "Brisket", "Bratwurst", "Schnitzel", "Haggis", "Lasagna", "Pierogi",
+        };
+        // Mix of recognisable gamer numbers and plain randoms for variety.
+        int[] gamerNums = { 69, 420, 1337, 9000, 9001, 42, 404, 666, 777, 360, 2077, 1984, 808, 101, 247, 911, 007, 1, 2, 3 };
+
+        string a = adj[rng.Next(adj.Length)];
+        string n = noun[rng.Next(noun.Length)];
+        int    num = rng.Next(4) == 0          // 25 % chance of a gamer number
+            ? gamerNums[rng.Next(gamerNums.Length)]
+            : rng.Next(10, 9999);
+
+        return $"{a}{n}{num}";
     }
 
     private static int StableHash32(string text)
