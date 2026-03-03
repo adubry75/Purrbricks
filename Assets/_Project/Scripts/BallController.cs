@@ -70,7 +70,7 @@ public class BallController : MonoBehaviour
 
     // ── Speed ramp (Fury Strike charge) ───────────────────────────────────────
     private const float RAMP_MAX = 2.0f;   // maximum speed multiplier
-    private const float RAMP_RATE = 0.015f; // multiplier gained per second while live
+    public float RAMP_RATE = 0.015f; // multiplier gained per second while live
     private float _rampMultiplier = 1.0f;
 
     /// <summary>0 = no charge, 1 = Fury Strike ready.</summary>

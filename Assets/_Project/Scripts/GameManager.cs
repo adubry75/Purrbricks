@@ -193,6 +193,8 @@ public class GameManager : MonoBehaviour
             if (Input.GetKeyDown(KeyCode.Keypad9))    CheatApply(PowerupType.ShieldWall);
             if (Input.GetKeyDown(KeyCode.KeypadPlus)) CheatApply(PowerupType.BigBall);
             if (Input.GetKeyDown(KeyCode.KeypadPeriod)) CheatApply(PowerupType.ScoreFrenzy);
+            
+            //Debug.Log($"{_ball.RampFraction} ramp");
         }
 
         if (_state == GameState.Playing && (Input.GetKey(KeyCode.LeftControl) || Input.GetKey(KeyCode.RightControl)))
@@ -218,6 +220,11 @@ public class GameManager : MonoBehaviour
         // Debug hotkey: clear all but 1 brick
         if (Input.GetKeyDown(KeyCode.K) && _state == GameState.Playing)
             ClearAllButOneBrick();
+
+        if (Input.GetKeyDown(KeyCode.X))
+        {
+            _ball.RAMP_RATE = .5f;
+        }
 
         if (Input.GetKeyDown(KeyCode.Z))
         {
@@ -276,14 +283,28 @@ public class GameManager : MonoBehaviour
     private static bool IsFuryStrikeMouseComboPressed()
     {
         var mouse = Mouse.current;
-        if (mouse == null) return false;
+        if (mouse == null) 
+        {
+            Debug.Log($"null mouse in fury!");
+            return false; 
+        }
+
 
         var left = mouse.leftButton;
         var right = mouse.rightButton;
-        if (left == null || right == null) return false;
+        if (left == null || right == null)
+        {
+            Debug.Log($"null left or right in fury!");
+            return false;
+        }
 
         if (left.isPressed && right.isPressed)
+        {
+            Debug.Log($"left: {left.wasPressedThisFrame}! right: {right.wasPressedThisFrame}!");
             return left.wasPressedThisFrame || right.wasPressedThisFrame;
+        }
+
+        Debug.Log($"nothing, falling thru");
 
         return false;
     }
