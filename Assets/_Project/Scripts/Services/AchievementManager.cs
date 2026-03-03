@@ -310,4 +310,70 @@ public class AchievementManager : MonoBehaviour
 
     private static bool IsSteamReady() =>
         SteamworksBootstrap.Instance?.IsSteamAvailable == true;
+
+    // ── Dev reset (debug builds only) ──────────────────────────────────────────
+
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
+    private void Update()
+    {
+        // Ctrl + Shift + F12 → wipe all achievements (for fresh testing / handoff)
+        if (Input.GetKey(KeyCode.LeftControl) && Input.GetKey(KeyCode.LeftShift)
+            && Input.GetKeyDown(KeyCode.F12))
+        {
+            ClearAllAchievements();
+        }
+    }
+#endif
+
+    /// <summary>
+    /// Clears every achievement and resets all related stats on Steam, then wipes the
+    /// per-level death counts stored in PlayerPrefs.
+    /// Only intended for dev/QA use — call via Ctrl+Shift+F12 in a development build.
+    /// </summary>
+    public void ClearAllAchievements()
+    {
+        if (!IsSteamReady())
+        {
+            Debug.LogWarning("[Achievement] Cannot clear — Steam is not available.");
+            return;
+        }
+
+        string[] allIds =
+        {
+            ID.FirstPaws, ID.Burglar, ID.ClawMarks, ID.Halfway, ID.Meow, ID.Purrfect,
+            ID.Score10K, ID.Score100K, ID.Score1M, ID.GemHunter,
+            ID.ComboTen, ID.ComboTwentyFive, ID.HavocFirst, ID.HavocTen, ID.MaximumHavoc,
+            ID.BallPit, ID.DoubleTrouble, ID.NineLives, ID.Cursed,
+            ID.LastLife, ID.Unbroken, ID.LongHaul, ID.Blindfolded, ID.TinyTerror, ID.DrunkDriver,
+            ID.Catastrophic, ID.Level1GameOver, ID.Pacifist, ID.SpeedRunner, ID.Curiosity, ID.Catastrophe,
+        };
+
+        int cleared = 0;
+        foreach (string id in allIds)
+        {
+            if (SteamUserStats.ClearAchievement(id)) cleared++;
+            else Debug.LogWarning($"[Achievement] ClearAchievement failed for: {id}");
+        }
+
+        // Reset the Fury Strike cumulative stat
+        SteamUserStats.SetStat(StatFuryStrikes, 0);
+
+        // Commit everything to Steam in one call
+        SteamUserStats.StoreStats();
+
+        // Wipe per-level death counts used by the Curiosity achievement
+        for (int i = 0; i < 80; i++)
+            PlayerPrefs.DeleteKey(PrefixLevelDeaths + i);
+        PlayerPrefs.Save();
+
+        // Reset session state so achievements can trigger again this run
+        _sessionExtraLives        = 0;
+        _sessionBricksDestroyed   = 0;
+        _longHaulUnlocked         = false;
+        _ballAliveSeconds         = 0f;
+        _consecutiveNoDeathStreak = 0;
+        _furyStrikeBricksHit      = 0;
+
+        Debug.Log($"[Achievement] Cleared {cleared}/{allIds.Length} achievements + reset stats. StoreStats called.");
+    }
 }

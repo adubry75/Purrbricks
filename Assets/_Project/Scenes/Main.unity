@@ -3643,7 +3643,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: Version 1.0005 - 2/28/2006 23:38
+  m_text: Version 1.006 - 3/3/2006 00:10
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: eb27bc354c34be64980cd2d69dd4e6d9, type: 2}
   m_sharedMaterial: {fileID: -5226213460154039966, guid: eb27bc354c34be64980cd2d69dd4e6d9, type: 2}
