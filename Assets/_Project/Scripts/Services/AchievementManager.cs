@@ -26,11 +26,15 @@ public class AchievementManager : MonoBehaviour
         public const string Score10K       = "ACH_SCORE_10K";
         public const string Score100K      = "ACH_SCORE_100K";
         public const string Score1M        = "ACH_SCORE_1M";
+        public const string Score10M       = "ACH_SCORE_10M";
+        public const string Score100M      = "ACH_SCORE_100M";
         public const string GemHunter      = "ACH_GEM_HUNTER";
 
         // Combos & Fury Strike
         public const string ComboTen       = "ACH_COMBO_10";
         public const string ComboTwentyFive= "ACH_COMBO_25";
+        public const string ComboFifty     = "ACH_COMBO_50";
+        public const string Combo1Hundred  = "ACH_COMBO_100";
         public const string HavocFirst     = "ACH_HAVOC_FIRST";
         public const string HavocTen       = "ACH_HAVOC_10";
         public const string MaximumHavoc   = "ACH_MAXIMUM_HAVOC";
@@ -175,6 +179,7 @@ public class AchievementManager : MonoBehaviour
     {
         if (combo >= 10) Unlock(ID.ComboTen);
         if (combo >= 25) Unlock(ID.ComboTwentyFive);
+        if (combo >= 50) Unlock(ID.ComboFifty);
 
         // Double Trouble: ScoreFrenzy active while at ×10+ combo
         if (scoreFrenzyActive && combo >= 10) Unlock(ID.DoubleTrouble);

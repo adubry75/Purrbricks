@@ -71,6 +71,40 @@ public class HighScoresUI : MonoBehaviour
         Hide();
     }
 
+    private void Start()
+    {
+        // Pre-warm the overall AllTime/Weekly/Daily boards at game startup so
+        // FindOrCreateLeaderboard completes before the user opens HighScores.
+        // _boardIndex is 0 (OVERALL) at this point, which is always the first thing shown.
+        if (!LeaderboardTestData.Enabled)
+            StartCoroutine(PrewarmAfterDelay());
+    }
+
+    private System.Collections.IEnumerator PrewarmAfterDelay()
+    {
+        // Give SteamworksBootstrap a moment to finish initialising before we issue API calls.
+        yield return new WaitForSecondsRealtime(1.5f);
+        PrewarmCurrentBoardScopes();
+    }
+
+    /// <summary>
+    /// Fires FindOrCreateLeaderboard for the Weekly and Daily scopes of the current board
+    /// so the handles are ready before the user clicks those tabs.
+    /// </summary>
+    private void PrewarmCurrentBoardScopes()
+    {
+        if (SteamLeaderboardManager.Instance == null) return;
+        string allTime = _boardIndex == 0
+            ? PurrbricksLeaderboards.OverallAllTime
+            : PurrbricksLeaderboards.LevelAllTime(_boardIndex - 1);
+
+        // AllTime is warmed implicitly by the first Fetch(); skip it to keep the queue lean.
+        SteamLeaderboardManager.Instance.PrewarmBoard(
+            PurrbricksLeaderboards.Scoped(allTime, LeaderboardTimeScope.Weekly));
+        SteamLeaderboardManager.Instance.PrewarmBoard(
+            PurrbricksLeaderboards.Scoped(allTime, LeaderboardTimeScope.Daily));
+    }
+
     // ── UI Construction ───────────────────────────────────────────────────────
 
     private void BuildUI()
@@ -261,6 +295,9 @@ public class HighScoresUI : MonoBehaviour
         UpdateBoardLabel();
         UpdateScopeTabVisuals();
         Fetch();
+        // After the current board's fetch is queued, kick off weekly/daily init in
+        // parallel so those boards are ready by the time the user clicks those tabs.
+        PrewarmCurrentBoardScopes();
     }
 
     private void Fetch()
@@ -293,14 +330,18 @@ public class HighScoresUI : MonoBehaviour
             return;
         }
 
-        SteamLeaderboardManager.Instance.FetchAroundMe(board, 0,
+        // No-op (downloads are now fully parallel, no shared queue to drain).
+        SteamLeaderboardManager.Instance.CancelPendingDownloads();
+
+        // range=50 → up to 101 entries centred on the current user (range=0 would return only the user's own row).
+        SteamLeaderboardManager.Instance.FetchAroundMe(board, 50,
             entries => OnFetchedAroundMe(token, board, entries));
         StartCoroutine(FetchTimeout(token));
     }
 
     private IEnumerator FetchTimeout(int token)
     {
-        yield return new WaitForSecondsRealtime(8f);
+        yield return new WaitForSecondsRealtime(15f);
         if (!_fetching) yield break;
         if (token != _fetchToken) yield break;
 
@@ -333,13 +374,18 @@ public class HighScoresUI : MonoBehaviour
             }
             // Production: fall back to the top of the board so at least something is visible.
             _fetching = true;
-            SteamLeaderboardManager.Instance?.FetchRange(boardName, 1, 10,
+            SteamLeaderboardManager.Instance?.FetchRange(boardName, 1, 50,
                 top => OnFetchedTop(token, boardName, top));
             return;
         }
 
-        // FetchAroundMe(range=0) always returns the current user's entry as entries[0].
-        var me = entries[0];
+        // With range=50 FetchAroundMe returns up to 101 entries sorted by rank.
+        // The user's entry is somewhere in that list — find it explicitly.
+        CSteamID mySteamId = SteamworksBootstrap.Instance?.IsSteamAvailable == true
+            ? SteamUser.GetSteamID() : CSteamID.Nil;
+        var me = mySteamId != CSteamID.Nil
+            ? entries.Find(e => e.SteamId == mySteamId) ?? entries[0]
+            : entries[0];
 
         // Cache the player's score from the AllTime board so Weekly/Daily simulation can
         // use the same baseline score even before those boards have a real Steam entry.

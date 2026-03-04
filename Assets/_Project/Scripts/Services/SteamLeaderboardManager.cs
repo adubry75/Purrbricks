@@ -30,23 +30,14 @@ public class SteamLeaderboardManager : MonoBehaviour
             = new Queue<Action<List<LeaderboardEntryModel>>>();
     }
 
-    private struct DownloadRequest
-    {
-        public SteamLeaderboard_t Handle;
-        public ELeaderboardDataRequest RequestType;
-        public int RangeStart;
-        public int RangeEnd;
-        public Action<List<LeaderboardEntryModel>> Callback;
-    }
-
     private readonly Dictionary<string, BoardEntry> _boards = new Dictionary<string, BoardEntry>();
 
-    // ── Initialization queue (one board at a time) ────────────────────────────
+    // ── Parallel board initialization ─────────────────────────────────────────
+    // Each FindOrCreateLeaderboard call gets its own CallResult so all boards
+    // initialise concurrently rather than queuing behind each other.
 
-    private readonly HashSet<string> _initQueued = new HashSet<string>();
-    private readonly Queue<string>   _initQueue  = new Queue<string>();
-    private string _initializingNow;
-    private CallResult<LeaderboardFindResult_t> _findResult;
+    private readonly Dictionary<string, CallResult<LeaderboardFindResult_t>> _activeInits
+        = new Dictionary<string, CallResult<LeaderboardFindResult_t>>();
 
     // ── Upload queue (serialized) ─────────────────────────────────────────────
 
@@ -55,12 +46,12 @@ public class SteamLeaderboardManager : MonoBehaviour
     private bool _uploading;
     private CallResult<LeaderboardScoreUploaded_t> _uploadResult;
 
-    // ── Download queue (serialized) ───────────────────────────────────────────
+    // ── Parallel downloads ────────────────────────────────────────────────────
+    // Each DownloadLeaderboardEntries call gets its own CallResult so a hung
+    // download on one board cannot block downloads on any other board.
 
-    private readonly Queue<DownloadRequest> _downloadQueue = new Queue<DownloadRequest>();
-    private bool _downloading;
-    private Action<List<LeaderboardEntryModel>> _downloadCallback;
-    private CallResult<LeaderboardScoresDownloaded_t> _downloadResult;
+    private readonly List<CallResult<LeaderboardScoresDownloaded_t>> _activeDownloads
+        = new List<CallResult<LeaderboardScoresDownloaded_t>>();
 
     // ── Lifecycle ─────────────────────────────────────────────────────────────
 
@@ -70,9 +61,7 @@ public class SteamLeaderboardManager : MonoBehaviour
         Instance = this;
         DontDestroyOnLoad(gameObject);
 
-        _findResult     = CallResult<LeaderboardFindResult_t>.Create(OnLeaderboardFound);
-        _uploadResult   = CallResult<LeaderboardScoreUploaded_t>.Create(OnScoreUploaded);
-        _downloadResult = CallResult<LeaderboardScoresDownloaded_t>.Create(OnScoresDownloaded);
+        _uploadResult = CallResult<LeaderboardScoreUploaded_t>.Create(OnScoreUploaded);
     }
 
     // ── Public API ────────────────────────────────────────────────────────────
@@ -134,6 +123,25 @@ public class SteamLeaderboardManager : MonoBehaviour
     }
 
     /// <summary>
+    /// Triggers board initialization (FindOrCreateLeaderboard) for <paramref name="boardName"/>
+    /// without queuing any download. Call this to warm up a board before the user fetches it.
+    /// Safe to call if the board is already ready — becomes a no-op.
+    /// </summary>
+    public void PrewarmBoard(string boardName)
+    {
+        if (!IsSteamReady()) return;
+        var entry = GetOrCreate(boardName);
+        if (!entry.IsReady) EnsureInit(boardName);
+    }
+
+    /// <summary>
+    /// No-op: downloads are now fully parallel (no shared queue).
+    /// A stale download's callback is discarded by the token check in HighScoresUI.
+    /// Kept so existing call sites compile without changes.
+    /// </summary>
+    public void CancelPendingDownloads() { }
+
+    /// <summary>
     /// Fetch all scores currently on the leaderboard.
     /// <paramref name="callback"/> is invoked with an empty list when the board has no entries, or <c>null</c> on error.
     /// </summary>
@@ -180,35 +188,42 @@ public class SteamLeaderboardManager : MonoBehaviour
 
     private void EnsureInit(string name)
     {
-        if (_initQueued.Contains(name)) return;
-        _initQueued.Add(name);
-        _initQueue.Enqueue(name);
-        TryStartNextInit();
-    }
-
-    private void TryStartNextInit()
-    {
-        if (_initializingNow != null || _initQueue.Count == 0) return;
-        _initializingNow = _initQueue.Dequeue();
-        Debug.Log($"SteamLeaderboardManager: Finding/creating '{_initializingNow}'");
+        if (_activeInits.ContainsKey(name)) return; // already in progress
+        // Each board gets its own CallResult so multiple boards init concurrently.
+        var cr = CallResult<LeaderboardFindResult_t>.Create(
+            (result, failure) => OnLeaderboardFound(name, result, failure));
+        _activeInits[name] = cr;
+        Debug.Log($"SteamLeaderboardManager: Finding/creating '{name}'");
         var call = SteamUserStats.FindOrCreateLeaderboard(
-            _initializingNow,
+            name,
             ELeaderboardSortMethod.k_ELeaderboardSortMethodDescending,
             ELeaderboardDisplayType.k_ELeaderboardDisplayTypeNumeric);
-        _findResult.Set(call);
+        cr.Set(call);
     }
 
-    private void OnLeaderboardFound(LeaderboardFindResult_t result, bool failure)
+    private void OnLeaderboardFound(string name, LeaderboardFindResult_t result, bool failure)
     {
-        string name = _initializingNow;
-        _initializingNow = null;
-        _initQueued.Remove(name);
+        _activeInits.Remove(name);
 
         if (failure || result.m_bLeaderboardFound == 0)
         {
             Debug.LogWarning($"SteamLeaderboardManager: Failed to find/create '{name}'");
             OnError?.Invoke($"Could not access leaderboard '{name}'.");
-            TryStartNextInit();
+            // Fail any pending fetches for this board so callers don't hang.
+            if (_boards.TryGetValue(name, out var failEntry))
+            {
+                while (failEntry.PendingFetches.Count > 0)
+                {
+                    var (_, _, _, cb) = failEntry.PendingFetches.Dequeue();
+                    cb?.Invoke(null);
+                }
+                while (failEntry.PendingUploads.Count > 0) failEntry.PendingUploads.Dequeue();
+                while (failEntry.PendingFetchAll.Count > 0)
+                {
+                    var cb = failEntry.PendingFetchAll.Dequeue();
+                    cb?.Invoke(null);
+                }
+            }
             return;
         }
 
@@ -234,8 +249,6 @@ public class SteamLeaderboardManager : MonoBehaviour
             var cb = entry.PendingFetchAll.Dequeue();
             EnqueueFetchAllNow(entry, cb);
         }
-
-        TryStartNextInit();
     }
 
     private void EnqueueFetchAllNow(BoardEntry entry, Action<List<LeaderboardEntryModel>> callback)
@@ -295,59 +308,40 @@ public class SteamLeaderboardManager : MonoBehaviour
     private void EnqueueDownload(SteamLeaderboard_t handle, ELeaderboardDataRequest reqType,
         int rangeStart, int rangeEnd, Action<List<LeaderboardEntryModel>> cb)
     {
-        _downloadQueue.Enqueue(new DownloadRequest
+        // Declare cr before the lambda so the closure can capture it.
+        CallResult<LeaderboardScoresDownloaded_t> cr = null;
+        cr = CallResult<LeaderboardScoresDownloaded_t>.Create((result, failure) =>
         {
-            Handle      = handle,
-            RequestType = reqType,
-            RangeStart  = rangeStart,
-            RangeEnd    = rangeEnd,
-            Callback    = cb,
-        });
-        TryStartNextDownload();
-    }
+            _activeDownloads.Remove(cr);
 
-    private void TryStartNextDownload()
-    {
-        if (_downloading || _downloadQueue.Count == 0) return;
-        _downloading = true;
-        var req = _downloadQueue.Dequeue();
-        _downloadCallback = req.Callback;
-        var call = SteamUserStats.DownloadLeaderboardEntries(
-            req.Handle, req.RequestType, req.RangeStart, req.RangeEnd);
-        _downloadResult.Set(call);
-        Debug.Log($"SteamLeaderboardManager: Downloading {req.RequestType} [{req.RangeStart},{req.RangeEnd}]");
-    }
+            if (Debug.isDebugBuild)
+                Debug.Log($"SteamLeaderboardManager: Download complete failure={failure} entries={result.m_cEntryCount}");
 
-    private void OnScoresDownloaded(LeaderboardScoresDownloaded_t result, bool failure)
-    {
-        _downloading = false;
-        var cb = _downloadCallback;
-        _downloadCallback = null;
-
-        if (Debug.isDebugBuild)
-            Debug.Log($"SteamLeaderboardManager: Download complete failure={failure} entries={result.m_cEntryCount}");
-
-        if (failure)
-        {
-            Debug.LogWarning("SteamLeaderboardManager: Download failed.");
-            cb?.Invoke(null);
-            TryStartNextDownload();
-            return;
-        }
-
-        var entries = new List<LeaderboardEntryModel>(result.m_cEntryCount);
-        for (int i = 0; i < result.m_cEntryCount; i++)
-        {
-            if (SteamUserStats.GetDownloadedLeaderboardEntry(
-                result.m_hSteamLeaderboardEntries, i, out var e, null, 0))
+            if (failure)
             {
-                string displayName = ResolveDisplayName(e.m_steamIDUser);
-                entries.Add(new LeaderboardEntryModel(e.m_nGlobalRank, e.m_nScore, e.m_steamIDUser, displayName));
+                Debug.LogWarning("SteamLeaderboardManager: Download failed.");
+                cb?.Invoke(null);
+                return;
             }
-        }
 
-        cb?.Invoke(entries);
-        TryStartNextDownload();
+            var entries = new List<LeaderboardEntryModel>(result.m_cEntryCount);
+            for (int i = 0; i < result.m_cEntryCount; i++)
+            {
+                if (SteamUserStats.GetDownloadedLeaderboardEntry(
+                    result.m_hSteamLeaderboardEntries, i, out var e, null, 0))
+                {
+                    string displayName = ResolveDisplayName(e.m_steamIDUser);
+                    entries.Add(new LeaderboardEntryModel(e.m_nGlobalRank, e.m_nScore, e.m_steamIDUser, displayName));
+                }
+            }
+
+            cb?.Invoke(entries);
+        });
+
+        _activeDownloads.Add(cr); // keep alive until callback fires
+        var call = SteamUserStats.DownloadLeaderboardEntries(handle, reqType, rangeStart, rangeEnd);
+        cr.Set(call);
+        Debug.Log($"SteamLeaderboardManager: Downloading {reqType} [{rangeStart},{rangeEnd}]");
     }
 
     private static string ResolveDisplayName(CSteamID steamId)
