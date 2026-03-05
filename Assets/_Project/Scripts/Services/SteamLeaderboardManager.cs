@@ -5,8 +5,9 @@ using UnityEngine;
 
 /// <summary>
 /// Singleton that manages multiple named Steam leaderboards.
-/// Serializes board initialization, score uploads (KeepBest), and top-score fetches
-/// so that multiple boards can be used without conflicting CallResult handles.
+/// Board initialization, score uploads, and score downloads are all fully parallel —
+/// each async Steam API call gets its own CallResult so a stuck callback on one board
+/// cannot block any other board.
 /// </summary>
 public class SteamLeaderboardManager : MonoBehaviour
 {
@@ -39,12 +40,12 @@ public class SteamLeaderboardManager : MonoBehaviour
     private readonly Dictionary<string, CallResult<LeaderboardFindResult_t>> _activeInits
         = new Dictionary<string, CallResult<LeaderboardFindResult_t>>();
 
-    // ── Upload queue (serialized) ─────────────────────────────────────────────
+    // ── Parallel uploads ──────────────────────────────────────────────────────
+    // Each UploadLeaderboardScore call gets its own CallResult so a hung callback
+    // on one board cannot block uploads to any other board.
 
-    private readonly Queue<(SteamLeaderboard_t handle, int score, ELeaderboardUploadScoreMethod method)> _uploadQueue
-        = new Queue<(SteamLeaderboard_t, int, ELeaderboardUploadScoreMethod)>();
-    private bool _uploading;
-    private CallResult<LeaderboardScoreUploaded_t> _uploadResult;
+    private readonly List<CallResult<LeaderboardScoreUploaded_t>> _activeUploads
+        = new List<CallResult<LeaderboardScoreUploaded_t>>();
 
     // ── Parallel downloads ────────────────────────────────────────────────────
     // Each DownloadLeaderboardEntries call gets its own CallResult so a hung
@@ -60,8 +61,6 @@ public class SteamLeaderboardManager : MonoBehaviour
         if (Instance != null && Instance != this) { Destroy(gameObject); return; }
         Instance = this;
         DontDestroyOnLoad(gameObject);
-
-        _uploadResult = CallResult<LeaderboardScoreUploaded_t>.Create(OnScoreUploaded);
     }
 
     // ── Public API ────────────────────────────────────────────────────────────
@@ -279,28 +278,22 @@ public class SteamLeaderboardManager : MonoBehaviour
 
     private void EnqueueUpload(SteamLeaderboard_t handle, int score, ELeaderboardUploadScoreMethod method)
     {
-        _uploadQueue.Enqueue((handle, score, method));
-        TryStartNextUpload();
-    }
+        // Each upload gets its own CallResult — a hung callback on one board cannot
+        // block uploads to any other board (same pattern as parallel downloads).
+        CallResult<LeaderboardScoreUploaded_t> cr = null;
+        cr = CallResult<LeaderboardScoreUploaded_t>.Create((result, failure) =>
+        {
+            _activeUploads.Remove(cr);
+            if (failure || result.m_bSuccess == 0)
+                Debug.LogWarning($"SteamLeaderboardManager: Score upload failed (failure={failure}).");
+            else
+                Debug.Log($"SteamLeaderboardManager: Uploaded score {result.m_nScore} (rank {result.m_nGlobalRankNew})");
+        });
 
-    private void TryStartNextUpload()
-    {
-        if (_uploading || _uploadQueue.Count == 0) return;
-        _uploading = true;
-        var (handle, score, method) = _uploadQueue.Dequeue();
+        _activeUploads.Add(cr); // keep alive until callback fires
         var call = SteamUserStats.UploadLeaderboardScore(handle, method, score, null, 0);
-        _uploadResult.Set(call);
+        cr.Set(call);
         Debug.Log($"SteamLeaderboardManager: Uploading score {score} ({method})");
-    }
-
-    private void OnScoreUploaded(LeaderboardScoreUploaded_t result, bool failure)
-    {
-        _uploading = false;
-        if (failure || result.m_bSuccess == 0)
-            Debug.LogWarning("SteamLeaderboardManager: Score upload failed.");
-        else
-            Debug.Log($"SteamLeaderboardManager: Uploaded score {result.m_nScore} (rank {result.m_nGlobalRankNew})");
-        TryStartNextUpload();
     }
 
     // ── Downloads ─────────────────────────────────────────────────────────────

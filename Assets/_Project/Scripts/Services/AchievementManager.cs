@@ -318,7 +318,6 @@ public class AchievementManager : MonoBehaviour
 
     // ── Dev reset (debug builds only) ──────────────────────────────────────────
 
-#if UNITY_EDITOR || DEVELOPMENT_BUILD
     private void Update()
     {
         // Ctrl + Shift + F12 → wipe all achievements (for fresh testing / handoff)
@@ -328,7 +327,7 @@ public class AchievementManager : MonoBehaviour
             ClearAllAchievements();
         }
     }
-#endif
+
 
     /// <summary>
     /// Clears every achievement and resets all related stats on Steam, then wipes the
