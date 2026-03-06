@@ -39,8 +39,8 @@ public class InventoryRadialMenu : MonoBehaviour
     private CanvasGroup _radialGroup;
 
     // Layout
-    private const float OUTER_RADIUS    = 230f;
-    private const float INNER_RADIUS    = 120f;
+    private const float OUTER_RADIUS    = 330f;
+    private const float INNER_RADIUS    = 220f;
     private const float OUTER_SLOT_SIZE = 88f;
     private const float INNER_SLOT_SIZE = 72f;
     private const float HIGHLIGHT_SCALE = 1.18f;
@@ -208,7 +208,8 @@ public class InventoryRadialMenu : MonoBehaviour
 
         var rootRt = _radialRoot.AddComponent<RectTransform>();
         rootRt.anchorMin = rootRt.anchorMax = rootRt.pivot = new Vector2(0.5f, 0.5f);
-        rootRt.sizeDelta = rootRt.anchoredPosition = Vector2.zero;
+        rootRt.sizeDelta        = Vector2.zero;
+        rootRt.anchoredPosition = new Vector2(-160f, 0f);
 
         _radialGroup = _radialRoot.AddComponent<CanvasGroup>();
         _radialGroup.alpha = 0f;
@@ -431,8 +432,9 @@ public class InventoryRadialMenu : MonoBehaviour
         if (_slotRTs.Count == 0) return;
 
         Vector2 screenCenter = new Vector2(Screen.width * 0.5f, Screen.height * 0.5f);
-        // Convert mouse screen-pixel delta to canvas units
-        Vector2 mouseCanvas = ((Vector2)Input.mousePosition - screenCenter) / _canvas.scaleFactor;
+        // Convert mouse to canvas units relative to the radialRoot's local space
+        var rootRt = _radialRoot.GetComponent<RectTransform>();
+        Vector2 mouseCanvas = ((Vector2)Input.mousePosition - screenCenter) / _canvas.scaleFactor - rootRt.anchoredPosition;
 
         int newHovered = -1;
         for (int i = 0; i < _slotRTs.Count; i++)

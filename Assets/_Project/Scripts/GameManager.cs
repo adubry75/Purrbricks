@@ -91,6 +91,9 @@ public class GameManager : MonoBehaviour
 
     [SerializeField] private GameState _state = GameState.MainMenu;
 
+    // ── Level code entry state ───────────────────────────────────────────────
+    private GameState _stateBeforeCodeEntry;
+
     // ── Level Editor test-play session ───────────────────────────────────────
     private bool _isEditorTestMode;
     private GameState _cachedStateBeforeEditorTest;
@@ -240,16 +243,18 @@ public class GameManager : MonoBehaviour
         if (_state == GameState.Playing && Input.GetKeyDown(KeyCode.RightBracket))
             DebugClearLevelBricks();
 
-        if (_state == GameState.Playing && Input.GetKeyDown(KeyCode.Escape))
+        if ((_state == GameState.Playing || _state == GameState.Ready) && Input.GetKeyDown(KeyCode.Escape))
             SetState(GameState.Paused);
 
         // G key: open level code warp dialog (Ready, Playing, or Paused)
-        // Guard: skip if the dialog is already open so the player can type 'G' freely
+        // Guard: skip if the dialog is already open so the player can type 'G' freely.
+        // We pause time without entering the Paused state so the pause menu stays hidden.
         if ((_state == GameState.Ready || _state == GameState.Playing || _state == GameState.Paused)
             && Input.GetKeyDown(KeyCode.G)
             && (_levelCodeEntryUI == null || !_levelCodeEntryUI.IsVisible))
         {
-            SetState(GameState.Paused);
+            _stateBeforeCodeEntry = _state;
+            Time.timeScale = 0f;
             RefreshUIRefsIfMissing();
             _levelCodeEntryUI?.Show();
         }
@@ -535,6 +540,16 @@ public class GameManager : MonoBehaviour
         SetState(GameState.Playing);
     }
 
+    /// <summary>
+    /// Called by LevelCodeEntryUI when the dialog is dismissed without warping (ESC).
+    /// Restores time if we were the ones who paused it (i.e. the game was not already Paused).
+    /// </summary>
+    public void ResumeAfterCodeEntry()
+    {
+        if (_stateBeforeCodeEntry != GameState.Paused)
+            Time.timeScale = 1f;
+    }
+
     /// <summary>Starts a temporary play session from the in-game level editor.</summary>
     public void StartEditorTestLevel(LevelData editorLevelData, string levelId, LevelEditorUI editorUI)
     {
@@ -698,6 +713,7 @@ public class GameManager : MonoBehaviour
         _isDemoMode = false;
         _paddle?.SetDemoMode(false);
         _levelCodeEntryUI?.Hide();
+        _pauseMenuUI?.Hide();
         _gameOverUI?.Hide();
         _victoryUI?.Hide();
 
@@ -970,6 +986,8 @@ public class GameManager : MonoBehaviour
                 SetCursorMenuMode();
                 Time.timeScale = 0f;
                 _hud?.SetState("Cleared");
+                _pauseMenuUI?.Hide();
+                ScreenEffects.Instance?.SetBadVignette(false);
                 //_hud?.ShowCenter("Level Cleared!");
                 _ball?.ResetToPaddle();
                 break;
@@ -983,6 +1001,8 @@ public class GameManager : MonoBehaviour
                 }
                 SetCursorMenuMode();
                 Time.timeScale = 0f;
+                _pauseMenuUI?.Hide();
+                ScreenEffects.Instance?.SetBadVignette(false);
                 string levelId = (_levelIds != null && _currentLevelIndex < _levelIds.Length)
                     ? _levelIds[_currentLevelIndex] : "";
                 _victoryUI?.ShowVictory(_score - _levelStartScore, _levelComboBonus, _levelBestCombo, levelId, _currentLevelIndex);

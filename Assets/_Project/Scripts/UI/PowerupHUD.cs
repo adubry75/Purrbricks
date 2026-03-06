@@ -16,8 +16,7 @@ public class PowerupHUD : MonoBehaviour
     public static PowerupHUD Instance { get; private set; }
 
     // ── Header palette ────────────────────────────────────────────────────────
-    private static readonly Color HeaderBg  = new Color(0.10f, 0.25f, 0.50f, 0.90f);
-    private static readonly Color HeaderTxt = new Color(0.102f, 0.251f, 0.502f); // #1A4080
+
 
     // ── Root refs ─────────────────────────────────────────────────────────────
     private Canvas        _canvas;
@@ -498,29 +497,6 @@ public class PowerupHUD : MonoBehaviour
         panelImg.color = new Color(0.04f, 0.06f, 0.13f, 0.90f);
         panelImg.raycastTarget = false;
 
-        // ── ACTIVE column header (static label, not a tab button) ─────────────
-        var activeHeaderGO = new GameObject("ActiveHeader");
-        activeHeaderGO.transform.SetParent(_sidebar.transform, false);
-        var activeHeaderImg = activeHeaderGO.AddComponent<Image>();
-        activeHeaderImg.color = HeaderBg;
-        activeHeaderImg.raycastTarget = false;
-        var activeHeaderRt = activeHeaderGO.GetComponent<RectTransform>();
-        activeHeaderRt.anchorMin        = new Vector2(1f, 1f);
-        activeHeaderRt.anchorMax        = new Vector2(1f, 1f);
-        activeHeaderRt.pivot            = new Vector2(1f, 1f);
-        activeHeaderRt.sizeDelta        = new Vector2(233f, 34f);
-        activeHeaderRt.anchoredPosition = new Vector2(-5f, -5f);
-        var activeLblGO = new GameObject("Label");
-        activeLblGO.transform.SetParent(activeHeaderGO.transform, false);
-        var activeLbl = activeLblGO.AddComponent<TextMeshProUGUI>();
-        activeLbl.text      = "ACTIVE";
-        activeLbl.fontSize  = 12;
-        activeLbl.fontStyle = FontStyles.Bold;
-        activeLbl.alignment = TextAlignmentOptions.Center;
-        activeLbl.color     = HeaderTxt;
-        activeLbl.raycastTarget = false;
-        FillRT(activeLbl.GetComponent<RectTransform>());
-
         // ── Active Powerup list root — VLG stacks from top ────────────────────
         var listRootGO = new GameObject("SlotList");
         listRootGO.transform.SetParent(_sidebar.transform, false);
@@ -539,29 +515,6 @@ public class PowerupHUD : MonoBehaviour
         listVLG.childControlWidth      = true;
         listVLG.childControlHeight     = true;
         listVLG.padding = new RectOffset(0, 0, 10, 0);
-
-        // ── INV column header (static label, not a tab button) ────────────────
-        var invHeaderGO = new GameObject("InvHeader");
-        invHeaderGO.transform.SetParent(_sidebar.transform, false);
-        var invHeaderImg = invHeaderGO.AddComponent<Image>();
-        invHeaderImg.color = HeaderBg;
-        invHeaderImg.raycastTarget = false;
-        var invHeaderRt = invHeaderGO.GetComponent<RectTransform>();
-        invHeaderRt.anchorMin        = new Vector2(1f, 1f);
-        invHeaderRt.anchorMax        = new Vector2(1f, 1f);
-        invHeaderRt.pivot            = new Vector2(1f, 1f);
-        invHeaderRt.sizeDelta        = new Vector2(80f, 34f);
-        invHeaderRt.anchoredPosition = new Vector2(-238f, -5f);
-        var invLblGO = new GameObject("Label");
-        invLblGO.transform.SetParent(invHeaderGO.transform, false);
-        var invLbl = invLblGO.AddComponent<TextMeshProUGUI>();
-        invLbl.text      = "INV";
-        invLbl.fontSize  = 12;
-        invLbl.fontStyle = FontStyles.Bold;
-        invLbl.alignment = TextAlignmentOptions.Center;
-        invLbl.color     = HeaderTxt;
-        invLbl.raycastTarget = false;
-        FillRT(invLbl.GetComponent<RectTransform>());
 
         // ── Inventory scroll view ─────────────────────────────────────────────
         // Positioned in the left 80px of the sidebar, top at y=-80 (below TopBar).

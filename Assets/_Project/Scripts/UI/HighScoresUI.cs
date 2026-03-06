@@ -124,10 +124,10 @@ public class HighScoresUI : MonoBehaviour
         var panelImg = panel.AddComponent<Image>();
         panelImg.color = new Color(0f, 0f, 0f, 0.78f);
         var panelRt = panel.GetComponent<RectTransform>();
-        panelRt.anchorMin        = Vector2.zero;
-        panelRt.anchorMax        = Vector2.one;
-        panelRt.sizeDelta        = Vector2.zero;
-        panelRt.anchoredPosition = new Vector2(-160f, 0f);
+        panelRt.anchorMin = Vector2.zero;
+        panelRt.anchorMax = Vector2.one;
+        panelRt.offsetMin = new Vector2(-320f, 0f);
+        panelRt.offsetMax = Vector2.zero;
 
         // ── Title ─────────────────────────────────────────────────────────────
         var titleGO = MakeText(panel.transform, "LEADERBOARDS", new Vector2(0f, 418f), 80, ColorGold, true);

@@ -49,6 +49,7 @@ public class StoreUI : MonoBehaviour
         (PowerupType.DrunkenPaddle, "DRUNK PADDLE",  new Color(1.00f, 0.55f, 0.00f)),
         (PowerupType.DrunkVision,   "DRUNK VISION",  new Color(0.20f, 0.25f, 0.65f)),
         (PowerupType.GremlinBounces,"GREMLIN",       new Color(0.12f, 0.60f, 0.65f)),
+        (PowerupType.FlipScreen,    "FLIP SCREEN",   new Color(0.90f, 0.20f, 0.65f)),
     };
 
     private void Awake()

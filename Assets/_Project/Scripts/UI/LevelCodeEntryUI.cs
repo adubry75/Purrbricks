@@ -149,6 +149,7 @@ public class LevelCodeEntryUI : MonoBehaviour
         if (Input.GetKeyDown(KeyCode.Escape))
         {
             Hide();
+            GameManager.Instance?.ResumeAfterCodeEntry();
             return;
         }
 
