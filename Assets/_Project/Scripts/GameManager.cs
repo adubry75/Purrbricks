@@ -93,6 +93,7 @@ public class GameManager : MonoBehaviour
 
     // ── Level code entry state ───────────────────────────────────────────────
     private GameState _stateBeforeCodeEntry;
+    private GameState _stateBeforePause;
 
     // ── Level Editor test-play session ───────────────────────────────────────
     private bool _isEditorTestMode;
@@ -213,6 +214,14 @@ public class GameManager : MonoBehaviour
             if (Input.GetKeyDown(KeyCode.Keypad9)) CheatApply(PowerupType.GremlinBounces);
         }
 
+        // Fury tutorial: fire once the charge first reaches 100%
+        if (_state == GameState.Playing && _ball != null && _ball.RampFraction >= 1f)
+            TutorialManager.Instance?.TriggerIfNew(
+                TutorialManager.ID.FuryStrike,
+                "★ ★ ★",
+                "FURY STRIKE READY!",
+                "Your Fury Charge is at maximum!\n\nPress LEFT + RIGHT mouse buttons together\nto unleash FURY STRIKE — a devastating\nbomb blast from every ball on screen!");
+
         // Fury Strike: both mouse buttons pressed together when charge is full
         if (_state == GameState.Playing && _ball != null && _ball.RampFraction >= 1f &&
             IsFuryStrikeMouseComboPressed())
@@ -243,7 +252,8 @@ public class GameManager : MonoBehaviour
         if (_state == GameState.Playing && Input.GetKeyDown(KeyCode.RightBracket))
             DebugClearLevelBricks();
 
-        if ((_state == GameState.Playing || _state == GameState.Ready) && Input.GetKeyDown(KeyCode.Escape))
+        if ((_state == GameState.Playing || _state == GameState.Ready) && Input.GetKeyDown(KeyCode.Escape)
+            && (TutorialManager.Instance == null || !TutorialManager.Instance.IsShowing))
             SetState(GameState.Paused);
 
         // G key: open level code warp dialog (Ready, Playing, or Paused)
@@ -433,6 +443,12 @@ public class GameManager : MonoBehaviour
 
         _mainMenuUI?.Hide();
         _highScoresUI?.Hide();
+
+        TutorialManager.Instance?.TriggerIfNew(
+            TutorialManager.ID.LaunchBall,
+            "● ● ●",
+            "HOW TO PLAY",
+            "Hold LEFT CLICK to aim the ball.\nRelease to launch!\n\nPress ESCAPE to pause at any time.");
     }
 
     public void ShowMainMenu()
@@ -537,7 +553,7 @@ public class GameManager : MonoBehaviour
     {
         _pauseMenuUI?.Hide();
         _settingsUI?.Hide();
-        SetState(GameState.Playing);
+        SetState(_stateBeforePause == GameState.Ready ? GameState.Ready : GameState.Playing);
     }
 
     /// <summary>
@@ -915,6 +931,8 @@ public class GameManager : MonoBehaviour
 
     public void SetState(GameState newState)
     {
+        if (newState == GameState.Paused)
+            _stateBeforePause = _state; // capture BEFORE _state is overwritten
         _state = newState;
         Time.timeScale = 1f;
 
@@ -947,7 +965,6 @@ public class GameManager : MonoBehaviour
                 PowerupHUD.Instance?.SetVisible(true);
                 PurrBucksManager.Instance?.SetVisible(!_isEditorTestMode);
                 _hud?.SetState("Ready");
-                _hud?.ShowCenter("Hold Left Click to Aim\r\nRelease to Launch");
                 SfxPlayer.Instance?.MuteAll(false);
                 break;
 

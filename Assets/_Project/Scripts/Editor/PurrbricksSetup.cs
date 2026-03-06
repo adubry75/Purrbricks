@@ -236,6 +236,14 @@ public static class PurrbricksSetup
             Debug.Log("Added ScreenEffects.");
         }
 
+        // ── 11d. TutorialManager ─────────────────────────────────────────────
+        var tutMgrGO = EnsureGO("TutorialManager");
+        if (tutMgrGO.GetComponent<TutorialManager>() == null)
+        {
+            tutMgrGO.AddComponent<TutorialManager>();
+            Debug.Log("Added TutorialManager.");
+        }
+
         // ── 11c2. UITheme (shared UI sprites) ───────────────────────────────
         var themeGO = EnsureGO("UITheme");
         if (themeGO.GetComponent<UITheme>() == null)

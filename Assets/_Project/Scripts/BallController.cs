@@ -195,8 +195,10 @@ public class BallController : MonoBehaviour
                 transform.position = (Vector2)_paddle.position + _paddleOffset;
 
             // Aiming: only when GameManager is in Ready state (not demo mode etc.)
+            // Block input while a tutorial popup is open so the dismiss click doesn't launch.
             var gm = GameManager.Instance;
-            if (gm == null || gm.State == GameState.Ready)
+            if ((gm == null || gm.State == GameState.Ready)
+                && (TutorialManager.Instance == null || !TutorialManager.Instance.IsShowing))
                 HandleAimInput();
 
             return;

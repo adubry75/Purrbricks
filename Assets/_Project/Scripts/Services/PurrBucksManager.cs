@@ -111,6 +111,11 @@ public class PurrBucksManager : MonoBehaviour
         _inventory[type] = GetInventoryCount(type) + qty;
         SaveInventory(type);
         OnInventoryChanged?.Invoke();
+        TutorialManager.Instance?.TriggerIfNew(
+            TutorialManager.ID.Inventory,
+            "▶ INV ◀",
+            "POWERUP COLLECTED!",
+            "You have powerups in your inventory!\n\nPress MIDDLE MOUSE BUTTON to open\nyour Radial Menu and select a powerup,\nor hover near the right edge of the screen.");
     }
 
     /// <summary>

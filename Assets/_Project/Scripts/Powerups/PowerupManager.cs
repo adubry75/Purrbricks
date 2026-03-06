@@ -94,6 +94,11 @@ public class PowerupManager : MonoBehaviour
             // we check after spawn via a one-frame delayed count.
             // Instead we notify after spawning so the count is up to date.
             NotifyBallCount();
+            TutorialManager.Instance?.TriggerIfNew(
+                TutorialManager.ID.MultiBallFury,
+                "● ● ●",
+                "MULTI-BALL ACTIVE!",
+                "Multiple balls are in play!\n\nWhen you unleash FURY STRIKE,\nEVERY ball explodes simultaneously —\nmassive combo bonus and destruction!");
             return;
         }
 
