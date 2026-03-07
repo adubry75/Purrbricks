@@ -72,10 +72,17 @@ public class CommunityBrowserUI : MonoBehaviour
     public void Hide()
     {
         gameObject.SetActive(false);
-        Time.timeScale    = _prevTimeScale;
+        Time.timeScale      = _prevTimeScale;
         AudioListener.pause = _prevAudioPaused;
         _backAction?.Invoke();
         _backAction = null;
+    }
+
+    private void OnBack()
+    {
+        _backAction = null; // suppress any pending back action
+        Hide();
+        GameManager.Instance?.ShowMainMenu();
     }
 
     public void SetBackAction(System.Action onBack) => _backAction = onBack;
@@ -147,10 +154,10 @@ public class CommunityBrowserUI : MonoBehaviour
 
         UpdateSortTabVisuals();
 
-        // Back button
+        // Back button — always returns to Main Menu regardless of how the browser was opened
         UIStyle.CreateButton(header.transform, "← Back",
             new Vector2(860f, 0f), new Vector2(160f, 50f),
-            Hide, UIStyle.AccentRed);
+            OnBack, UIStyle.AccentRed);
     }
 
     private void BuildCardsArea()

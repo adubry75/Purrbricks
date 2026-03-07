@@ -51,8 +51,8 @@ public class HighScoresUI : MonoBehaviour
     private CSteamID _cachedMySteamId;
     private string   _cachedMyName = "You";
 
-    // 0 = overall + one board per level_XX
-    private const int TOTAL_BOARDS = 85;
+    // 0 = overall + one board per native level (dynamic)
+    private int TotalBoards => 1 + (GameManager.Instance?.LevelCount ?? 80);
     private const float ROW_HEIGHT = 44f;
     private const float ROW_SPACING = 4f;
     private const float ROW_PITCH = ROW_HEIGHT + ROW_SPACING;
@@ -256,17 +256,16 @@ public class HighScoresUI : MonoBehaviour
 
     private void OnPrevBoard()
     {
-        // If on a custom board, step into normal boards
-        if (_boardIndex == -1) _boardIndex = 0;
-        else _boardIndex = (_boardIndex - 1 + TOTAL_BOARDS) % TOTAL_BOARDS;
+        if (_boardIndex == -1) return; // custom board — arrows are hidden, shouldn't fire
+        _boardIndex = (_boardIndex - 1 + TotalBoards) % TotalBoards;
         _customBoardName = null; _customBoardLabel = null;
         ResetAndFetch();
     }
 
     private void OnNextBoard()
     {
-        if (_boardIndex == -1) _boardIndex = 0;
-        else _boardIndex = (_boardIndex + 1) % TOTAL_BOARDS;
+        if (_boardIndex == -1) return; // custom board — arrows are hidden, shouldn't fire
+        _boardIndex = (_boardIndex + 1) % TotalBoards;
         _customBoardName = null; _customBoardLabel = null;
         ResetAndFetch();
     }
@@ -591,6 +590,10 @@ public class HighScoresUI : MonoBehaviour
     {
         if (_boardLabel == null) return;
         _boardLabel.text = GetBoardLabel();
+        // Hide nav arrows when showing a custom (community) board — no adjacent boards to browse
+        bool showArrows = _boardIndex != -1;
+        if (_prevBoardBtn != null) _prevBoardBtn.gameObject.SetActive(showArrows);
+        if (_nextBoardBtn != null) _nextBoardBtn.gameObject.SetActive(showArrows);
     }
 
     private void UpdateScopeTabVisuals()
@@ -649,7 +652,7 @@ public class HighScoresUI : MonoBehaviour
         if (_boardIndex == 0) return "OVERALL";
         int levelIndex = _boardIndex - 1;
         string title   = LoadLevelTitle(levelIndex);
-        return $"Level {levelIndex + 1:D2}: {title}  ({levelIndex + 1}/80)";
+        return $"Level {levelIndex + 1:D2}: {title}  ({levelIndex + 1}/{TotalBoards - 1})";
     }
 
     private static string LoadLevelTitle(int levelIndex)
@@ -786,7 +789,7 @@ public class HighScoresUI : MonoBehaviour
     {
         SetReturnToVictory(returnToVictory);
         gameObject.SetActive(true);
-        _boardIndex       = Mathf.Clamp(levelIndex + 1, 0, TOTAL_BOARDS - 1);
+        _boardIndex       = Mathf.Clamp(levelIndex + 1, 0, TotalBoards - 1);
         _customBoardName  = null;
         _customBoardLabel = null;
         _scope = LeaderboardTimeScope.AllTime;

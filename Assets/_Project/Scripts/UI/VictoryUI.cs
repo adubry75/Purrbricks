@@ -117,7 +117,7 @@ public class VictoryUI : MonoBehaviour
 
         // ── Buttons ───────────────────────────────────────────────────────────
         // Level Rankings button (top center)
-        UIStyle.CreateButton(_panel.transform, "Level Board",
+        UIStyle.CreateButton(_panel.transform, "High Scores",
             new Vector2(0f, -110f), new Vector2(320f, 70f),
             OnLevelBoard, UIStyle.AccentBlue);
 
