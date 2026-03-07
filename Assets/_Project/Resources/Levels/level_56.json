@@ -210,5 +210,7 @@
       "row": 4,
       "templateId": "gold"
     }
-  ]
+  ],
+  "nativeLevel": true,
+  "levelOrder": 56
 }

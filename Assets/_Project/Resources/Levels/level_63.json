@@ -206,5 +206,7 @@
       "row": 0,
       "templateId": "gem"
     }
-  ]
+  ],
+  "nativeLevel": true,
+  "levelOrder": 63
 }

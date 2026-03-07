@@ -279,5 +279,7 @@
       "row": 4,
       "templateId": "gem"
     }
-  ]
+  ],
+  "nativeLevel": true,
+  "levelOrder": 77
 }

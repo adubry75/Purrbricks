@@ -90,13 +90,14 @@ public class MainMenuUI : MonoBehaviour
 
         CreateTitle();
 
-        UIStyle.CreateButton(_panel.transform, "Play",         new Vector2(0f,  -80f), new Vector2(360f, 84f), () => GameManager.Instance?.StartGame(), UIStyle.AccentMagenta);
-        UIStyle.CreateButton(_panel.transform, "Level Select", new Vector2(0f, -170f), new Vector2(360f, 84f), ShowLevelSelect, UIStyle.AccentGreen);
-        UIStyle.CreateButton(_panel.transform, "High Scores",  new Vector2(0f, -260f), new Vector2(360f, 84f), () => GameManager.Instance?.ShowHighScores(), UIStyle.AccentBlue);
-        UIStyle.CreateButton(_panel.transform, "Settings",     new Vector2(0f, -345f), new Vector2(360f, 84f), () => GameManager.Instance?.ShowSettings(fromPause: false), UIStyle.AccentBlue);
-        UIStyle.CreateButton(_panel.transform, "Quit",         new Vector2(0f, -430f), new Vector2(360f, 84f), QuitGame, UIStyle.AccentRed);
+        UIStyle.CreateButton(_panel.transform, "Play",             new Vector2(0f,  -80f), new Vector2(360f, 84f), () => GameManager.Instance?.StartGame(), UIStyle.AccentMagenta);
+        UIStyle.CreateButton(_panel.transform, "Level Select",     new Vector2(0f, -170f), new Vector2(360f, 84f), ShowLevelSelect, UIStyle.AccentGreen);
+        UIStyle.CreateButton(_panel.transform, "Community Levels", new Vector2(0f, -260f), new Vector2(360f, 84f), ShowCommunityBrowser, UIStyle.AccentGold);
+        UIStyle.CreateButton(_panel.transform, "High Scores",      new Vector2(0f, -350f), new Vector2(360f, 84f), () => GameManager.Instance?.ShowHighScores(), UIStyle.AccentBlue);
+        UIStyle.CreateButton(_panel.transform, "Settings",         new Vector2(0f, -435f), new Vector2(360f, 84f), () => GameManager.Instance?.ShowSettings(fromPause: false), UIStyle.AccentBlue);
+        UIStyle.CreateButton(_panel.transform, "Quit",             new Vector2(0f, -520f), new Vector2(360f, 84f), QuitGame, UIStyle.AccentRed);
 #if UNITY_EDITOR
-        UIStyle.CreateButton(_panel.transform, "Level Editor [F1]", new Vector2(0f, -510f),
+        UIStyle.CreateButton(_panel.transform, "Level Editor [F1]", new Vector2(0f, -600f),
             new Vector2(260f, 48f), ShowLevelEditor, UIStyle.AccentGold);
 #endif
 
@@ -173,6 +174,15 @@ public class MainMenuUI : MonoBehaviour
         rt.anchorMax = new Vector2(0.5f, 0.5f);
         rt.sizeDelta = new Vector2(800f, 40f);
         rt.anchoredPosition = new Vector2(0f, 190f);
+    }
+
+    private void ShowCommunityBrowser()
+    {
+        var browser = Object.FindFirstObjectByType<CommunityBrowserUI>(FindObjectsInactive.Include);
+        if (browser == null) { Debug.LogWarning("[MainMenuUI] CommunityBrowserUI not found. Run Purrbricks > Setup Scene."); return; }
+        Hide();
+        browser.SetBackAction(Show);
+        browser.Show();
     }
 
     private void ShowLevelSelect()

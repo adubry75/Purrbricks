@@ -220,5 +220,7 @@
       "row": 6,
       "templateId": "blue"
     }
-  ]
+  ],
+  "nativeLevel": true,
+  "levelOrder": 42
 }

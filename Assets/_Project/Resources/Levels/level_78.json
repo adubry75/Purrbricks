@@ -800,5 +800,7 @@
       "row": 7,
       "templateId": "gem"
     }
-  ]
+  ],
+  "nativeLevel": true,
+  "levelOrder": 78
 }

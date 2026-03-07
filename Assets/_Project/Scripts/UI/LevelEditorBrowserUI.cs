@@ -29,6 +29,9 @@ public class LevelEditorBrowserUI : MonoBehaviour
             { "bumper",   new Color(1.00f, 0.60f, 0.10f) },
         };
 
+    /// <summary>True when the level's JSON has nativeLevel:true (shipped with the game).</summary>
+    private static bool IsNativeLevel(LevelData data) => data?.nativeLevel ?? false;
+
     // ── Layout constants (reference 1920×1080) ────────────────────────────────
     private const int   PAGE_COLS  = 4;
     private const int   PAGE_ROWS  = 4;
@@ -385,32 +388,41 @@ public class LevelEditorBrowserUI : MonoBehaviour
     {
         _levels.Clear();
         var assets = Resources.LoadAll<TextAsset>("Levels");
+        var items  = new List<(string id, LevelData data)>();
 
-        var sorted = assets
-            .Select(a =>
-            {
-                var m = Regex.Match(a.name, @"\d+");
-                int idx = m.Success ? int.Parse(m.Value) : 9999;
-                return (idx, a);
-            })
-            .OrderBy(t => t.idx)
-            .Select(t => t.a);
-
-        foreach (var asset in sorted)
+        foreach (var asset in assets)
         {
             try
             {
                 var data = JsonConvert.DeserializeObject<LevelData>(asset.text);
-                if (data != null) _levels.Add((asset.name, data));
+                if (data != null) items.Add((asset.name, data));
             }
             catch { /* skip bad JSON */ }
         }
+
+        // Sort: native levels first (by levelOrder), then user levels (by levelOrder then id).
+        // levelOrder == -1 means "no explicit order" → sort to end within each group.
+        foreach (var item in items
+                     .OrderBy(x => x.data.nativeLevel ? 0 : 1)
+                     .ThenBy(x => x.data.levelOrder < 0 ? int.MaxValue : x.data.levelOrder)
+                     .ThenBy(x => x.id))
+            _levels.Add(item);
     }
 
     // ── Pagination ────────────────────────────────────────────────────────────
+
+    /// In Level Select mode only native levels are shown; the editor shows everything.
+    private IReadOnlyList<(string id, LevelData data)> GetDisplayedLevels()
+    {
+        if (_isLevelSelectMode)
+            return _levels.Where(l => IsNativeLevel(l.data)).ToList();
+        return _levels;
+    }
+
     private void ShowPage(int p)
     {
-        int totalPages = Mathf.Max(1, Mathf.CeilToInt(_levels.Count / (float)PAGE_SIZE));
+        var displayed = GetDisplayedLevels();
+        int totalPages = Mathf.Max(1, Mathf.CeilToInt(displayed.Count / (float)PAGE_SIZE));
         _page = Mathf.Clamp(p, 0, totalPages - 1);
 
         // Clear old cards
@@ -424,7 +436,7 @@ public class LevelEditorBrowserUI : MonoBehaviour
         float startY = -8f;
 
         int start = _page * PAGE_SIZE;
-        int end   = Mathf.Min(start + PAGE_SIZE, _levels.Count);
+        int end   = Mathf.Min(start + PAGE_SIZE, displayed.Count);
 
         for (int i = start; i < end; i++)
         {
@@ -433,7 +445,7 @@ public class LevelEditorBrowserUI : MonoBehaviour
             int row  = slot / PAGE_COLS;
             float cx = startX + col * (CARD_W + CARD_GAP);
             float cy = startY - row * (CARD_H + CARD_GAP);
-            CreateCard(_levels[i].id, _levels[i].data, cx, cy);
+            CreateCard(displayed[i].id, displayed[i].data, cx, cy);
         }
 
         _pageLabel.text = $"Page {_page + 1} / {totalPages}";
@@ -517,10 +529,14 @@ public class LevelEditorBrowserUI : MonoBehaviour
         cols.colorMultiplier  = 1f;
         btn.colors = cols;
 
-        // Determine lock state (level select mode only)
-        var  numMatch   = Regex.Match(levelId, @"\d+");
-        int  levelIndex = numMatch.Success ? int.Parse(numMatch.Value) : -1;
-        bool isLocked   = _isLevelSelectMode && (GameManager.Instance == null || !GameManager.Instance.IsLevelUnlocked(levelIndex));
+        // Use nativeLevel flag from data — reliable regardless of filename
+        bool isNative  = IsNativeLevel(data);
+        bool adminMode = GameManager.Instance?.AdminMode ?? false;
+
+        // Level index for unlock checks: try to parse a number from the ID (native levels only)
+        var numMatch   = Regex.Match(levelId, @"\d+");
+        int levelIndex = numMatch.Success ? int.Parse(numMatch.Value) : -1;
+        bool isLocked  = _isLevelSelectMode && (GameManager.Instance == null || !GameManager.Instance.IsLevelUnlocked(levelIndex));
 
         string capturedId   = levelId;
         LevelData capturedData = data;
@@ -541,9 +557,32 @@ public class LevelEditorBrowserUI : MonoBehaviour
                 string json  = JsonConvert.SerializeObject(capturedData);
                 var    clone = JsonConvert.DeserializeObject<LevelData>(json);
                 Hide();
-                _editorUI?.OpenLevel(clone, capturedId);
+                // Native levels open read-only unless admin mode is on
+                bool openReadOnly = isNative && !adminMode;
+                _editorUI?.OpenLevel(clone, capturedId, readOnly: openReadOnly);
             }
         });
+
+        // Read-only badge for native levels when not in admin mode (editor mode only)
+        if (!_isLevelSelectMode && isNative && !adminMode)
+        {
+            var badgeGO  = new GameObject("ReadOnlyBadge");
+            badgeGO.transform.SetParent(card.transform, false);
+            var badgeTxt = badgeGO.AddComponent<Text>();
+            badgeTxt.text      = "VIEW ONLY";
+            badgeTxt.font      = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
+            badgeTxt.fontSize  = 11;
+            badgeTxt.fontStyle = FontStyle.Bold;
+            badgeTxt.color     = new Color(1f, 0.78f, 0.10f, 0.85f);
+            badgeTxt.alignment = TextAnchor.UpperRight;
+            badgeTxt.raycastTarget = false;
+            var badgeRt = badgeTxt.GetComponent<RectTransform>();
+            badgeRt.anchorMin        = new Vector2(1f, 1f);
+            badgeRt.anchorMax        = new Vector2(1f, 1f);
+            badgeRt.pivot            = new Vector2(1f, 1f);
+            badgeRt.sizeDelta        = new Vector2(90f, 16f);
+            badgeRt.anchoredPosition = new Vector2(-4f, -4f);
+        }
 
         // Lock overlay (level select mode, locked levels only)
         if (isLocked)

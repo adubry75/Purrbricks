@@ -195,6 +195,14 @@
       "row": 5,
       "templateId": "blue"
     },
-    { "col": 0, "row": 0, "templateId": "standard", "tint": "#FF3333", "powerupId": "FlipScreen" }
-  ]
+    {
+      "col": 0,
+      "row": 0,
+      "templateId": "standard",
+      "tint": "#FF3333",
+      "powerupId": "FlipScreen"
+    }
+  ],
+  "nativeLevel": true,
+  "levelOrder": 43
 }

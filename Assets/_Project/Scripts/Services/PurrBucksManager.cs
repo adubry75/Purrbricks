@@ -273,6 +273,86 @@ public class PurrBucksManager : MonoBehaviour
         OnRankAwardResolved?.Invoke(_pendingAward);
     }
 
+    // ── Community Level Complete Award ────────────────────────────────────────
+
+    /// <summary>
+    /// Awards Purr Bucks for clearing a community level.
+    /// Same structure as <see cref="AwardLevelComplete"/> but uses community-specific
+    /// PlayerPrefs key and Steam leaderboard boards.
+    /// </summary>
+    public void AwardCommunityLevelComplete(int communityId, bool perfectClear, int livesLost)
+    {
+        _pendingAward = 0;
+
+        string key = $"cl_cleared_{communityId}";
+        bool isFirstTime = PlayerPrefs.GetInt(key, 0) == 0;
+        if (isFirstTime) PlayerPrefs.SetInt(key, 1);
+
+        int immediate = PurrBucksConfig.REWARD_PARTICIPATION;
+        if (perfectClear) immediate += PurrBucksConfig.REWARD_PERFECT_CLEAR;
+        if (isFirstTime)  immediate += PurrBucksConfig.REWARD_FIRST_TIME;
+
+        _pendingAward = immediate;
+        AddCurrency(immediate);
+        OnRankAwardResolved?.Invoke(_pendingAward);
+
+        if (LeaderboardTestData.Enabled)
+        {
+            string allTimeBoard = PurrbricksLeaderboards.CommunityAllTime(communityId);
+            string weeklyBoard  = PurrbricksLeaderboards.Scoped(allTimeBoard, LeaderboardTimeScope.Weekly);
+            string dailyBoard   = PurrbricksLeaderboards.Scoped(allTimeBoard, LeaderboardTimeScope.Daily);
+
+            int allTimeBonus = GetRankBonus(LeaderboardTestData.GetOrRollDesiredRank(allTimeBoard));
+            int weeklyBonus  = Mathf.RoundToInt(GetRankBonus(LeaderboardTestData.GetOrRollDesiredRank(weeklyBoard))  * 0.60f);
+            int dailyBonus   = Mathf.RoundToInt(GetRankBonus(LeaderboardTestData.GetOrRollDesiredRank(dailyBoard))   * 0.40f);
+
+            int rankBonus = allTimeBonus + weeklyBonus + dailyBonus;
+            if (rankBonus > 0)
+            {
+                _pendingAward += rankBonus;
+                AddCurrency(rankBonus);
+            }
+            OnRankAwardResolved?.Invoke(_pendingAward);
+            return;
+        }
+
+        StartCoroutine(FetchCommunityRankAndAward(communityId));
+    }
+
+    private IEnumerator FetchCommunityRankAndAward(int communityId)
+    {
+        yield return new WaitForSecondsRealtime(1.5f);
+
+        string allTimeBoard = PurrbricksLeaderboards.CommunityAllTime(communityId);
+        string weeklyBoard  = PurrbricksLeaderboards.Scoped(allTimeBoard, LeaderboardTimeScope.Weekly);
+        string dailyBoard   = PurrbricksLeaderboards.Scoped(allTimeBoard, LeaderboardTimeScope.Daily);
+
+        int allTimeRank = 0, weeklyRank = 0, dailyRank = 0;
+
+        if (SteamLeaderboardManager.Instance != null)
+        {
+            bool allTimeDone = false, weeklyDone = false, dailyDone = false;
+
+            SteamLeaderboardManager.Instance.FetchAroundMe(allTimeBoard, 0, entries => { if (entries?.Count > 0) allTimeRank = entries[0].Rank; allTimeDone = true; });
+            SteamLeaderboardManager.Instance.FetchAroundMe(weeklyBoard,  0, entries => { if (entries?.Count > 0) weeklyRank  = entries[0].Rank; weeklyDone  = true; });
+            SteamLeaderboardManager.Instance.FetchAroundMe(dailyBoard,   0, entries => { if (entries?.Count > 0) dailyRank   = entries[0].Rank; dailyDone   = true; });
+
+            float elapsed = 0f;
+            while ((!allTimeDone || !weeklyDone || !dailyDone) && elapsed < 8f)
+            {
+                elapsed += Time.unscaledDeltaTime;
+                yield return null;
+            }
+        }
+
+        int rankBonus = GetRankBonus(allTimeRank)
+                      + Mathf.RoundToInt(GetRankBonus(weeklyRank) * 0.60f)
+                      + Mathf.RoundToInt(GetRankBonus(dailyRank)  * 0.40f);
+
+        if (rankBonus > 0) { _pendingAward += rankBonus; AddCurrency(rankBonus); }
+        OnRankAwardResolved?.Invoke(_pendingAward);
+    }
+
     private static int GetRankBonus(int rank)
     {
         if      (rank == 1) return PurrBucksConfig.REWARD_FIRST_PLACE  - PurrBucksConfig.REWARD_PARTICIPATION;

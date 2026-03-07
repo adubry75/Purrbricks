@@ -586,5 +586,7 @@
       "templateId": "steel",
       "isIndestructible": true
     }
-  ]
+  ],
+  "nativeLevel": true,
+  "levelOrder": 69
 }

@@ -20,9 +20,11 @@ public class GameManager : MonoBehaviour
     public static GameManager Instance { get; private set; }
 
     [Header("Admin")]
-    [Tooltip("When ON: numpad cheats apply powerups directly, ignoring inventory.\n" +
-             "When OFF: numpad cheats consume from inventory like a normal player.")]
+    [Tooltip("When ON: numpad cheats apply powerups directly (ignoring inventory), AND native levels are editable in the Level Editor.")]
     [SerializeField] private bool _adminMode = true;
+
+    /// <summary>Exposes admin mode to other systems (e.g. Level Editor read-only bypass).</summary>
+    public bool AdminMode => _adminMode;
 
     [Header("Round Settings")]
     [SerializeField] private int _startingLives = 3;
@@ -59,6 +61,11 @@ public class GameManager : MonoBehaviour
     private float _comboTimer;
     private int _lives;
     private bool _isDemoMode;
+
+    // ── Community level mode ─────────────────────────────────────────────────
+    private bool               _isCommunityMode;
+    private CommunityLevelMeta _currentCommunityMeta;
+    private LevelData          _cachedCommunityData; // for Retry after GameOver
     private bool _primaryBallOnHold; // true while primary fell but clones still active
     private int _activeClonesCount;  // explicit count — avoids deferred-Destroy false positives
     private bool _scoreFrenzyActive;
@@ -157,6 +164,7 @@ public class GameManager : MonoBehaviour
         if (_gameOverUI == null)   Debug.LogError("GameOverUI not found! Run Purrbricks > Setup Scene.");
         if (_victoryUI == null)    Debug.LogError("VictoryUI not found! Run Purrbricks > Setup Scene.");
         if (_highScoresUI == null) Debug.LogError("HighScoresUI not found! Run Purrbricks > Setup Scene.");
+        // CommunityBrowserUI and CommunityLevelService are optional — no error if missing
         // LevelCodeEntryUI and StoreUI are optional — no error if missing
 
     }
@@ -415,6 +423,7 @@ public class GameManager : MonoBehaviour
     public void StartGame()
     {
         _isEditorTestMode = false;
+        _isCommunityMode  = false;
         RestoreGameplayAfterHighScores();
         _isDemoMode = false;
         _paddle?.SetDemoMode(false);
@@ -808,6 +817,7 @@ public class GameManager : MonoBehaviour
 
     public void LoadLevel(int levelIndex)
     {
+        _isCommunityMode = false;
         _isAdvancingLevel = false;
 
         if (_levelIds == null || _levelIds.Length == 0)
@@ -927,6 +937,98 @@ public class GameManager : MonoBehaviour
         _highScoresUI?.Hide();
     }
 
+    // ── Community Level ──────────────────────────────────────────────────────
+
+    public bool IsCommunityMode => _isCommunityMode;
+    public CommunityLevelMeta CurrentCommunityMeta => _currentCommunityMeta;
+
+    /// <summary>Starts gameplay with a community-published level.</summary>
+    public void StartCommunityLevel(CommunityLevelMeta meta, LevelData data)
+    {
+        if (meta == null || data == null)
+        {
+            Debug.LogError("[GameManager] StartCommunityLevel: meta or data is null.");
+            return;
+        }
+
+        _isCommunityMode      = true;
+        _currentCommunityMeta = meta;
+        _cachedCommunityData  = data;
+        _isEditorTestMode     = false;
+
+        RestoreGameplayAfterHighScores();
+        _isDemoMode = false;
+        _paddle?.SetDemoMode(false);
+
+        // Hide all menus
+        _mainMenuUI?.Hide();
+        _gameOverUI?.Hide();
+        _victoryUI?.Hide();
+        _pauseMenuUI?.Hide();
+        _highScoresUI?.Hide();
+        _settingsUI?.Hide();
+        _storeUI?.Hide();
+
+        PowerupManager.Instance?.ResetAll();
+        ClearAllParticles();
+
+        _score             = 0;
+        _combo             = 0;
+        _comboTimer        = 0f;
+        _lives             = _startingLives;
+        _scoreFrenzyActive = false;
+        _cachedFuryCharge  = 0f;
+        _levelStartScore   = 0;
+        _levelBestCombo    = 0;
+        _levelComboBonus   = 0;
+        LivesAtLevelStart  = _lives;
+
+        _hud?.SetScore(_score);
+        _hud?.SetLives(_lives);
+        _hud?.SetCombo(_combo);
+
+        if (_levelLoader == null)
+            _levelLoader = FindFirstObjectByType<LevelLoader>();
+
+        if (_levelLoader == null)
+        {
+            Debug.LogError("[GameManager] StartCommunityLevel: No LevelLoader found.");
+            return;
+        }
+
+        _levelLoader.LoadLevelData(data);
+
+        _primaryBallOnHold = false;
+        _activeClonesCount = 0;
+        if (_ball != null) _ball.gameObject.SetActive(true);
+        var allBalls = Object.FindObjectsByType<BallController>(FindObjectsSortMode.None);
+        foreach (var b in allBalls)
+            if (b != _ball) Destroy(b.gameObject);
+
+        _ball?.ResetToPaddle();
+        _paddle?.ResetPosition();
+
+        string levelTitle = string.IsNullOrEmpty(meta.title) ? "Community Level" : meta.title;
+        _hud?.SetLevelInfo(0, levelTitle);
+        _hud?.SetLevelCode("");
+
+        AudioListener.pause = false;
+        _levelStartTime = Time.realtimeSinceStartup;
+
+        // Notify play count (fire and forget)
+        CommunityLevelService.Instance?.IncrementPlayCount(meta.id);
+
+        MusicPlayer.Instance?.PlayGameplay(0);
+        SetState(GameState.Ready);
+    }
+
+    /// <summary>Retries the last played community level (called from GameOverUI).</summary>
+    public void RetryCommunityLevel()
+    {
+        if (_currentCommunityMeta != null && _cachedCommunityData != null)
+            StartCommunityLevel(_currentCommunityMeta, _cachedCommunityData);
+    }
+
     // ── State Management ────────────────────────────────────────────────────
 
     public void SetState(GameState newState)
@@ -995,7 +1097,10 @@ public class GameManager : MonoBehaviour
                 SetCursorMenuMode();
                 Time.timeScale = 0f;
                 SfxPlayer.Instance?.PlayGameOver();
-                _gameOverUI?.ShowGameOver(_score);
+                if (_isCommunityMode)
+                    _gameOverUI?.ShowCommunityGameOver(_score);
+                else
+                    _gameOverUI?.ShowGameOver(_score);
                 MusicPlayer.Instance?.PlayGameOver();
                 break;
 
@@ -1020,9 +1125,18 @@ public class GameManager : MonoBehaviour
                 Time.timeScale = 0f;
                 _pauseMenuUI?.Hide();
                 ScreenEffects.Instance?.SetBadVignette(false);
-                string levelId = (_levelIds != null && _currentLevelIndex < _levelIds.Length)
-                    ? _levelIds[_currentLevelIndex] : "";
-                _victoryUI?.ShowVictory(_score - _levelStartScore, _levelComboBonus, _levelBestCombo, levelId, _currentLevelIndex);
+                if (_isCommunityMode && _currentCommunityMeta != null)
+                {
+                    _victoryUI?.ShowCommunityVictory(
+                        _score - _levelStartScore, _levelComboBonus, _levelBestCombo,
+                        _currentCommunityMeta);
+                }
+                else
+                {
+                    string levelId = (_levelIds != null && _currentLevelIndex < _levelIds.Length)
+                        ? _levelIds[_currentLevelIndex] : "";
+                    _victoryUI?.ShowVictory(_score - _levelStartScore, _levelComboBonus, _levelBestCombo, levelId, _currentLevelIndex);
+                }
                 MusicPlayer.Instance?.PlayLevelFinish();
 
                 float levelTime = Time.realtimeSinceStartup - _levelStartTime;

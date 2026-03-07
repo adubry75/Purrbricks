@@ -150,8 +150,83 @@ public class GameOverUI : MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// Community mode game over — shows Retry and Browse Levels instead of Leaderboard / Main Menu.
+    /// </summary>
+    public void ShowCommunityGameOver(int finalScore)
+    {
+        gameObject.SetActive(true);
+
+        if (_titleText != null)
+        {
+            _titleText.text  = "GAME OVER";
+            _titleText.color = UIStyle.AccentRed;
+        }
+        if (_scoreText != null) _scoreText.text = $"Score: {finalScore:N0}";
+
+        // Temporarily replace button text to show community actions.
+        // The real label GOs are children of the panel — find and relabel them.
+        var buttons = GetComponentsInChildren<Button>(true);
+        foreach (var btn in buttons)
+        {
+            var txt = btn.GetComponentInChildren<Text>();
+            if (txt == null) continue;
+            if (txt.text == "Leaderboard")
+            {
+                txt.text = "Retry";
+                btn.onClick.RemoveAllListeners();
+                btn.onClick.AddListener(OnRetryClicked);
+            }
+            else if (txt.text == "Main Menu")
+            {
+                txt.text = "Browse Levels";
+                btn.onClick.RemoveAllListeners();
+                btn.onClick.AddListener(OnBrowseLevels);
+            }
+        }
+    }
+
     private void OnLeaderboard() => GameManager.Instance?.ShowHighScoresAfterGameOver();
     private void OnMainMenu()    => GameManager.Instance?.ShowMainMenu();
+
+    private void OnRetryClicked()
+    {
+        // Restore button labels for next regular GameOver
+        RestoreNormalButtons();
+        Hide();
+        GameManager.Instance?.RetryCommunityLevel();
+    }
+
+    private void OnBrowseLevels()
+    {
+        RestoreNormalButtons();
+        Hide();
+        var browser = Object.FindFirstObjectByType<CommunityBrowserUI>(FindObjectsInactive.Include);
+        if (browser != null) browser.Show();
+        else GameManager.Instance?.ShowMainMenu();
+    }
+
+    private void RestoreNormalButtons()
+    {
+        var buttons = GetComponentsInChildren<Button>(true);
+        foreach (var btn in buttons)
+        {
+            var txt = btn.GetComponentInChildren<Text>();
+            if (txt == null) continue;
+            if (txt.text == "Retry")
+            {
+                txt.text = "Leaderboard";
+                btn.onClick.RemoveAllListeners();
+                btn.onClick.AddListener(OnLeaderboard);
+            }
+            else if (txt.text == "Browse Levels")
+            {
+                txt.text = "Main Menu";
+                btn.onClick.RemoveAllListeners();
+                btn.onClick.AddListener(OnMainMenu);
+            }
+        }
+    }
 
     public void Show() { gameObject.SetActive(true); }
     public void Hide() { gameObject.SetActive(false); }

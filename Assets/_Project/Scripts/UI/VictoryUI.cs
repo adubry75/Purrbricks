@@ -122,9 +122,10 @@ public class VictoryUI : MonoBehaviour
             OnLevelBoard, UIStyle.AccentBlue);
 
         // Next Level / Replay (side by side)
-        UIStyle.CreateButton(_panel.transform, "Next Level",
+        var nextLevelBtn = UIStyle.CreateButton(_panel.transform, "Next Level",
             new Vector2(162f, -200f), new Vector2(300f, 70f),
             OnNextLevel, UIStyle.AccentGreen);
+        _nextLevelBtnGO = nextLevelBtn.gameObject;
 
         UIStyle.CreateButton(_panel.transform, "Replay Level",
             new Vector2(-162f, -200f), new Vector2(300f, 70f),
@@ -134,6 +135,13 @@ public class VictoryUI : MonoBehaviour
         UIStyle.CreateButton(_panel.transform, "Level Select",
             new Vector2(0f, -290f), new Vector2(280f, 60f),
             OnLevelSelect, UIStyle.AccentBlue);
+
+        // Browse More (community mode only — hidden by default)
+        var browseBtn = UIStyle.CreateButton(_panel.transform, "Browse More",
+            new Vector2(162f, -200f), new Vector2(300f, 70f),
+            OnBrowseMore, UIStyle.AccentGold);
+        _browseMoreBtnGO = browseBtn.gameObject;
+        _browseMoreBtnGO.SetActive(false);
 
         BuildRatingSection();
     }
@@ -277,9 +285,83 @@ public class VictoryUI : MonoBehaviour
         SpawnVictoryFireworks();
     }
 
+    // ── Community Victory ─────────────────────────────────────────────────────
+
+    private CommunityLevelMeta _currentCommunityMeta;
+    private bool _isCommunityMode;
+
+    // "Browse More" button GO — only active in community mode
+    private GameObject _browseMoreBtnGO;
+    private GameObject _nextLevelBtnGO;
+
+    public void ShowCommunityVictory(int levelScore, int comboBonus, int bestCombo, CommunityLevelMeta meta)
+    {
+        _isCommunityMode      = true;
+        _currentCommunityMeta = meta;
+        _currentLevelId       = $"cl_{meta.id}";
+        _currentLevelScore    = levelScore;
+
+        // Activate first so OnEnable subscribes to OnRankAwardResolved
+        gameObject.SetActive(true);
+
+        // Submit score to community Steam boards
+        if (levelScore > 0)
+        {
+            string allTimeBoard = PurrbricksLeaderboards.CommunityAllTime(meta.id);
+            string weeklyBoard  = PurrbricksLeaderboards.Scoped(allTimeBoard, LeaderboardTimeScope.Weekly);
+            string dailyBoard   = PurrbricksLeaderboards.Scoped(allTimeBoard, LeaderboardTimeScope.Daily);
+
+            SteamLeaderboardManager.Instance?.SubmitScore(allTimeBoard, levelScore);
+            SteamLeaderboardManager.Instance?.SubmitScore(weeklyBoard,  levelScore);
+            SteamLeaderboardManager.Instance?.SubmitScore(dailyBoard,   levelScore);
+
+            LeaderboardTestData.RerollForBoard(allTimeBoard);
+            LeaderboardTestData.RerollForBoard(weeklyBoard);
+            LeaderboardTestData.RerollForBoard(dailyBoard);
+        }
+
+        // Award Purr Bucks
+        if (PurrBucksManager.Instance != null)
+        {
+            int livesLost   = (GameManager.Instance?.LivesAtLevelStart ?? 0) - (GameManager.Instance?.GetLives() ?? 0);
+            bool perfectClear = livesLost <= 0;
+            _purrBucksText?.gameObject.SetActive(false);
+            PurrBucksManager.Instance.AwardCommunityLevelComplete(meta.id, perfectClear, livesLost);
+        }
+
+        if (_levelScoreText != null) _levelScoreText.text = $"Level Score:  {levelScore:N0}";
+        if (_comboBonusText != null) _comboBonusText.text = comboBonus > 0
+            ? $"Combo Bonus:  +{comboBonus:N0}" : "Combo Bonus:  —";
+        if (_bestComboText != null) _bestComboText.text = bestCombo > 0
+            ? $"Best Combo:  ×{bestCombo + 1}" : "Best Combo:  —";
+
+        _newBestBanner?.SetActive(false); // no personal best tracking for community levels
+
+        // Pre-load community rating
+        _currentRating = CommunityLevelService.Instance?.GetMyRating(meta.id) ?? 0;
+        UpdateStars(_currentRating);
+
+        // Mark cleared
+        CommunityLevelService.Instance?.MarkCleared(meta.id);
+
+        // Swap Next Level → Browse More button
+        if (_nextLevelBtnGO  != null) _nextLevelBtnGO.SetActive(false);
+        if (_browseMoreBtnGO != null) _browseMoreBtnGO.SetActive(true);
+
+        SpawnVictoryFireworks();
+    }
+
     private void OnNextLevel()   => GameManager.Instance?.LoadNextLevel();
     private void OnReplayLevel() => GameManager.Instance?.ReplayCurrentLevel();
     private void OnLevelBoard()  => GameManager.Instance?.ShowLevelLeaderboard(_currentLevelIndex);
+
+    private void OnBrowseMore()
+    {
+        Hide();
+        var browser = Object.FindFirstObjectByType<CommunityBrowserUI>(FindObjectsInactive.Include);
+        if (browser != null) browser.Show();
+        else GameManager.Instance?.ShowMainMenu();
+    }
 
     private void OnLevelSelect()
     {
@@ -300,14 +382,24 @@ public class VictoryUI : MonoBehaviour
     {
         // Click the already-active star → clear the rating
         _currentRating = (_currentRating == starNum) ? 0 : starNum;
-
-        if (LevelRatingService.Instance != null)
-            LevelRatingService.Instance.SetRating(_currentLevelId, _currentLevelIndex, _currentRating);
-        else
-            Debug.LogWarning("[VictoryUI] LevelRatingService.Instance is null — rating NOT saved! " +
-                             "Run 'Purrbricks > Setup Scene' to add the service to the scene.");
-
         UpdateStars(_currentRating);
+
+        if (_isCommunityMode && _currentCommunityMeta != null)
+        {
+            CommunityLevelService.Instance?.RateLevel(_currentCommunityMeta.id, _currentRating, error =>
+            {
+                if (!string.IsNullOrEmpty(error))
+                    Debug.LogWarning($"[VictoryUI] Community rating error: {error}");
+            });
+        }
+        else
+        {
+            if (LevelRatingService.Instance != null)
+                LevelRatingService.Instance.SetRating(_currentLevelId, _currentLevelIndex, _currentRating);
+            else
+                Debug.LogWarning("[VictoryUI] LevelRatingService.Instance is null — rating NOT saved! " +
+                                 "Run 'Purrbricks > Setup Scene' to add the service to the scene.");
+        }
     }
 
     private void UpdateStars(int rating)
@@ -322,7 +414,15 @@ public class VictoryUI : MonoBehaviour
     }
 
     public void Show() { gameObject.SetActive(true); }
-    public void Hide() { gameObject.SetActive(false); }
+    public void Hide()
+    {
+        // Reset community mode state so next ShowVictory starts clean
+        _isCommunityMode      = false;
+        _currentCommunityMeta = null;
+        if (_nextLevelBtnGO  != null) _nextLevelBtnGO.SetActive(true);
+        if (_browseMoreBtnGO != null) _browseMoreBtnGO.SetActive(false);
+        gameObject.SetActive(false);
+    }
 
     // ── Text helpers ──────────────────────────────────────────────────────────
 

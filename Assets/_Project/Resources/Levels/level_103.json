@@ -2,77 +2,476 @@
   "id": "level_103",
   "displayName": "The Scream",
   "ballSpeed": 8.0,
-  "grid": { "cols": 20, "rows": 12, "brickWidth": 0.65, "brickHeight": 0.40, "gapX": 0.02, "gapY": 0.02 },
+  "grid": {
+    "cols": 20,
+    "rows": 12,
+    "brickWidth": 0.65,
+    "brickHeight": 0.4,
+    "gapX": 0.02,
+    "gapY": 0.02
+  },
   "bricks": [
-    { "col": 0, "row": 0, "templateId": "red"  }, { "col": 1, "row": 0, "templateId": "red"  },
-    { "col": 2, "row": 0, "templateId": "gold" }, { "col": 3, "row": 0, "templateId": "gold" },
-    { "col": 4, "row": 0, "templateId": "red"  }, { "col": 5, "row": 0, "templateId": "red"  },
-    { "col": 6, "row": 0, "templateId": "gold" }, { "col": 7, "row": 0, "templateId": "gold" },
-    { "col": 8, "row": 0, "templateId": "red"  }, { "col": 9, "row": 0, "templateId": "red"  },
-    { "col": 10,"row": 0, "templateId": "gold" }, { "col": 11,"row": 0, "templateId": "gold" },
-    { "col": 12,"row": 0, "templateId": "red"  }, { "col": 13,"row": 0, "templateId": "red"  },
-    { "col": 14,"row": 0, "templateId": "gold" }, { "col": 15,"row": 0, "templateId": "gold" },
-    { "col": 16,"row": 0, "templateId": "red"  }, { "col": 17,"row": 0, "templateId": "red"  },
-    { "col": 18,"row": 0, "templateId": "gold" }, { "col": 19,"row": 0, "templateId": "gold" },
-
-    { "col": 0, "row": 1, "templateId": "gold" }, { "col": 2, "row": 1, "templateId": "red"  },
-    { "col": 4, "row": 1, "templateId": "gold" }, { "col": 6, "row": 1, "templateId": "red"  },
-    { "col": 8, "row": 1, "templateId": "gold" }, { "col": 10,"row": 1, "templateId": "red"  },
-    { "col": 12,"row": 1, "templateId": "gold" }, { "col": 14,"row": 1, "templateId": "red"  },
-    { "col": 16,"row": 1, "templateId": "gold" }, { "col": 18,"row": 1, "templateId": "red"  },
-
-    { "col": 9, "row": 2, "templateId": "dark" }, { "col": 10,"row": 2, "templateId": "dark" },
-    { "col": 11,"row": 2, "templateId": "dark" },
-
-    { "col": 7, "row": 3, "templateId": "dark" },
-    { "col": 8, "row": 3, "templateId": "standard" },
-    { "col": 9, "row": 3, "templateId": "standard" },
-    { "col": 10,"row": 3, "templateId": "standard" },
-    { "col": 11,"row": 3, "templateId": "standard" },
-    { "col": 12,"row": 3, "templateId": "dark" },
-
-    { "col": 7, "row": 4, "templateId": "dark" },
-    { "col": 8, "row": 4, "templateId": "standard" },
-    { "col": 9, "row": 4, "templateId": "dark"     },
-    { "col": 10,"row": 4, "templateId": "dark"     },
-    { "col": 11,"row": 4, "templateId": "standard" },
-    { "col": 12,"row": 4, "templateId": "dark" },
-
-    { "col": 6, "row": 5, "templateId": "dark" },
-    { "col": 7, "row": 5, "templateId": "dark" },
-    { "col": 8, "row": 5, "templateId": "dark" },
-    { "col": 9, "row": 5, "templateId": "standard" },
-    { "col": 10,"row": 5, "templateId": "standard" },
-    { "col": 11,"row": 5, "templateId": "dark"     },
-    { "col": 12,"row": 5, "templateId": "dark" },
-    { "col": 13,"row": 5, "templateId": "dark" },
-
-    { "col": 5, "row": 6, "templateId": "dark" },
-    { "col": 6, "row": 6, "templateId": "standard" },
-    { "col": 9, "row": 6, "templateId": "standard" },
-    { "col": 10,"row": 6, "templateId": "standard" },
-    { "col": 13,"row": 6, "templateId": "standard" },
-    { "col": 14,"row": 6, "templateId": "dark" },
-
-    { "col": 0, "row": 7, "templateId": "dark" }, { "col": 1, "row": 7, "templateId": "dark" },
-    { "col": 2, "row": 7, "templateId": "dark" }, { "col": 3, "row": 7, "templateId": "dark" },
-    { "col": 4, "row": 7, "templateId": "dark" }, { "col": 5, "row": 7, "templateId": "dark" },
-    { "col": 14,"row": 7, "templateId": "dark" }, { "col": 15,"row": 7, "templateId": "dark" },
-    { "col": 16,"row": 7, "templateId": "dark" }, { "col": 17,"row": 7, "templateId": "dark" },
-
-    { "col": 0, "row": 8, "templateId": "dark" }, { "col": 1, "row": 8, "templateId": "dark" },
-    { "col": 2, "row": 8, "templateId": "blue" }, { "col": 3, "row": 8, "templateId": "blue" },
-    { "col": 4, "row": 8, "templateId": "blue" }, { "col": 5, "row": 8, "templateId": "dark" },
-    { "col": 14,"row": 8, "templateId": "dark" }, { "col": 15,"row": 8, "templateId": "blue" },
-    { "col": 16,"row": 8, "templateId": "blue" }, { "col": 17,"row": 8, "templateId": "dark" },
-
-    { "col": 0, "row": 9, "templateId": "dark" }, { "col": 1, "row": 9, "templateId": "blue" },
-    { "col": 2, "row": 9, "templateId": "blue" }, { "col": 3, "row": 9, "templateId": "dark" },
-    { "col": 16,"row": 9, "templateId": "blue" }, { "col": 17,"row": 9, "templateId": "blue" },
-    { "col": 18,"row": 9, "templateId": "dark" },
-
-    { "col": 0, "row": 10, "templateId": "dark" }, { "col": 1, "row": 10, "templateId": "dark" },
-    { "col": 2, "row": 10, "templateId": "dark" }, { "col": 17,"row": 10, "templateId": "dark" },
-    { "col": 18,"row": 10, "templateId": "dark" }, { "col": 19,"row": 10, "templateId": "dark" }
-  ]
+    {
+      "col": 0,
+      "row": 0,
+      "templateId": "red"
+    },
+    {
+      "col": 1,
+      "row": 0,
+      "templateId": "red"
+    },
+    {
+      "col": 2,
+      "row": 0,
+      "templateId": "gold"
+    },
+    {
+      "col": 3,
+      "row": 0,
+      "templateId": "gold"
+    },
+    {
+      "col": 4,
+      "row": 0,
+      "templateId": "red"
+    },
+    {
+      "col": 5,
+      "row": 0,
+      "templateId": "red"
+    },
+    {
+      "col": 6,
+      "row": 0,
+      "templateId": "gold"
+    },
+    {
+      "col": 7,
+      "row": 0,
+      "templateId": "gold"
+    },
+    {
+      "col": 8,
+      "row": 0,
+      "templateId": "red"
+    },
+    {
+      "col": 9,
+      "row": 0,
+      "templateId": "red"
+    },
+    {
+      "col": 10,
+      "row": 0,
+      "templateId": "gold"
+    },
+    {
+      "col": 11,
+      "row": 0,
+      "templateId": "gold"
+    },
+    {
+      "col": 12,
+      "row": 0,
+      "templateId": "red"
+    },
+    {
+      "col": 13,
+      "row": 0,
+      "templateId": "red"
+    },
+    {
+      "col": 14,
+      "row": 0,
+      "templateId": "gold"
+    },
+    {
+      "col": 15,
+      "row": 0,
+      "templateId": "gold"
+    },
+    {
+      "col": 16,
+      "row": 0,
+      "templateId": "red"
+    },
+    {
+      "col": 17,
+      "row": 0,
+      "templateId": "red"
+    },
+    {
+      "col": 18,
+      "row": 0,
+      "templateId": "gold"
+    },
+    {
+      "col": 19,
+      "row": 0,
+      "templateId": "gold"
+    },
+    {
+      "col": 0,
+      "row": 1,
+      "templateId": "gold"
+    },
+    {
+      "col": 2,
+      "row": 1,
+      "templateId": "red"
+    },
+    {
+      "col": 4,
+      "row": 1,
+      "templateId": "gold"
+    },
+    {
+      "col": 6,
+      "row": 1,
+      "templateId": "red"
+    },
+    {
+      "col": 8,
+      "row": 1,
+      "templateId": "gold"
+    },
+    {
+      "col": 10,
+      "row": 1,
+      "templateId": "red"
+    },
+    {
+      "col": 12,
+      "row": 1,
+      "templateId": "gold"
+    },
+    {
+      "col": 14,
+      "row": 1,
+      "templateId": "red"
+    },
+    {
+      "col": 16,
+      "row": 1,
+      "templateId": "gold"
+    },
+    {
+      "col": 18,
+      "row": 1,
+      "templateId": "red"
+    },
+    {
+      "col": 9,
+      "row": 2,
+      "templateId": "dark"
+    },
+    {
+      "col": 10,
+      "row": 2,
+      "templateId": "dark"
+    },
+    {
+      "col": 11,
+      "row": 2,
+      "templateId": "dark"
+    },
+    {
+      "col": 7,
+      "row": 3,
+      "templateId": "dark"
+    },
+    {
+      "col": 8,
+      "row": 3,
+      "templateId": "standard"
+    },
+    {
+      "col": 9,
+      "row": 3,
+      "templateId": "standard"
+    },
+    {
+      "col": 10,
+      "row": 3,
+      "templateId": "standard"
+    },
+    {
+      "col": 11,
+      "row": 3,
+      "templateId": "standard"
+    },
+    {
+      "col": 12,
+      "row": 3,
+      "templateId": "dark"
+    },
+    {
+      "col": 7,
+      "row": 4,
+      "templateId": "dark"
+    },
+    {
+      "col": 8,
+      "row": 4,
+      "templateId": "standard"
+    },
+    {
+      "col": 9,
+      "row": 4,
+      "templateId": "dark"
+    },
+    {
+      "col": 10,
+      "row": 4,
+      "templateId": "dark"
+    },
+    {
+      "col": 11,
+      "row": 4,
+      "templateId": "standard"
+    },
+    {
+      "col": 12,
+      "row": 4,
+      "templateId": "dark"
+    },
+    {
+      "col": 6,
+      "row": 5,
+      "templateId": "dark"
+    },
+    {
+      "col": 7,
+      "row": 5,
+      "templateId": "dark"
+    },
+    {
+      "col": 8,
+      "row": 5,
+      "templateId": "dark"
+    },
+    {
+      "col": 9,
+      "row": 5,
+      "templateId": "standard"
+    },
+    {
+      "col": 10,
+      "row": 5,
+      "templateId": "standard"
+    },
+    {
+      "col": 11,
+      "row": 5,
+      "templateId": "dark"
+    },
+    {
+      "col": 12,
+      "row": 5,
+      "templateId": "dark"
+    },
+    {
+      "col": 13,
+      "row": 5,
+      "templateId": "dark"
+    },
+    {
+      "col": 5,
+      "row": 6,
+      "templateId": "dark"
+    },
+    {
+      "col": 6,
+      "row": 6,
+      "templateId": "standard"
+    },
+    {
+      "col": 9,
+      "row": 6,
+      "templateId": "standard"
+    },
+    {
+      "col": 10,
+      "row": 6,
+      "templateId": "standard"
+    },
+    {
+      "col": 13,
+      "row": 6,
+      "templateId": "standard"
+    },
+    {
+      "col": 14,
+      "row": 6,
+      "templateId": "dark"
+    },
+    {
+      "col": 0,
+      "row": 7,
+      "templateId": "dark"
+    },
+    {
+      "col": 1,
+      "row": 7,
+      "templateId": "dark"
+    },
+    {
+      "col": 2,
+      "row": 7,
+      "templateId": "dark"
+    },
+    {
+      "col": 3,
+      "row": 7,
+      "templateId": "dark"
+    },
+    {
+      "col": 4,
+      "row": 7,
+      "templateId": "dark"
+    },
+    {
+      "col": 5,
+      "row": 7,
+      "templateId": "dark"
+    },
+    {
+      "col": 14,
+      "row": 7,
+      "templateId": "dark"
+    },
+    {
+      "col": 15,
+      "row": 7,
+      "templateId": "dark"
+    },
+    {
+      "col": 16,
+      "row": 7,
+      "templateId": "dark"
+    },
+    {
+      "col": 17,
+      "row": 7,
+      "templateId": "dark"
+    },
+    {
+      "col": 0,
+      "row": 8,
+      "templateId": "dark"
+    },
+    {
+      "col": 1,
+      "row": 8,
+      "templateId": "dark"
+    },
+    {
+      "col": 2,
+      "row": 8,
+      "templateId": "blue"
+    },
+    {
+      "col": 3,
+      "row": 8,
+      "templateId": "blue"
+    },
+    {
+      "col": 4,
+      "row": 8,
+      "templateId": "blue"
+    },
+    {
+      "col": 5,
+      "row": 8,
+      "templateId": "dark"
+    },
+    {
+      "col": 14,
+      "row": 8,
+      "templateId": "dark"
+    },
+    {
+      "col": 15,
+      "row": 8,
+      "templateId": "blue"
+    },
+    {
+      "col": 16,
+      "row": 8,
+      "templateId": "blue"
+    },
+    {
+      "col": 17,
+      "row": 8,
+      "templateId": "dark"
+    },
+    {
+      "col": 0,
+      "row": 9,
+      "templateId": "dark"
+    },
+    {
+      "col": 1,
+      "row": 9,
+      "templateId": "blue"
+    },
+    {
+      "col": 2,
+      "row": 9,
+      "templateId": "blue"
+    },
+    {
+      "col": 3,
+      "row": 9,
+      "templateId": "dark"
+    },
+    {
+      "col": 16,
+      "row": 9,
+      "templateId": "blue"
+    },
+    {
+      "col": 17,
+      "row": 9,
+      "templateId": "blue"
+    },
+    {
+      "col": 18,
+      "row": 9,
+      "templateId": "dark"
+    },
+    {
+      "col": 0,
+      "row": 10,
+      "templateId": "dark"
+    },
+    {
+      "col": 1,
+      "row": 10,
+      "templateId": "dark"
+    },
+    {
+      "col": 2,
+      "row": 10,
+      "templateId": "dark"
+    },
+    {
+      "col": 17,
+      "row": 10,
+      "templateId": "dark"
+    },
+    {
+      "col": 18,
+      "row": 10,
+      "templateId": "dark"
+    },
+    {
+      "col": 19,
+      "row": 10,
+      "templateId": "dark"
+    }
+  ],
+  "nativeLevel": true,
+  "levelOrder": 103
 }

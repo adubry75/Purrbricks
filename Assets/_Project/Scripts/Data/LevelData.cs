@@ -11,6 +11,10 @@ public class LevelData
     public List<BrickEntryData> bricks = new List<BrickEntryData>();
     public List<PrismGateData> prismGates = new List<PrismGateData>();
     public bool unlocked;
+    /// <summary>True for levels shipped with the game. Editable only when AdminMode is on in GameManager.</summary>
+    public bool nativeLevel = false;
+    /// <summary>Display order in the editor browser. -1 = sort after all levels with an explicit order.</summary>
+    public int levelOrder = -1;
 }
 
 [Serializable]

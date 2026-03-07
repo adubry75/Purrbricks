@@ -444,6 +444,30 @@ public static class PurrbricksSetup
         levelBrowserUI.SetEditorUI(levelEditorUI);
         levelEditorUI.SetBrowser(levelBrowserUI);
 
+        // ── Community Level Service ───────────────────────────────────────────
+        var clsGO = EnsureGO("CommunityLevelService");
+        if (clsGO.GetComponent<CommunityLevelService>() == null)
+        {
+            clsGO.AddComponent<CommunityLevelService>();
+            Debug.Log("Added CommunityLevelService.");
+        }
+
+        // ── Community Browser UI ──────────────────────────────────────────────
+        var cbGO = EnsureGO("CommunityBrowserUI");
+        if (cbGO.GetComponent<CommunityBrowserUI>() == null)
+        {
+            cbGO.AddComponent<CommunityBrowserUI>();
+            Debug.Log("Added CommunityBrowserUI.");
+        }
+
+        // ── Community Publish UI ──────────────────────────────────────────────
+        var cpGO = EnsureGO("CommunityPublishUI");
+        if (cpGO.GetComponent<CommunityPublishUI>() == null)
+        {
+            cpGO.AddComponent<CommunityPublishUI>();
+            Debug.Log("Added CommunityPublishUI.");
+        }
+
         // ── 12. Main menu button sprites + ball/paddle sprites ───────────────
         // Refresh asset database so newly-added Art files are recognized
         AssetDatabase.Refresh();

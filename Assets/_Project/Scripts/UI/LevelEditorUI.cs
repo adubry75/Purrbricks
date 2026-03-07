@@ -51,9 +51,17 @@ public class LevelEditorUI : MonoBehaviour
     // ── Runtime state ─────────────────────────────────────────────────────────
     private LevelData      _data;
     private string         _levelId;
+    private bool           _isReadOnly;
     private BrickEntryData _selected;
     private int            _selectedCol = -1, _selectedRow = -1;
     private string         _activeTemplate = "standard";
+
+    // ── Bottom bar button refs (toggled based on read-only state) ─────────────
+    private Button     _saveBtnRef;
+    private GameObject _saveBtnGO;
+    private GameObject _cloneBtnGO;
+    private GameObject _publishBtnGO;
+    private GameObject _readOnlyBanner;
 
     // Drag state
     private bool   _isDragging;
@@ -78,6 +86,11 @@ public class LevelEditorUI : MonoBehaviour
     // ── Top-bar fields ────────────────────────────────────────────────────────
     private InputField _fieldName, _fieldSpeed, _fieldCols, _fieldRows;
     private InputField _fieldBrickW, _fieldBrickH, _fieldGapX, _fieldGapY;
+    private InputField _fieldOrder;   // levelOrder for user-created levels
+
+    // ── Bottom-bar community toggle ────────────────────────────────────────────
+    private Toggle     _communityToggle;
+    private GameObject _communityToggleGO;
 
     // ── Properties panel widgets ──────────────────────────────────────────────
     // _propTitle intentionally unused — the title label is always visible in the panel
@@ -114,10 +127,11 @@ public class LevelEditorUI : MonoBehaviour
     public void SetBrowser(LevelEditorBrowserUI browser) => _browser = browser;
 
     // ── Open / Show / Hide ────────────────────────────────────────────────────
-    public void OpenLevel(LevelData data, string levelId)
+    public void OpenLevel(LevelData data, string levelId, bool readOnly = false)
     {
-        _data    = data;
-        _levelId = levelId;
+        _data       = data;
+        _levelId    = levelId;
+        _isReadOnly = readOnly;
         _selected    = null;
         _selectedCol = -1; _selectedRow = -1;
         _activeTemplate = "standard";
@@ -132,12 +146,68 @@ public class LevelEditorUI : MonoBehaviour
         _fieldBrickH.text = g.brickHeight.ToString("F2");
         _fieldGapX.text   = g.gapX.ToString("F2");
         _fieldGapY.text   = g.gapY.ToString("F2");
+        if (_fieldOrder != null)
+            _fieldOrder.text = data.levelOrder >= 0 ? data.levelOrder.ToString() : "";
 
         BuildCells();
         RefreshGrid();
         ClearProps();
         RefreshGatesPanel();
+        ApplyReadOnlyMode(_isReadOnly);
         gameObject.SetActive(true);
+    }
+
+    private void ApplyReadOnlyMode(bool readOnly)
+    {
+        // VIEW ONLY banner
+        if (_readOnlyBanner != null) _readOnlyBanner.SetActive(readOnly);
+
+        // Bottom-bar button visibility
+        if (_saveBtnGO    != null) _saveBtnGO.SetActive(!readOnly);
+        if (_cloneBtnGO   != null) _cloneBtnGO.SetActive(readOnly);
+
+        // Community toggle + Publish button: only show for non-read-only, non-native levels
+        bool showCommunity = !readOnly && !IsNativeLevel() && CommunityLevelService.Instance != null;
+        if (_communityToggleGO != null) _communityToggleGO.SetActive(showCommunity);
+        if (_publishBtnGO != null)      _publishBtnGO.SetActive(showCommunity);
+        // Reset toggle state when opening a new level
+        if (_communityToggle != null)   _communityToggle.isOn = false;
+
+        // Fields: read-only when in view mode
+        bool fieldInteract = !readOnly;
+        if (_fieldName  != null) _fieldName.interactable  = fieldInteract;
+        if (_fieldSpeed != null) _fieldSpeed.interactable = fieldInteract;
+        if (_fieldCols  != null) _fieldCols.interactable  = fieldInteract;
+        if (_fieldRows  != null) _fieldRows.interactable  = fieldInteract;
+        if (_fieldBrickW != null) _fieldBrickW.interactable = fieldInteract;
+        if (_fieldBrickH != null) _fieldBrickH.interactable = fieldInteract;
+        if (_fieldGapX  != null) _fieldGapX.interactable  = fieldInteract;
+        if (_fieldGapY  != null) _fieldGapY.interactable  = fieldInteract;
+    }
+
+    private bool IsNativeLevel() => _data?.nativeLevel ?? false;
+
+    private void CloneBuiltInLevel()
+    {
+        if (_data == null) return;
+        // Find the highest numeric index currently in use across ALL level files
+        var existing = Resources.LoadAll<TextAsset>("Levels");
+        int maxIdx = 0;
+        foreach (var a in existing)
+        {
+            var mx = System.Text.RegularExpressions.Regex.Match(a.name, @"\d+");
+            if (mx.Success && int.TryParse(mx.Value, out int i) && i > maxIdx)
+                maxIdx = i;
+        }
+        int newIdx = maxIdx + 1;
+        string newId = $"level_{newIdx}";
+
+        string json  = Newtonsoft.Json.JsonConvert.SerializeObject(_data);
+        var    clone = Newtonsoft.Json.JsonConvert.DeserializeObject<LevelData>(json);
+        clone.id          = newId;
+        clone.nativeLevel = false;  // clone is a user level, not a native level
+        clone.levelOrder  = -1;
+        OpenLevel(clone, newId, readOnly: false);
     }
 
     public void Show() => gameObject.SetActive(true);
@@ -236,8 +306,10 @@ public class LevelEditorUI : MonoBehaviour
                      out _fieldBrickH, labelY, fieldY);
         x = TopField(bar.transform, "Gap X", x, 85f, "0.08",
                      out _fieldGapX, labelY, fieldY);
-             TopField(bar.transform, "Gap Y", x, 85f, "0.16",
+        x =  TopField(bar.transform, "Gap Y", x, 85f, "0.16",
                      out _fieldGapY, labelY, fieldY);
+             TopField(bar.transform, "Order", x, 70f, "-1",
+                     out _fieldOrder, labelY, fieldY);
 
         // Rebuild-grid button
         UIStyle.CreateButton(bar.transform, "↺ Rebuild Grid",
@@ -695,21 +767,78 @@ public class LevelEditorUI : MonoBehaviour
         rt.anchoredPosition = Vector2.zero;
         rt.sizeDelta = new Vector2(0f, BOT_H);
 
-        UIStyle.CreateButton(bar.transform, "✕ Cancel",
-            new Vector2(-500f, 0f), new Vector2(200f, 48f),
+        UIStyle.CreateButton(bar.transform, "✕ Cancel / Back",
+            new Vector2(-500f, 0f), new Vector2(220f, 48f),
             ConfirmCancel, UIStyle.AccentRed);
 
+        // VIEW ONLY banner (shown in read-only mode)
+        _readOnlyBanner = new GameObject("ReadOnlyBanner");
+        _readOnlyBanner.transform.SetParent(bar.transform, false);
+        var roBannerImg = _readOnlyBanner.AddComponent<Image>();
+        roBannerImg.color = new Color(0.55f, 0.35f, 0f, 0.85f);
+        var roBannerRt = _readOnlyBanner.GetComponent<RectTransform>();
+        roBannerRt.anchorMin = roBannerRt.anchorMax = new Vector2(0.5f, 0.5f);
+        roBannerRt.sizeDelta = new Vector2(380f, 44f);
+        roBannerRt.anchoredPosition = new Vector2(0f, 0f);
+        var roBannerLblGO = new GameObject("Lbl");
+        roBannerLblGO.transform.SetParent(_readOnlyBanner.transform, false);
+        var roBannerLbl = roBannerLblGO.AddComponent<Text>();
+        roBannerLbl.text = "VIEW ONLY — Built-in levels are read-only";
+        roBannerLbl.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
+        roBannerLbl.fontSize = 16;
+        roBannerLbl.fontStyle = FontStyle.Bold;
+        roBannerLbl.alignment = TextAnchor.MiddleCenter;
+        roBannerLbl.color = UIStyle.AccentGold;
+        roBannerLbl.raycastTarget = false;
+        var roBannerLblRt = roBannerLblGO.GetComponent<RectTransform>();
+        roBannerLblRt.anchorMin = Vector2.zero; roBannerLblRt.anchorMax = Vector2.one;
+        roBannerLblRt.offsetMin = new Vector2(8f, 0f); roBannerLblRt.offsetMax = new Vector2(-8f, 0f);
+        _readOnlyBanner.SetActive(false);
+
+        // Clone button (shown only in read-only mode)
+        _cloneBtnGO = UIStyle.CreateButton(bar.transform, "⎘ Clone as New Level",
+            new Vector2(500f, 0f), new Vector2(260f, 48f),
+            CloneBuiltInLevel, UIStyle.AccentGold).gameObject;
+        _cloneBtnGO.SetActive(false);
+
+        // "Submit to Community" toggle — when checked, Save also opens the publish dialog
+        _communityToggle = CreateToggle(bar.transform, "Submit to Community?",
+            new Vector2(-120f, 0f));
+        _communityToggleGO = _communityToggle.gameObject;
+        _communityToggleGO.SetActive(false);
+
+        // Publish button (shown in editable, non-built-in mode)
+        _publishBtnGO = UIStyle.CreateButton(bar.transform, "📤 Publish",
+            new Vector2(200f, 0f), new Vector2(200f, 48f),
+            OnPublishClicked, UIStyle.AccentGold).gameObject;
+        _publishBtnGO.SetActive(false);
+
 #if UNITY_EDITOR
-        UIStyle.CreateButton(bar.transform, "✓ Save Level",
+        _saveBtnGO = UIStyle.CreateButton(bar.transform, "✓ Save Level",
             new Vector2(500f, 0f), new Vector2(220f, 48f),
-            SaveLevel, UIStyle.AccentGreen);
+            SaveLevel, UIStyle.AccentGreen).gameObject;
+        _saveBtnRef = _saveBtnGO.GetComponent<Button>();
 #else
         // Show greyed-out save button in builds
         var fakeBtn = UIStyle.CreateButton(bar.transform, "✓ Save (Editor Only)",
             new Vector2(500f, 0f), new Vector2(260f, 48f),
             () => { }, UIStyle.AccentBlue);
         fakeBtn.interactable = false;
+        _saveBtnGO = fakeBtn.gameObject;
 #endif
+    }
+
+    private void OnPublishClicked()
+    {
+        if (_data == null || _isReadOnly) return;
+        ApplyTopBarMetadata(_data);
+        var publishUI = Object.FindFirstObjectByType<CommunityPublishUI>(FindObjectsInactive.Include);
+        if (publishUI == null)
+        {
+            Debug.LogWarning("[LevelEditorUI] CommunityPublishUI not found. Run Purrbricks > Setup Scene.");
+            return;
+        }
+        publishUI.Show(_data, _levelId);
     }
 
     // ═════════════════════════════════════════════════════════════════════════
@@ -925,6 +1054,7 @@ public class LevelEditorUI : MonoBehaviour
 
     public void OnCellPointerDown(int col, int row)
     {
+        if (_isReadOnly) return;
         _mouseDown      = true;
         _pressCol       = col;
         _pressRow       = row;
@@ -933,6 +1063,7 @@ public class LevelEditorUI : MonoBehaviour
 
     public void OnCellPointerUp(int col, int row)
     {
+        if (_isReadOnly) return;
         if (_isDragging) return; // EndDrag handles it in Update
 
         _mouseDown = false;
@@ -1243,6 +1374,8 @@ public class LevelEditorUI : MonoBehaviour
 
         string json = JsonConvert.SerializeObject(_data, settings);
 
+        bool submitToCommunity = _communityToggle != null && _communityToggle.isOn;
+
 #if UNITY_EDITOR
         string dir  = Path.Combine(Application.dataPath, "_Project", "Resources", "Levels");
         if (!Directory.Exists(dir)) Directory.CreateDirectory(dir);
@@ -1250,6 +1383,18 @@ public class LevelEditorUI : MonoBehaviour
         File.WriteAllText(path, json);
         UnityEditor.AssetDatabase.Refresh();
         Debug.Log($"[LevelEditor] Saved '{_levelId}' → {path}");
+
+        if (submitToCommunity)
+        {
+            // Open the publish dialog before returning to browser
+            var publishUI = Object.FindFirstObjectByType<CommunityPublishUI>(FindObjectsInactive.Include);
+            if (publishUI != null)
+            {
+                publishUI.Show(_data, _levelId);
+                return; // stay on editor screen until publish dialog closes
+            }
+        }
+
         ReturnToBrowser();
 #else
         Debug.LogWarning("[LevelEditor] Save is only available in the Unity Editor.");
@@ -1261,6 +1406,13 @@ public class LevelEditorUI : MonoBehaviour
         if (target == null) return;
         target.displayName = _fieldName.text?.Trim() ?? _levelId;
         if (float.TryParse(_fieldSpeed.text, out float spd)) target.ballSpeed = spd;
+        if (_fieldOrder != null)
+        {
+            if (int.TryParse(_fieldOrder.text?.Trim(), out int ord))
+                target.levelOrder = ord;
+            else
+                target.levelOrder = -1;
+        }
     }
 
     private void TestLevel()

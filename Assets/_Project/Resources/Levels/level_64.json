@@ -295,5 +295,7 @@
       "row": 1,
       "templateId": "red"
     }
-  ]
+  ],
+  "nativeLevel": true,
+  "levelOrder": 64
 }

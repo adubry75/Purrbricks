@@ -415,5 +415,7 @@
       "row": 4,
       "templateId": "steel"
     }
-  ]
+  ],
+  "nativeLevel": true,
+  "levelOrder": 51
 }

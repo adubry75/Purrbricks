@@ -6,6 +6,9 @@ public static class PurrbricksLeaderboards
 
     public static string LevelAllTime(int levelIndex) => $"Purrbricks_level_{levelIndex:D2}";
 
+    /// <summary>All-time board for a community level. Max 30 chars: "Purrbricks_cl_99999_at" = 22 chars.</summary>
+    public static string CommunityAllTime(int communityId) => $"Purrbricks_cl_{communityId}_at";
+
     public static string Scoped(string allTimeBoardName, LeaderboardTimeScope scope)
     {
         if (string.IsNullOrEmpty(allTimeBoardName)) return allTimeBoardName;
