@@ -969,6 +969,11 @@ public class GameManager : MonoBehaviour
         _cachedCommunityData  = data;
         _isEditorTestMode     = false;
 
+        // Stop any in-progress level-advance routine from a previous level
+        // (StartCommunityLevel bypasses LoadLevel which normally resets this).
+        if (_advanceRoutine != null) { StopCoroutine(_advanceRoutine); _advanceRoutine = null; }
+        _isAdvancingLevel = false;
+
         RestoreGameplayAfterHighScores();
         _isDemoMode = false;
         _paddle?.SetDemoMode(false);

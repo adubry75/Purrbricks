@@ -446,6 +446,10 @@ public class CommunityBrowserUI : MonoBehaviour
             // Clear back action BEFORE Hide() so it doesn't re-show the main menu
             _backAction = null;
             GameManager.Instance?.StartCommunityLevel(meta, data);
+            // Override the saved timeScale (was 0 from Victory screen) so Hide()
+            // restores gameplay time, not the frozen VictoryUI time.
+            _prevTimeScale   = 1f;
+            _prevAudioPaused = false;
             Hide();
         });
     }
