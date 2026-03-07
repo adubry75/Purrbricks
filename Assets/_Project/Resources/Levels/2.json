@@ -1,0 +1,48 @@
+{
+  "id": "2",
+  "displayName": "2",
+  "ballSpeed": 8.5,
+  "grid": {
+    "cols": 12,
+    "rows": 6,
+    "brickWidth": 1.35,
+    "brickHeight": 0.45,
+    "gapX": 0.08,
+    "gapY": 0.16
+  },
+  "bricks": [
+    {
+      "col": 3,
+      "row": 3,
+      "templateId": "gem"
+    },
+    {
+      "col": 7,
+      "row": 1,
+      "templateId": "gem"
+    },
+    {
+      "col": 7,
+      "row": 4,
+      "templateId": "gem"
+    },
+    {
+      "templateId": "blue"
+    },
+    {
+      "col": 1,
+      "templateId": "blue"
+    },
+    {
+      "col": 11,
+      "templateId": "cyan"
+    },
+    {
+      "col": 10,
+      "templateId": "cyan"
+    }
+  ],
+  "prismGates": [],
+  "levelOrder": -1,
+  "levelGuid": "91bb81f909bf42498a66c4fd30c2d5fd"
+}

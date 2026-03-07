@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using Newtonsoft.Json;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -12,12 +13,13 @@ public class CommunityBrowserUI : MonoBehaviour
     public static CommunityBrowserUI Instance { get; private set; }
 
     // ── Layout constants ───────────────────────────────────────────────────────
-    private const int   COLS      = 3;
+    private const int   COLS      = 4;
     private const int   ROWS      = 4;
-    private const int   PAGE_SIZE = COLS * ROWS; // 12
-    private const float CARD_W    = 560f;
-    private const float CARD_H    = 210f;
-    private const float CARD_GAP  = 24f;
+    private const int   PAGE_SIZE = COLS * ROWS; // 16
+    private const float CARD_W    = 420f;
+    private const float CARD_H    = 215f;
+    private const float CARD_GAP  = 18f;
+    private const float THUMB_H   = 110f;
     private const float TOP_H     = 100f;
     private const float BOT_H     = 62f;
     private const float H_MARGIN  = 40f;
@@ -137,7 +139,7 @@ public class CommunityBrowserUI : MonoBehaviour
         for (int i = 0; i < SortKeys.Length; i++)
         {
             int captured = i;
-            float tx = tabStartX + i * (tabW + 12f) - 960f; // relative to centre
+            float tx = tabStartX + i * (tabW + 12f) - 960f;
             var btn = UIStyle.CreateButton(header.transform, SortLabels[i],
                 new Vector2(tx + tabW * 0.5f, 0f), new Vector2(tabW, tabH),
                 () => OnSortTabClicked(captured), UIStyle.AccentBlue);
@@ -163,7 +165,7 @@ public class CommunityBrowserUI : MonoBehaviour
 
         _cardsRoot = area.transform;
 
-        // Loading spinner label
+        // Loading spinner
         var spinGO = new GameObject("LoadingSpinner");
         spinGO.transform.SetParent(area.transform, false);
         var spinTxt = spinGO.AddComponent<Text>();
@@ -179,7 +181,7 @@ public class CommunityBrowserUI : MonoBehaviour
         _loadingSpinner = spinGO;
         spinGO.SetActive(false);
 
-        // Empty state label
+        // Empty state
         var emptyGO = new GameObject("EmptyText");
         emptyGO.transform.SetParent(area.transform, false);
         _emptyText = emptyGO.AddComponent<Text>();
@@ -271,7 +273,7 @@ public class CommunityBrowserUI : MonoBehaviour
             var img = _sortBtns[i].GetComponent<Image>();
             if (img != null)
                 img.color = (i == _sortIndex)
-                    ? new Color(0.25f, 0.18f, 0.03f, 1f) // highlighted (dark gold)
+                    ? new Color(0.25f, 0.18f, 0.03f, 1f)
                     : new Color(0.07f, 0.09f, 0.18f, 1f);
         }
     }
@@ -290,11 +292,11 @@ public class CommunityBrowserUI : MonoBehaviour
 
     private void PopulateCards(List<CommunityLevelMeta> levels)
     {
-        // Available area: ~1840 × 930
-        // 3 cols × 560 + 2 × 24 = 1728 → startX = (1840-1728)/2 = 56
-        // 4 rows × 210 + 3 × 24 = 912  → startY = (930-912)/2 = 9
-        float startX = 56f;
-        float startY = -9f;
+        // Available area: ~1840 × 918 (1920 - 2×40 wide, 1080 - 100 - 62 tall)
+        // 4 cols × 420 + 3 × 18 = 1734  → startX = (1840-1734)/2 = 53
+        // 4 rows × 215 + 3 × 18 = 914   → startY = (918-914)/2  = 2 → use -2 (top-aligned)
+        float startX = 53f;
+        float startY = -2f;
 
         for (int i = 0; i < levels.Count; i++)
         {
@@ -318,45 +320,84 @@ public class CommunityBrowserUI : MonoBehaviour
         cRt.sizeDelta = new Vector2(CARD_W, CARD_H);
         card.AddComponent<Outline>().effectColor = new Color(0.25f, 0.35f, 0.60f, 0.7f);
 
-        float cx = 10f; // left margin for text
+        // ── Thumbnail area (top THUMB_H pixels) ─────────────────────────────
+        var thumbGO = MakePanel(card.transform, "Thumb", new Color(0.05f, 0.07f, 0.15f, 1f));
+        var tRt = thumbGO.GetComponent<RectTransform>();
+        tRt.anchorMin = new Vector2(0f, 1f); tRt.anchorMax = new Vector2(1f, 1f);
+        tRt.pivot     = new Vector2(0f, 1f);
+        tRt.anchoredPosition = Vector2.zero;
+        tRt.sizeDelta = new Vector2(0f, THUMB_H);
+
+        // Try to render thumbnail from jsonData
+        if (!string.IsNullOrEmpty(meta.jsonData))
+        {
+            try
+            {
+                var levelData = JsonConvert.DeserializeObject<LevelData>(meta.jsonData);
+                if (levelData != null)
+                    LevelEditorBrowserUI.BuildThumbnail(thumbGO.transform, levelData, CARD_W, THUMB_H);
+            }
+            catch { /* skip bad JSON — thumbnail stays blank */ }
+        }
+
+        // ── Info area (below thumbnail) ──────────────────────────────────────
+        float infoTop = -(THUMB_H + 4f);   // y from top of card
+        float cx = 8f;                     // left margin
 
         // Title
         CardLabel(card.transform, meta.title ?? "Untitled",
-            new Vector2(cx, -16f), 22, Color.white, TextAnchor.UpperLeft, CARD_W - 20f, 28f);
+            new Vector2(cx, infoTop), 16, Color.white, TextAnchor.UpperLeft,
+            CARD_W - 16f, 20f, FontStyle.Bold);
 
         // Author
         CardLabel(card.transform, $"by {meta.steamName ?? "Unknown"}",
-            new Vector2(cx, -46f), 16, new Color(0.65f, 0.65f, 0.80f), TextAnchor.UpperLeft, CARD_W - 20f, 22f);
+            new Vector2(cx, infoTop - 22f), 13, new Color(0.65f, 0.65f, 0.80f),
+            TextAnchor.UpperLeft, CARD_W - 16f, 17f);
 
-        // Stars + rating
+        // Stars
         string ratingStr = meta.ratingCount > 0
-            ? $"★ {meta.averageRating:F1}  ({meta.ratingCount} ratings)"
+            ? $"★ {meta.averageRating:F1}  ({meta.ratingCount})"
             : "No ratings yet";
         CardLabel(card.transform, ratingStr,
-            new Vector2(cx, -74f), 16, new Color(1f, 0.84f, 0.10f), TextAnchor.UpperLeft, CARD_W - 20f, 22f);
+            new Vector2(cx, infoTop - 41f), 13, new Color(1f, 0.84f, 0.10f),
+            TextAnchor.UpperLeft, CARD_W - 16f, 17f);
 
         // Stats
         CardLabel(card.transform, $"{meta.playCount} plays  |  {meta.brickCount} bricks",
-            new Vector2(cx, -98f), 14, new Color(0.55f, 0.55f, 0.65f), TextAnchor.UpperLeft, CARD_W - 20f, 20f);
+            new Vector2(cx, infoTop - 60f), 12, new Color(0.50f, 0.50f, 0.62f),
+            TextAnchor.UpperLeft, CARD_W - 16f, 16f);
 
-        // ▶ Play button
+        // ── Report button (bottom-right, tiny) ──────────────────────────────
+        // UIStyle buttons use center anchor (0.5,0.5) → position is relative to card center
+        // Card center in local space (pivot top-left): (CARD_W/2, -CARD_H/2)
+        // Want button center at ~(CARD_W-46, -(CARD_H-11)) from top-left
+        // → offset from card center: (CARD_W/2 - 46, -(CARD_H/2 - 11))
         int capturedId = meta.id;
-        var playBtn = UIStyle.CreateButton(card.transform, "▶ Play",
-            new Vector2(-(CARD_W * 0.5f - 110f), -(CARD_H - 38f)),
-            new Vector2(190f, 50f),
-            () => OnPlayClicked(capturedId, card), UIStyle.AccentGreen);
-
-        // ⚑ Report button (small, bottom-right)
-        var reportBtn = UIStyle.CreateButton(card.transform, "⚑",
-            new Vector2(CARD_W * 0.5f - 28f, -(CARD_H - 16f)),
-            new Vector2(44f, 32f),
+        var reportBtn = UIStyle.CreateButton(card.transform, "Report",
+            new Vector2(CARD_W * 0.5f - 46f, -(CARD_H * 0.5f - 11f)),
+            new Vector2(76f, 22f),
             () => OnReportClicked(capturedId), UIStyle.AccentRed);
         var reportTxt = reportBtn.GetComponentInChildren<Text>();
-        if (reportTxt != null) reportTxt.fontSize = 14;
+        if (reportTxt != null) reportTxt.fontSize = 11;
+
+        // ── Whole-card click = play ──────────────────────────────────────────
+        var btn = card.AddComponent<Button>();
+        var btnImg = card.GetComponent<Image>();
+        btn.targetGraphic = btnImg;
+        var cols = btn.colors;
+        cols.normalColor      = new Color(0.08f, 0.10f, 0.20f, 1f);
+        cols.highlightedColor = new Color(0.14f, 0.18f, 0.32f, 1f);
+        cols.pressedColor     = new Color(0.05f, 0.07f, 0.14f, 1f);
+        cols.colorMultiplier  = 1f;
+        btn.colors = cols;
+
+        int capturedMetaId = meta.id;
+        btn.onClick.AddListener(() => OnCardClicked(capturedMetaId, card, btn));
     }
 
     private void CardLabel(Transform parent, string text, Vector2 pos, int size, Color color,
-                           TextAnchor anchor, float width, float height)
+                           TextAnchor anchor, float width, float height,
+                           FontStyle style = FontStyle.Normal)
     {
         var go = new GameObject("Lbl_" + text.Substring(0, Mathf.Min(text.Length, 12)));
         go.transform.SetParent(parent, false);
@@ -364,6 +405,7 @@ public class CommunityBrowserUI : MonoBehaviour
         txt.text      = text;
         txt.font      = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
         txt.fontSize  = size;
+        txt.fontStyle = style;
         txt.alignment = anchor;
         txt.color     = color;
         txt.raycastTarget = false;
@@ -376,26 +418,33 @@ public class CommunityBrowserUI : MonoBehaviour
 
     // ── Button handlers ───────────────────────────────────────────────────────
 
-    private void OnPlayClicked(int id, GameObject card)
+    private void OnCardClicked(int id, GameObject card, Button btn)
     {
         if (CommunityLevelService.Instance == null) return;
 
-        // Show loading text on card
-        var btn = card.GetComponentInChildren<Button>();
-        if (btn != null) btn.interactable = false;
-        var labels = card.GetComponentsInChildren<Text>();
-        foreach (var l in labels)
-            if (l.text == "▶ Play") { l.text = "Loading..."; break; }
+        // Disable card interaction while loading
+        btn.interactable = false;
+        var titleLabels = card.GetComponentsInChildren<Text>();
+        foreach (var l in titleLabels)
+        {
+            if (l.gameObject.name.StartsWith("Lbl_") && l.fontStyle == FontStyle.Bold)
+            {
+                l.text = "Loading...";
+                break;
+            }
+        }
 
         CommunityLevelService.Instance.FetchLevel(id, (data, meta) =>
         {
             if (data == null || meta == null)
             {
                 Debug.LogWarning($"[CommunityBrowserUI] Failed to load community level {id}");
-                if (btn != null) btn.interactable = true;
+                btn.interactable = true;
                 return;
             }
 
+            // Clear back action BEFORE Hide() so it doesn't re-show the main menu
+            _backAction = null;
             GameManager.Instance?.StartCommunityLevel(meta, data);
             Hide();
         });

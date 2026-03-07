@@ -353,7 +353,13 @@ public class VictoryUI : MonoBehaviour
 
     private void OnNextLevel()   => GameManager.Instance?.LoadNextLevel();
     private void OnReplayLevel() => GameManager.Instance?.ReplayCurrentLevel();
-    private void OnLevelBoard()  => GameManager.Instance?.ShowLevelLeaderboard(_currentLevelIndex);
+    private void OnLevelBoard()
+    {
+        if (_isCommunityMode && _currentCommunityMeta != null)
+            GameManager.Instance?.ShowCommunityLevelLeaderboard(_currentCommunityMeta.id);
+        else
+            GameManager.Instance?.ShowLevelLeaderboard(_currentLevelIndex);
+    }
 
     private void OnBrowseMore()
     {
@@ -414,6 +420,13 @@ public class VictoryUI : MonoBehaviour
     }
 
     public void Show() { gameObject.SetActive(true); }
+
+    /// <summary>
+    /// Temporarily hide without resetting community mode state (used when opening leaderboard from victory).
+    /// Call Show() to restore.
+    /// </summary>
+    public void HideForLeaderboard() { gameObject.SetActive(false); }
+
     public void Hide()
     {
         // Reset community mode state so next ShowVictory starts clean

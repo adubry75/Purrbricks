@@ -60,7 +60,6 @@ public class LevelEditorUI : MonoBehaviour
     private Button     _saveBtnRef;
     private GameObject _saveBtnGO;
     private GameObject _cloneBtnGO;
-    private GameObject _publishBtnGO;
     private GameObject _readOnlyBanner;
 
     // Drag state
@@ -166,12 +165,16 @@ public class LevelEditorUI : MonoBehaviour
         if (_saveBtnGO    != null) _saveBtnGO.SetActive(!readOnly);
         if (_cloneBtnGO   != null) _cloneBtnGO.SetActive(readOnly);
 
-        // Community toggle + Publish button: only show for non-read-only, non-native levels
+        // Community toggle: only show for non-read-only, non-native levels
         bool showCommunity = !readOnly && !IsNativeLevel() && CommunityLevelService.Instance != null;
         if (_communityToggleGO != null) _communityToggleGO.SetActive(showCommunity);
-        if (_publishBtnGO != null)      _publishBtnGO.SetActive(showCommunity);
-        // Reset toggle state when opening a new level
-        if (_communityToggle != null)   _communityToggle.isOn = false;
+        // Pre-check toggle if level is already published
+        if (_communityToggle != null)
+        {
+            bool alreadyPublished = showCommunity &&
+                (CommunityLevelService.Instance?.IsPublished(_data?.levelGuid ?? "") ?? false);
+            _communityToggle.isOn = alreadyPublished;
+        }
 
         // Fields: read-only when in view mode
         bool fieldInteract = !readOnly;
@@ -807,12 +810,6 @@ public class LevelEditorUI : MonoBehaviour
         _communityToggleGO = _communityToggle.gameObject;
         _communityToggleGO.SetActive(false);
 
-        // Publish button (shown in editable, non-built-in mode)
-        _publishBtnGO = UIStyle.CreateButton(bar.transform, "📤 Publish",
-            new Vector2(200f, 0f), new Vector2(200f, 48f),
-            OnPublishClicked, UIStyle.AccentGold).gameObject;
-        _publishBtnGO.SetActive(false);
-
 #if UNITY_EDITOR
         _saveBtnGO = UIStyle.CreateButton(bar.transform, "✓ Save Level",
             new Vector2(500f, 0f), new Vector2(220f, 48f),
@@ -826,19 +823,6 @@ public class LevelEditorUI : MonoBehaviour
         fakeBtn.interactable = false;
         _saveBtnGO = fakeBtn.gameObject;
 #endif
-    }
-
-    private void OnPublishClicked()
-    {
-        if (_data == null || _isReadOnly) return;
-        ApplyTopBarMetadata(_data);
-        var publishUI = Object.FindFirstObjectByType<CommunityPublishUI>(FindObjectsInactive.Include);
-        if (publishUI == null)
-        {
-            Debug.LogWarning("[LevelEditorUI] CommunityPublishUI not found. Run Purrbricks > Setup Scene.");
-            return;
-        }
-        publishUI.Show(_data, _levelId);
     }
 
     // ═════════════════════════════════════════════════════════════════════════
@@ -1363,6 +1347,10 @@ public class LevelEditorUI : MonoBehaviour
     {
         if (_data == null) return;
 
+        // Ensure every saved level has a stable GUID (backward-compat for levels created before GUIDs)
+        if (string.IsNullOrEmpty(_data.levelGuid))
+            _data.levelGuid = System.Guid.NewGuid().ToString("N");
+
         ApplyTopBarMetadata(_data);
 
         var settings = new JsonSerializerSettings
@@ -1375,6 +1363,7 @@ public class LevelEditorUI : MonoBehaviour
         string json = JsonConvert.SerializeObject(_data, settings);
 
         bool submitToCommunity = _communityToggle != null && _communityToggle.isOn;
+        bool wasPublished = CommunityLevelService.Instance?.IsPublished(_data?.levelGuid ?? "") ?? false;
 
 #if UNITY_EDITOR
         string dir  = Path.Combine(Application.dataPath, "_Project", "Resources", "Levels");
@@ -1383,6 +1372,14 @@ public class LevelEditorUI : MonoBehaviour
         File.WriteAllText(path, json);
         UnityEditor.AssetDatabase.Refresh();
         Debug.Log($"[LevelEditor] Saved '{_levelId}' → {path}");
+
+        // Uncheck while published → unpublish from community
+        if (wasPublished && !submitToCommunity && CommunityLevelService.Instance != null)
+        {
+            int serverId = CommunityLevelService.Instance.GetPublishedServerId(_data.levelGuid);
+            if (serverId > 0)
+                CommunityLevelService.Instance.DeleteLevel(serverId, _ => { });
+        }
 
         if (submitToCommunity)
         {

@@ -1,0 +1,33 @@
+{
+  "id": "asdf21",
+  "displayName": "asdfas",
+  "ballSpeed": 8.5,
+  "grid": {
+    "cols": 12,
+    "rows": 6,
+    "brickWidth": 1.35,
+    "brickHeight": 0.45,
+    "gapX": 0.08,
+    "gapY": 0.16
+  },
+  "bricks": [
+    {
+      "col": 2,
+      "row": 3,
+      "templateId": "gold"
+    },
+    {
+      "col": 6,
+      "row": 2,
+      "templateId": "gold"
+    },
+    {
+      "col": 10,
+      "row": 4,
+      "templateId": "gold"
+    }
+  ],
+  "prismGates": [],
+  "levelOrder": -1,
+  "levelGuid": "122e545b87a449e194d2812136ac7d3d"
+}

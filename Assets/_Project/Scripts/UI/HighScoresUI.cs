@@ -38,7 +38,9 @@ public class HighScoresUI : MonoBehaviour
     private bool       _returnToVictory;
 
     // State
-    private int  _boardIndex; // 0 = OVERALL, 1..N = level 00..(N-1)
+    private int    _boardIndex;      // 0 = OVERALL, 1..N = level 00..(N-1), -1 = custom board
+    private string _customBoardName; // used when _boardIndex == -1
+    private string _customBoardLabel;
     private LeaderboardTimeScope _scope;
     private bool _fetching;
     private int  _fetchToken;
@@ -254,13 +256,18 @@ public class HighScoresUI : MonoBehaviour
 
     private void OnPrevBoard()
     {
-        _boardIndex = (_boardIndex - 1 + TOTAL_BOARDS) % TOTAL_BOARDS;
+        // If on a custom board, step into normal boards
+        if (_boardIndex == -1) _boardIndex = 0;
+        else _boardIndex = (_boardIndex - 1 + TOTAL_BOARDS) % TOTAL_BOARDS;
+        _customBoardName = null; _customBoardLabel = null;
         ResetAndFetch();
     }
 
     private void OnNextBoard()
     {
-        _boardIndex = (_boardIndex + 1) % TOTAL_BOARDS;
+        if (_boardIndex == -1) _boardIndex = 0;
+        else _boardIndex = (_boardIndex + 1) % TOTAL_BOARDS;
+        _customBoardName = null; _customBoardLabel = null;
         ResetAndFetch();
     }
 
@@ -626,6 +633,9 @@ public class HighScoresUI : MonoBehaviour
 
     private string BoardName()
     {
+        if (_boardIndex == -1)
+            return PurrbricksLeaderboards.Scoped(_customBoardName, _scope);
+
         string allTime = _boardIndex == 0
             ? PurrbricksLeaderboards.OverallAllTime
             : PurrbricksLeaderboards.LevelAllTime(_boardIndex - 1);
@@ -635,6 +645,7 @@ public class HighScoresUI : MonoBehaviour
 
     private string GetBoardLabel()
     {
+        if (_boardIndex == -1) return _customBoardLabel ?? _customBoardName ?? "Custom Board";
         if (_boardIndex == 0) return "OVERALL";
         int levelIndex = _boardIndex - 1;
         string title   = LoadLevelTitle(levelIndex);
@@ -775,7 +786,21 @@ public class HighScoresUI : MonoBehaviour
     {
         SetReturnToVictory(returnToVictory);
         gameObject.SetActive(true);
-        _boardIndex = Mathf.Clamp(levelIndex + 1, 0, TOTAL_BOARDS - 1);
+        _boardIndex       = Mathf.Clamp(levelIndex + 1, 0, TOTAL_BOARDS - 1);
+        _customBoardName  = null;
+        _customBoardLabel = null;
+        _scope = LeaderboardTimeScope.AllTime;
+        ResetAndFetch();
+    }
+
+    /// <summary>Opens on an arbitrary named Steam leaderboard (e.g. community level boards).</summary>
+    public void ShowForBoardName(string boardName, string displayLabel, bool returnToVictory = false)
+    {
+        SetReturnToVictory(returnToVictory);
+        gameObject.SetActive(true);
+        _boardIndex       = -1;
+        _customBoardName  = boardName;
+        _customBoardLabel = displayLabel;
         _scope = LeaderboardTimeScope.AllTime;
         ResetAndFetch();
     }

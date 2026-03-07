@@ -69,6 +69,13 @@ public class LevelEditorBrowserUI : MonoBehaviour
     private Text   _headerTitle;
     private Button _newLevelBtn;
 
+    // ── My Levels filter (DB-backed) ──────────────────────────────────────────
+    private bool   _showMyLevelsOnly;
+    private bool                      _loadingMyLevels;
+    private List<CommunityLevelMeta> _myDbLevels;
+    private Button _myLevelsBtn;
+    private Text   _myLevelsBtnLabel;
+
     // ── Modal ─────────────────────────────────────────────────────────────────
     private GameObject _modal;
     private InputField _modalId, _modalName, _modalCols, _modalRows;
@@ -97,6 +104,7 @@ public class LevelEditorBrowserUI : MonoBehaviour
         _onLevelSelected   = onLevelSelected;
         if (_headerTitle  != null) _headerTitle.text = "LEVEL SELECT";
         if (_newLevelBtn  != null) _newLevelBtn.gameObject.SetActive(false);
+        if (_myLevelsBtn  != null) _myLevelsBtn.gameObject.SetActive(false);
         Show();
     }
 
@@ -123,8 +131,13 @@ public class LevelEditorBrowserUI : MonoBehaviour
     /// </summary>
     public void LoadLevelsAndPage()
     {
-        LoadLevels();
-        ShowPage(0);
+        if (_showMyLevelsOnly)
+            FetchMyLevelsFromDB();
+        else
+        {
+            LoadLevels();
+            ShowPage(0);
+        }
     }
 
     public void Hide() => gameObject.SetActive(false);
@@ -135,6 +148,70 @@ public class LevelEditorBrowserUI : MonoBehaviour
         _onLevelSelected   = null;
         if (_headerTitle != null) _headerTitle.text = "LEVEL EDITOR";
         if (_newLevelBtn != null) _newLevelBtn.gameObject.SetActive(true);
+        if (_myLevelsBtn != null) _myLevelsBtn.gameObject.SetActive(true);
+    }
+
+    private void ToggleMyLevelsFilter()
+    {
+        _showMyLevelsOnly = !_showMyLevelsOnly;
+        if (_myLevelsBtnLabel != null)
+        {
+            _myLevelsBtnLabel.text  = _showMyLevelsOnly ? "Game Levels" : "My Levels";
+            _myLevelsBtnLabel.color = _showMyLevelsOnly ? UIStyle.AccentGold : Color.white;
+        }
+
+        if (_showMyLevelsOnly)
+        {
+            FetchMyLevelsFromDB();
+        }
+        else
+        {
+            _myDbLevels = null;
+            LoadLevels();
+            ShowPage(0);
+        }
+    }
+
+    private void FetchMyLevelsFromDB()
+    {
+        if (CommunityLevelService.Instance == null)
+        {
+            // Service not available — fall back to local filter
+            _myDbLevels = null;
+            LoadLevels();
+            ShowPage(0);
+            return;
+        }
+
+        _loadingMyLevels = true;
+        ShowMyLevelsLoading();
+
+        CommunityLevelService.Instance.FetchMyLevels(levels =>
+        {
+            _loadingMyLevels = false;
+            _myDbLevels = levels ?? new List<CommunityLevelMeta>();
+            ShowPage(0);
+        });
+    }
+
+    private void ShowMyLevelsLoading()
+    {
+        // Clear existing cards and show "Loading..." text
+        for (int i = _cardsRoot.childCount - 1; i >= 0; i--)
+            Destroy(_cardsRoot.GetChild(i).gameObject);
+
+        var go = new GameObject("Loading");
+        go.transform.SetParent(_cardsRoot, false);
+        var txt = go.AddComponent<Text>();
+        txt.text      = "Loading your community levels...";
+        txt.font      = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
+        txt.fontSize  = 32;
+        txt.fontStyle = FontStyle.Bold;
+        txt.color     = new Color(0.65f, 0.65f, 0.80f);
+        txt.alignment = TextAnchor.MiddleCenter;
+        var rt = txt.GetComponent<RectTransform>();
+        rt.anchorMin = Vector2.zero; rt.anchorMax = Vector2.one;
+        rt.offsetMin = rt.offsetMax = Vector2.zero;
     }
 
     // ── Canvas setup ──────────────────────────────────────────────────────────
@@ -204,6 +281,12 @@ public class LevelEditorBrowserUI : MonoBehaviour
         _newLevelBtn = UIStyle.CreateButton(header.transform, "+ New Level",
             new Vector2(630f, 0f), new Vector2(210f, 54f),
             ShowNewLevelModal, UIStyle.AccentGreen);
+
+        // "My Levels" filter — shows only user-created (non-native) levels
+        _myLevelsBtn = UIStyle.CreateButton(header.transform, "My Levels",
+            new Vector2(420f, 0f), new Vector2(180f, 54f),
+            ToggleMyLevelsFilter, UIStyle.AccentBlue);
+        _myLevelsBtnLabel = _myLevelsBtn.GetComponentInChildren<Text>();
 
         UIStyle.CreateButton(header.transform, "← Back",
             new Vector2(860f, 0f), new Vector2(180f, 54f),
@@ -373,6 +456,7 @@ public class LevelEditorBrowserUI : MonoBehaviour
         {
             id          = id,
             displayName = name,
+            levelGuid   = System.Guid.NewGuid().ToString("N"),  // stable publish identity
             ballSpeed   = 8.5f,
             grid        = new GridConfig { cols = cols, rows = rows },
             bricks      = new System.Collections.Generic.List<BrickEntryData>()
@@ -411,16 +495,26 @@ public class LevelEditorBrowserUI : MonoBehaviour
 
     // ── Pagination ────────────────────────────────────────────────────────────
 
-    /// In Level Select mode only native levels are shown; the editor shows everything.
+    /// Returns the filtered level list for the current display mode.
     private IReadOnlyList<(string id, LevelData data)> GetDisplayedLevels()
     {
         if (_isLevelSelectMode)
             return _levels.Where(l => IsNativeLevel(l.data)).ToList();
+        if (_showMyLevelsOnly)
+            return _levels.Where(l => !IsNativeLevel(l.data)).ToList();
         return _levels;
     }
 
     private void ShowPage(int p)
     {
+        // If in My Levels DB mode, show those cards instead of local levels
+        if (_showMyLevelsOnly && _myDbLevels != null)
+        {
+            ShowDbLevelsPage(p);
+            return;
+        }
+        if (_showMyLevelsOnly && _loadingMyLevels) return; // wait for fetch
+
         var displayed = GetDisplayedLevels();
         int totalPages = Mathf.Max(1, Mathf.CeilToInt(displayed.Count / (float)PAGE_SIZE));
         _page = Mathf.Clamp(p, 0, totalPages - 1);
@@ -429,9 +523,6 @@ public class LevelEditorBrowserUI : MonoBehaviour
         for (int i = _cardsRoot.childCount - 1; i >= 0; i--)
             Destroy(_cardsRoot.GetChild(i).gameObject);
 
-        // Available area inside cardsRoot: ~ 1840 × 930 (full – margins)
-        // 4 cols × CARD_W + 3 × GAP = 4×420+3×18 = 1734  → centre offset = (1840-1734)/2 = 53
-        // 4 rows × CARD_H + 3 × GAP = 4×215+3×18 = 914   → centre offset = (930-914)/2  = 8
         float startX = 53f;
         float startY = -8f;
 
@@ -451,6 +542,137 @@ public class LevelEditorBrowserUI : MonoBehaviour
         _pageLabel.text = $"Page {_page + 1} / {totalPages}";
         _prevBtn.interactable = _page > 0;
         _nextBtn.interactable = _page < totalPages - 1;
+    }
+
+    private void ShowDbLevelsPage(int p)
+    {
+        int totalPages = Mathf.Max(1, Mathf.CeilToInt(_myDbLevels.Count / (float)PAGE_SIZE));
+        _page = Mathf.Clamp(p, 0, totalPages - 1);
+
+        for (int i = _cardsRoot.childCount - 1; i >= 0; i--)
+            Destroy(_cardsRoot.GetChild(i).gameObject);
+
+        if (_myDbLevels.Count == 0)
+        {
+            var go = new GameObject("Empty");
+            go.transform.SetParent(_cardsRoot, false);
+            var txt = go.AddComponent<Text>();
+            txt.text      = "You haven't published any community levels yet.";
+            txt.font      = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
+            txt.fontSize  = 28;
+            txt.fontStyle = FontStyle.Bold;
+            txt.color     = new Color(0.55f, 0.55f, 0.70f);
+            txt.alignment = TextAnchor.MiddleCenter;
+            var rt = txt.GetComponent<RectTransform>();
+            rt.anchorMin = Vector2.zero; rt.anchorMax = Vector2.one;
+            rt.offsetMin = rt.offsetMax = Vector2.zero;
+            _pageLabel.text = "Page 1 / 1";
+            _prevBtn.interactable = _nextBtn.interactable = false;
+            return;
+        }
+
+        float startX = 53f;
+        float startY = -8f;
+        int start = _page * PAGE_SIZE;
+        int end   = Mathf.Min(start + PAGE_SIZE, _myDbLevels.Count);
+
+        for (int i = start; i < end; i++)
+        {
+            int slot = i - start;
+            int col  = slot % PAGE_COLS;
+            int row  = slot / PAGE_COLS;
+            float cx = startX + col * (CARD_W + CARD_GAP);
+            float cy = startY - row * (CARD_H + CARD_GAP);
+            CreateDbCard(_myDbLevels[i], cx, cy);
+        }
+
+        _pageLabel.text = $"Page {_page + 1} / {totalPages}";
+        _prevBtn.interactable = _page > 0;
+        _nextBtn.interactable = _page < totalPages - 1;
+    }
+
+    private void CreateDbCard(CommunityLevelMeta meta, float x, float y)
+    {
+        // Deserialize json_data to get the LevelData for thumbnail + opening in editor
+        LevelData data = null;
+        if (!string.IsNullOrEmpty(meta.jsonData))
+        {
+            try { data = JsonConvert.DeserializeObject<LevelData>(meta.jsonData); }
+            catch { /* ignore */ }
+        }
+
+        // Build a display ID from the stored data ID or the level title
+        string displayId = data?.id ?? $"cl_{meta.id}";
+
+        var card = MakePanel(_cardsRoot, "DbCard_" + meta.id, new Color(0.08f, 0.10f, 0.20f, 1f));
+        var cRt = card.GetComponent<RectTransform>();
+        cRt.anchorMin = cRt.anchorMax = new Vector2(0f, 1f);
+        cRt.pivot     = new Vector2(0f, 1f);
+        cRt.anchoredPosition = new Vector2(x, y);
+        cRt.sizeDelta = new Vector2(CARD_W, CARD_H);
+        card.AddComponent<Outline>().effectColor = new Color(0.3f, 0.55f, 0.30f, 0.8f); // green tint = community
+
+        // Thumbnail
+        var thumbGO = MakePanel(card.transform, "Thumb", new Color(0.05f, 0.07f, 0.15f, 1f));
+        var tRt = thumbGO.GetComponent<RectTransform>();
+        tRt.anchorMin = new Vector2(0f, 1f); tRt.anchorMax = new Vector2(1f, 1f);
+        tRt.pivot     = new Vector2(0f, 1f);
+        tRt.anchoredPosition = Vector2.zero;
+        tRt.sizeDelta = new Vector2(0f, THUMB_H);
+        if (data != null) BuildThumbnail(thumbGO.transform, data, CARD_W, THUMB_H);
+
+        // Labels
+        var labelArea = new GameObject("LabelArea");
+        labelArea.transform.SetParent(card.transform, false);
+        var laRt = labelArea.AddComponent<RectTransform>();
+        laRt.anchorMin = new Vector2(0f, 0f);
+        laRt.anchorMax = new Vector2(1f, 1f);
+        laRt.offsetMin = new Vector2(6f, 0f);
+        laRt.offsetMax = new Vector2(-6f, -(THUMB_H + 2f));
+
+        AddLabel(labelArea.transform, meta.title ?? displayId, new Vector2(0f, -2f),   16, Color.white,                  FontStyle.Bold);
+        AddLabel(labelArea.transform, $"★ {meta.averageRating:F1} · {meta.playCount} plays", new Vector2(0f, -20f), 12, UIStyle.AccentGold, FontStyle.Normal);
+        AddLabel(labelArea.transform, $"Bricks: {meta.brickCount}", new Vector2(0f, -36f), 12, new Color(0.55f, 0.55f, 0.70f), FontStyle.Normal);
+
+        // Whole-card click → open in editor
+        var btn = card.AddComponent<Button>();
+        btn.targetGraphic = card.GetComponent<Image>();
+        var cols = btn.colors;
+        cols.normalColor      = new Color(0.08f, 0.10f, 0.20f, 1f);
+        cols.highlightedColor = new Color(0.14f, 0.18f, 0.32f, 1f);
+        cols.pressedColor     = new Color(0.05f, 0.07f, 0.15f, 1f);
+        cols.colorMultiplier  = 1f;
+        btn.colors = cols;
+
+        LevelData capturedData = data;
+        string capturedId = displayId;
+        btn.onClick.AddListener(() =>
+        {
+            if (capturedData == null) return;
+            string json  = JsonConvert.SerializeObject(capturedData);
+            var    clone = JsonConvert.DeserializeObject<LevelData>(json);
+            Hide();
+            _editorUI?.OpenLevel(clone, capturedId, readOnly: false);
+        });
+    }
+
+    private void AddLabel(Transform parent, string text, Vector2 pos, int fontSize, Color color, FontStyle style)
+    {
+        var go = new GameObject("Lbl");
+        go.transform.SetParent(parent, false);
+        var txt = go.AddComponent<Text>();
+        txt.text      = text;
+        txt.font      = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
+        txt.fontSize  = fontSize;
+        txt.fontStyle = style;
+        txt.color     = color;
+        txt.alignment = TextAnchor.UpperLeft;
+        txt.raycastTarget = false;
+        var rt = txt.GetComponent<RectTransform>();
+        rt.anchorMin = rt.anchorMax = new Vector2(0f, 1f);
+        rt.pivot     = new Vector2(0f, 1f);
+        rt.anchoredPosition = pos;
+        rt.sizeDelta = new Vector2(CARD_W - 12f, fontSize + 4f);
     }
 
     private void CreateCard(string levelId, LevelData data, float x, float y)
@@ -609,7 +831,7 @@ public class LevelEditorBrowserUI : MonoBehaviour
     }
 
     // ── Thumbnail ─────────────────────────────────────────────────────────────
-    private void BuildThumbnail(Transform parent, LevelData data, float w, float h)
+    internal static void BuildThumbnail(Transform parent, LevelData data, float w, float h)
     {
         if (data?.bricks == null || data.bricks.Count == 0) return;
 
@@ -659,7 +881,7 @@ public class LevelEditorBrowserUI : MonoBehaviour
         }
     }
 
-    internal Color TemplateColor(string templateId)
+    internal static Color TemplateColor(string templateId)
     {
         if (string.IsNullOrEmpty(templateId)) return new Color(0.7f, 0.7f, 0.7f);
         TemplateColors.TryGetValue(templateId.ToLower(), out Color c);

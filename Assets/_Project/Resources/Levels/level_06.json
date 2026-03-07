@@ -12,67 +12,55 @@
   },
   "bricks": [
     {
-      "col": 0,
-      "row": 0,
       "templateId": "standard",
       "powerupId": "WidePaddle"
     },
     {
       "col": 1,
-      "row": 0,
       "templateId": "standard",
       "powerupId": "MultiBall"
     },
     {
       "col": 2,
-      "row": 0,
       "templateId": "standard",
       "powerupId": "StickyBall"
     },
     {
       "col": 3,
-      "row": 0,
       "templateId": "standard",
       "powerupId": "SpeedBall"
     },
     {
       "col": 4,
-      "row": 0,
       "templateId": "standard",
       "powerupId": "ExtraLife"
     },
     {
       "col": 5,
-      "row": 0,
       "templateId": "standard",
       "powerupId": "Laser"
     },
     {
       "col": 6,
-      "row": 0,
       "templateId": "standard",
       "powerupId": "Fireball"
     },
     {
       "col": 7,
-      "row": 0,
       "templateId": "standard",
       "powerupId": "BombBrick"
     },
     {
       "col": 8,
-      "row": 0,
       "templateId": "standard",
       "powerupId": "ShrinkPaddle"
     },
     {
       "col": 9,
-      "row": 0,
       "templateId": "standard",
       "powerupId": "ZipBall"
     },
     {
-      "col": 0,
       "row": 1,
       "templateId": "standard",
       "powerupId": "FlipControls"
@@ -132,7 +120,6 @@
       "powerupId": "BombBrick"
     },
     {
-      "col": 0,
       "row": 2,
       "templateId": "standard",
       "powerupId": "ShrinkPaddle"
@@ -192,7 +179,6 @@
       "powerupId": "Laser"
     },
     {
-      "col": 0,
       "row": 3,
       "templateId": "standard",
       "powerupId": "Fireball"
@@ -252,7 +238,6 @@
       "powerupId": "SpeedBall"
     },
     {
-      "col": 0,
       "row": 4,
       "templateId": "standard",
       "powerupId": "ExtraLife"
@@ -312,6 +297,8 @@
       "powerupId": "MultiBall"
     }
   ],
+  "prismGates": [],
   "nativeLevel": true,
-  "levelOrder": 6
+  "levelOrder": 6,
+  "levelGuid": "ffd66ee8e1d54200b3866d1aec167528"
 }

@@ -22,9 +22,9 @@ try {
     )->fetchColumn();
 
     $stmt = $db->prepare("
-        SELECT id, steam_id, steam_name, title, description,
+        SELECT id, level_guid, steam_id, steam_name, title, description,
                brick_count, play_count, average_rating, rating_count,
-               published_at
+               published_at, json_data
         FROM community_levels
         WHERE is_published = 1
         ORDER BY {$orderBy}
@@ -43,8 +43,11 @@ try {
         $row['steamId']       = $row['steam_id'];
         $row['steamName']     = $row['steam_name'];
         $row['publishedAt']   = $row['published_at'];
+        $row['levelGuid']     = $row['level_guid'];
+        $row['jsonData']      = $row['json_data'];
         unset($row['average_rating'], $row['rating_count'], $row['play_count'],
-              $row['brick_count'], $row['steam_id'], $row['steam_name'], $row['published_at']);
+              $row['brick_count'], $row['steam_id'], $row['steam_name'], $row['published_at'],
+              $row['level_guid'], $row['json_data']);
     }
     unset($row);
 

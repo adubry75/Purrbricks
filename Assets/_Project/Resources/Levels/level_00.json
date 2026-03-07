@@ -1,7 +1,6 @@
 {
   "id": "level_00",
   "displayName": "Diamond Rain",
-  "unlocked": true,
   "ballSpeed": 8.5,
   "grid": {
     "cols": 12,
@@ -265,6 +264,8 @@
     }
   ],
   "prismGates": [],
+  "unlocked": true,
   "nativeLevel": true,
-  "levelOrder": 0
+  "levelOrder": 1,
+  "levelGuid": "b953c6b3a27a4f30b02c6a2f603b273f"
 }

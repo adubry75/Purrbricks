@@ -1,5 +1,6 @@
 using System;
 using System.Collections;
+using System.Collections.Generic;
 using System.IO;
 using System.Text;
 using Newtonsoft.Json;
@@ -20,9 +21,9 @@ public class CommunityLevelService : MonoBehaviour
     [SerializeField] private string _apiBaseUrl = "";
 
     // PlayerPrefs key prefixes
-    private const string KEY_MY_RATING = "cl_rating_";     // int 0-5 per community level id
-    private const string KEY_CLEARED   = "cl_cleared_";    // int 0/1
-    private const string KEY_PUBLISHED  = "cl_published_"; // int communityId (keyed by local levelId)
+    private const string KEY_MY_RATING     = "cl_rating_";    // int 0-5 keyed by server id
+    private const string KEY_CLEARED       = "cl_cleared_";   // int 0/1 keyed by server id
+    private const string KEY_PUBLISHED_GUID = "cl_pguid_";    // int server id keyed by levelGuid
 
     // Cache directory: persistentDataPath/community_cache/{id}.json
     private string CacheDir => Path.Combine(Application.persistentDataPath, "community_cache");
@@ -40,11 +41,15 @@ public class CommunityLevelService : MonoBehaviour
     public void FetchLevels(string sort, int page, int limit, Action<CommunityLevelPage> cb)
         => StartCoroutine(FetchLevelsRoutine(sort, page, limit, cb));
 
+    /// <summary>Fetches all community levels published by the current Steam user.</summary>
+    public void FetchMyLevels(Action<List<CommunityLevelMeta>> cb)
+        => StartCoroutine(FetchMyLevelsRoutine(cb));
+
     public void FetchLevel(int id, Action<LevelData, CommunityLevelMeta> cb)
         => StartCoroutine(FetchLevelRoutine(id, cb));
 
-    public void PublishLevel(LevelData data, string localLevelId, string title, string desc, Action<int, string> cb)
-        => StartCoroutine(PublishLevelRoutine(data, localLevelId, title, desc, cb));
+    public void PublishLevel(LevelData data, string title, string desc, Action<PublishResult> cb)
+        => StartCoroutine(PublishLevelRoutine(data, title, desc, cb));
 
     public void RateLevel(int id, int rating, Action<string> cb)
         => StartCoroutine(RateLevelRoutine(id, rating, cb));
@@ -67,9 +72,12 @@ public class CommunityLevelService : MonoBehaviour
     public bool HasCleared(int id)
         => PlayerPrefs.GetInt(KEY_CLEARED + id, 0) == 1;
 
-    /// <summary>Returns the community level ID that was assigned when a local level was published (0 = never published).</summary>
-    public int GetPublishedId(string localLevelId)
-        => PlayerPrefs.GetInt(KEY_PUBLISHED + localLevelId, 0);
+    /// <summary>Returns the server row id that was assigned when this GUID was published (0 = never published).</summary>
+    public int GetPublishedServerId(string levelGuid)
+        => string.IsNullOrEmpty(levelGuid) ? 0 : PlayerPrefs.GetInt(KEY_PUBLISHED_GUID + levelGuid, 0);
+
+    /// <summary>True if this level GUID has been successfully published to the community server.</summary>
+    public bool IsPublished(string levelGuid) => GetPublishedServerId(levelGuid) > 0;
 
     /// <summary>Marks a community level as cleared in PlayerPrefs.</summary>
     public void MarkCleared(int id)
@@ -102,6 +110,35 @@ public class CommunityLevelService : MonoBehaviour
         {
             Debug.LogWarning($"[CommunityLevelService] FetchLevels parse error: {e.Message}");
             cb?.Invoke(null);
+        }
+    }
+
+    private IEnumerator FetchMyLevelsRoutine(Action<List<CommunityLevelMeta>> cb)
+    {
+        string steamId = "";
+        try { steamId = SteamUser.GetSteamID().m_SteamID.ToString(); } catch { }
+        if (string.IsNullOrEmpty(steamId)) { cb?.Invoke(new List<CommunityLevelMeta>()); yield break; }
+
+        string url = $"{ApiBase()}/my-levels.php?steamId={steamId}";
+        using var req = UnityWebRequest.Get(url);
+        yield return req.SendWebRequest();
+
+        if (req.result != UnityWebRequest.Result.Success)
+        {
+            Debug.LogWarning($"[CommunityLevelService] FetchMyLevels error: {req.error}");
+            cb?.Invoke(new List<CommunityLevelMeta>());
+            yield break;
+        }
+
+        try
+        {
+            var result = JsonConvert.DeserializeObject<CommunityLevelPage>(req.downloadHandler.text);
+            cb?.Invoke(result?.levels ?? new List<CommunityLevelMeta>());
+        }
+        catch (Exception e)
+        {
+            Debug.LogWarning($"[CommunityLevelService] FetchMyLevels parse error: {e.Message}");
+            cb?.Invoke(new List<CommunityLevelMeta>());
         }
     }
 
@@ -155,7 +192,7 @@ public class CommunityLevelService : MonoBehaviour
         }
     }
 
-    private IEnumerator PublishLevelRoutine(LevelData data, string localLevelId, string title, string desc, Action<int, string> cb)
+    private IEnumerator PublishLevelRoutine(LevelData data, string title, string desc, Action<PublishResult> cb)
     {
         string steamId   = "";
         string steamName = "";
@@ -164,14 +201,25 @@ public class CommunityLevelService : MonoBehaviour
             steamId   = SteamUser.GetSteamID().m_SteamID.ToString();
             steamName = SteamFriends.GetPersonaName();
         }
-        catch { /* Steam not available */ }
+        catch { /* Steam not available in editor without Steam running */ }
 
-        string jsonData = JsonConvert.SerializeObject(data);
-        int brickCount = data?.bricks?.Count ?? 0;
+        string levelGuid = data?.levelGuid ?? "";
+        if (string.IsNullOrEmpty(levelGuid))
+        {
+            // Safety net: generate a GUID if the level somehow has none
+            levelGuid = Guid.NewGuid().ToString("N");
+            if (data != null) data.levelGuid = levelGuid;
+            Debug.LogWarning("[CommunityLevelService] Level had no GUID — generated one on publish.");
+        }
 
+        string jsonData   = JsonConvert.SerializeObject(data);
+        int    brickCount = data?.bricks?.Count ?? 0;
+
+        // Build request body as a flat JSON string — jsonData is embedded as raw JSON object
         string body = "{" +
             $"\"steamId\":\"{EscapeJson(steamId)}\"," +
             $"\"steamName\":\"{EscapeJson(steamName)}\"," +
+            $"\"levelGuid\":\"{EscapeJson(levelGuid)}\"," +
             $"\"title\":\"{EscapeJson(title)}\"," +
             $"\"description\":\"{EscapeJson(desc)}\"," +
             $"\"jsonData\":{jsonData}," +
@@ -179,38 +227,46 @@ public class CommunityLevelService : MonoBehaviour
             "}";
 
         byte[] raw = Encoding.UTF8.GetBytes(body);
-        string url  = $"{ApiBase()}/publish.php";
-        Debug.Log($"[Level Editor]Publish URL '{url}'");
+        string url = $"{ApiBase()}/publish.php";
+        Debug.Log($"[CommunityLevelService] Publish → {url}  guid={levelGuid}");
+
         using var req = new UnityWebRequest(url, "POST");
         req.uploadHandler   = new UploadHandlerRaw(raw);
         req.downloadHandler = new DownloadHandlerBuffer();
         req.SetRequestHeader("Content-Type", "application/json");
         yield return req.SendWebRequest();
 
+        string rawBody = req.downloadHandler?.text ?? "(no body)";
+
         if (req.result != UnityWebRequest.Result.Success)
         {
-            cb?.Invoke(0, req.error);
+            Debug.LogWarning($"[CommunityLevelService] Publish HTTP error {req.responseCode}: {req.error}\nBody: {rawBody}");
+            cb?.Invoke(new PublishResult { error = $"HTTP {req.responseCode}: {req.error}" });
             yield break;
         }
 
         try
         {
-            var resp = JsonConvert.DeserializeObject<PublishResponse>(req.downloadHandler.text);
+            var resp = JsonConvert.DeserializeObject<PublishResponse>(rawBody);
             if (resp != null && resp.id > 0)
             {
-                PlayerPrefs.SetInt(KEY_PUBLISHED + localLevelId, resp.id);
+                PlayerPrefs.SetInt(KEY_PUBLISHED_GUID + levelGuid, resp.id);
                 PlayerPrefs.Save();
-                cb?.Invoke(resp.id, null);
+                Debug.Log($"[CommunityLevelService] Publish {resp.action}: server id={resp.id} guid={levelGuid}");
+                cb?.Invoke(new PublishResult { serverId = resp.id, levelGuid = levelGuid, action = resp.action });
             }
             else
             {
-                var err = JsonConvert.DeserializeObject<ErrorResponse>(req.downloadHandler.text);
-                cb?.Invoke(0, err?.error ?? "Unknown error");
+                var err = JsonConvert.DeserializeObject<ErrorResponse>(rawBody);
+                string msg = err?.error ?? $"Unexpected response: {rawBody}";
+                Debug.LogWarning($"[CommunityLevelService] Publish error from server: {msg}");
+                cb?.Invoke(new PublishResult { error = msg });
             }
         }
         catch (Exception e)
         {
-            cb?.Invoke(0, e.Message);
+            Debug.LogWarning($"[CommunityLevelService] Publish parse error: {e.Message}\nRaw: {rawBody}");
+            cb?.Invoke(new PublishResult { error = e.Message });
         }
     }
 
@@ -231,6 +287,7 @@ public class CommunityLevelService : MonoBehaviour
 
         if (req.result != UnityWebRequest.Result.Success)
         {
+            Debug.LogWarning($"[LevelRatingService] API error: {req.error}  ({url})");
             cb?.Invoke(req.error);
             yield break;
         }
@@ -309,6 +366,7 @@ public class CommunityLevelService : MonoBehaviour
     private class GetLevelResponse
     {
         public int    id;
+        public string levelGuid;
         public string steamId;
         public string steamName;
         public string title;
@@ -323,6 +381,7 @@ public class CommunityLevelService : MonoBehaviour
         public CommunityLevelMeta ToMeta() => new CommunityLevelMeta
         {
             id            = id,
+            levelGuid     = levelGuid,
             steamId       = steamId,
             steamName     = steamName,
             title         = title,
@@ -336,8 +395,20 @@ public class CommunityLevelService : MonoBehaviour
     }
 
     [Serializable]
-    private class PublishResponse { public int id; }
+    private class PublishResponse { public int id; public string levelGuid; public string action; }
 
     [Serializable]
     private class ErrorResponse  { public string error; }
+}
+
+// ── Publish result returned to callers ────────────────────────────────────────
+public class PublishResult
+{
+    public int    serverId;
+    public string levelGuid;
+    public string action;    // "created" or "updated"
+    public string error;
+    public bool   Success => string.IsNullOrEmpty(error);
+    public bool   WasCreated => action == "created";
+    public bool   WasUpdated => action == "updated";
 }

@@ -64,6 +64,7 @@ public class GameManager : MonoBehaviour
 
     // ── Community level mode ─────────────────────────────────────────────────
     private bool               _isCommunityMode;
+    private bool               _rampBoosted;
     private CommunityLevelMeta _currentCommunityMeta;
     private LevelData          _cachedCommunityData; // for Retry after GameOver
     private bool _primaryBallOnHold; // true while primary fell but clones still active
@@ -243,7 +244,8 @@ public class GameManager : MonoBehaviour
 
         if (Input.GetKeyDown(KeyCode.X))
         {
-            _ball.RAMP_RATE = .5f;
+            _rampBoosted = !_rampBoosted;
+            if (_ball != null) _ball.RAMP_RATE = _rampBoosted ? 0.5f : 0.015f;
         }
 
         if (Input.GetKeyDown(KeyCode.Z))
@@ -494,9 +496,20 @@ public class GameManager : MonoBehaviour
     public void ShowLevelLeaderboard(int levelIndex)
     {
         RestoreGameplayAfterHighScores();
-        _victoryUI?.Hide();
+        _victoryUI?.HideForLeaderboard();   // suspend without resetting community state
         _highScoresUI?.ShowForLevel(levelIndex, returnToVictory: true);
 
+        HideGameplayForHighScores();
+        SetState(GameState.HighScores);
+    }
+
+    /// <summary>Opens the leaderboard for a community level board (called from VictoryUI in community mode).</summary>
+    public void ShowCommunityLevelLeaderboard(int communityId)
+    {
+        string boardName = PurrbricksLeaderboards.CommunityAllTime(communityId);
+        RestoreGameplayAfterHighScores();
+        _victoryUI?.HideForLeaderboard();
+        _highScoresUI?.ShowForBoardName(boardName, $"Community #{communityId}", returnToVictory: true);
         HideGameplayForHighScores();
         SetState(GameState.HighScores);
     }

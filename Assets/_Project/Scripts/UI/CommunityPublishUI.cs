@@ -3,7 +3,8 @@ using UnityEngine;
 using UnityEngine.UI;
 
 /// <summary>
-/// Modal overlay for publishing a custom level to the community server.
+/// Modal overlay for publishing or updating a custom level on the community server.
+/// Identity is the level's stable GUID — title changes do NOT create duplicate rows.
 /// sortingOrder=700 — sits above everything.
 /// </summary>
 public class CommunityPublishUI : MonoBehaviour
@@ -12,17 +13,20 @@ public class CommunityPublishUI : MonoBehaviour
 
     private Canvas     _canvas;
     private GameObject _panel;
+    private Text       _cardTitle;
+    private Text       _publishStatus;
     private InputField _titleField;
     private InputField _descField;
     private Text       _statusText;
     private Button     _submitBtn;
+    private Text       _submitBtnLabel;
 
     private LevelData  _pendingData;
-    private string     _pendingLocalId;
 
     private static readonly Color ColorGold  = new Color(1.00f, 0.84f, 0.10f);
     private static readonly Color ColorGreen = new Color(0.20f, 1f, 0.45f);
     private static readonly Color ColorRed   = new Color(1f, 0.30f, 0.30f);
+    private static readonly Color ColorGray  = new Color(0.60f, 0.60f, 0.70f);
 
     private void Awake()
     {
@@ -35,17 +39,33 @@ public class CommunityPublishUI : MonoBehaviour
 
     // ── Public API ────────────────────────────────────────────────────────────
 
-    public void Show(LevelData data, string localLevelId)
+    public void Show(LevelData data, string _unused = null)
     {
-        _pendingData    = data;
-        _pendingLocalId = localLevelId;
+        _pendingData = data;
 
-        // Pre-fill title with level display name
+        bool alreadyPublished = CommunityLevelService.Instance != null
+                                && CommunityLevelService.Instance.IsPublished(data?.levelGuid ?? "");
+
+        // Card title and submit button label reflect the operation
+        if (_cardTitle      != null)
+            _cardTitle.text = alreadyPublished ? "UPDATE PUBLISHED LEVEL" : "PUBLISH LEVEL";
+        if (_submitBtnLabel != null)
+            _submitBtnLabel.text = alreadyPublished ? "UPDATE" : "SUBMIT TO COMMUNITY";
+
+        // Publish status line
+        if (_publishStatus != null)
+        {
+            _publishStatus.text  = alreadyPublished ? "✓  Published" : "Not yet published";
+            _publishStatus.color = alreadyPublished ? ColorGreen : ColorGray;
+        }
+
+        // Pre-fill title
         if (_titleField != null)
-            _titleField.text = data?.displayName ?? localLevelId ?? "";
-        if (_descField   != null) _descField.text = "";
-        if (_statusText  != null) { _statusText.text = ""; _statusText.gameObject.SetActive(false); }
-        if (_submitBtn   != null) _submitBtn.interactable = true;
+            _titleField.text = data?.displayName ?? "";
+        if (_descField  != null)
+            _descField.text = "";
+        if (_statusText != null) { _statusText.text = ""; _statusText.gameObject.SetActive(false); }
+        if (_submitBtn  != null) _submitBtn.interactable = true;
 
         gameObject.SetActive(true);
     }
@@ -84,35 +104,40 @@ public class CommunityPublishUI : MonoBehaviour
         var cardRt = card.GetComponent<RectTransform>();
         cardRt.anchorMin = cardRt.anchorMax = new Vector2(0.5f, 0.5f);
         cardRt.pivot     = new Vector2(0.5f, 0.5f);
-        cardRt.sizeDelta = new Vector2(560f, 420f);
+        cardRt.sizeDelta = new Vector2(560f, 440f);
         cardRt.anchoredPosition = Vector2.zero;
 
-        // Title
-        CreateText(card.transform, "PUBLISH LEVEL", new Vector2(0f, 165f), 40, ColorGold);
+        // Card title (dynamic: "PUBLISH LEVEL" or "UPDATE PUBLISHED LEVEL")
+        _cardTitle = CreateTextGO(card.transform, "PUBLISH LEVEL", new Vector2(0f, 175f), 36, ColorGold).GetComponent<Text>();
+
+        // Publish status ("Not yet published" / "✓ Published")
+        _publishStatus = CreateTextGO(card.transform, "Not yet published", new Vector2(0f, 135f), 14, ColorGray).GetComponent<Text>();
 
         // Title field label + input
-        CreateText(card.transform, "Level Title (required, max 64 chars)", new Vector2(0f, 105f), 15, new Color(0.65f, 0.65f, 0.80f));
-        _titleField = CreateInputField(card.transform, "Enter a catchy title...", new Vector2(0f, 72f), new Vector2(480f, 38f));
+        CreateText(card.transform, "Level Title (required, max 64 chars)", new Vector2(0f, 100f), 14, new Color(0.65f, 0.65f, 0.80f));
+        _titleField = CreateInputField(card.transform, "Enter a catchy title...", new Vector2(0f, 68f), new Vector2(490f, 38f));
         _titleField.characterLimit = 64;
 
         // Description field label + input
-        CreateText(card.transform, "Description (optional, max 256 chars)", new Vector2(0f, 32f), 15, new Color(0.65f, 0.65f, 0.80f));
-        _descField = CreateInputField(card.transform, "Describe your level...", new Vector2(0f, -22f), new Vector2(480f, 70f));
+        CreateText(card.transform, "Description (optional, max 256 chars)", new Vector2(0f, 28f), 14, new Color(0.65f, 0.65f, 0.80f));
+        _descField = CreateInputField(card.transform, "Describe your level...", new Vector2(0f, -28f), new Vector2(490f, 70f));
         _descField.lineType = InputField.LineType.MultiLineSubmit;
         _descField.characterLimit = 256;
 
-        // Status text (hidden by default)
-        var statusGO = CreateTextGO(card.transform, "", new Vector2(0f, -98f), 18, Color.white, "Status");
+        // Operation status text (shown during/after submit)
+        var statusGO = CreateTextGO(card.transform, "", new Vector2(0f, -110f), 17, Color.white, "Status");
         _statusText = statusGO.GetComponent<Text>();
         _statusText.gameObject.SetActive(false);
 
-        // Buttons
+        // Submit button
         _submitBtn = UIStyle.CreateButton(card.transform, "Submit to Community",
-            new Vector2(-70f, -160f), new Vector2(240f, 50f),
+            new Vector2(-75f, -175f), new Vector2(260f, 50f),
             OnSubmit, UIStyle.AccentGreen);
+        _submitBtnLabel = _submitBtn.GetComponentInChildren<Text>();
 
+        // Cancel button
         UIStyle.CreateButton(card.transform, "Cancel",
-            new Vector2(160f, -160f), new Vector2(140f, 50f),
+            new Vector2(160f, -175f), new Vector2(140f, 50f),
             Hide, UIStyle.AccentRed);
     }
 
@@ -134,18 +159,26 @@ public class CommunityPublishUI : MonoBehaviour
         string desc = (_descField?.text ?? "").Trim();
 
         if (_submitBtn != null) _submitBtn.interactable = false;
-        ShowStatus("Publishing...", Color.white);
+        bool isUpdate = CommunityLevelService.Instance.IsPublished(_pendingData?.levelGuid ?? "");
+        ShowStatus(isUpdate ? "Updating..." : "Publishing...", Color.white);
 
-        CommunityLevelService.Instance.PublishLevel(_pendingData, _pendingLocalId, title, desc, (id, error) =>
+        CommunityLevelService.Instance.PublishLevel(_pendingData, title, desc, result =>
         {
-            if (!string.IsNullOrEmpty(error))
+            if (!result.Success)
             {
-                ShowStatus($"Error: {error}", ColorRed);
+                ShowStatus($"Error: {result.error}", ColorRed);
                 if (_submitBtn != null) _submitBtn.interactable = true;
             }
             else
             {
-                ShowStatus($"Level published!  ID: #{id}", ColorGreen);
+                string verb = result.WasUpdated ? "Updated" : "Published";
+                ShowStatus($"{verb}!  Server ID: #{result.serverId}", ColorGreen);
+                // Refresh the status label for future opens
+                if (_publishStatus != null)
+                {
+                    _publishStatus.text  = "✓  Published";
+                    _publishStatus.color = ColorGreen;
+                }
                 StartCoroutine(AutoClose(2.5f));
             }
         });
@@ -184,7 +217,7 @@ public class CommunityPublishUI : MonoBehaviour
         var rt = txt.GetComponent<RectTransform>();
         rt.anchorMin        = new Vector2(0.5f, 0.5f);
         rt.anchorMax        = new Vector2(0.5f, 0.5f);
-        rt.sizeDelta        = new Vector2(500f, fontSize + 20f);
+        rt.sizeDelta        = new Vector2(510f, fontSize + 20f);
         rt.anchoredPosition = pos;
         return go;
     }
@@ -207,7 +240,7 @@ public class CommunityPublishUI : MonoBehaviour
         var phTxt = phGO.AddComponent<Text>();
         phTxt.text      = placeholder;
         phTxt.font      = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
-        phTxt.fontSize  = 16;
+        phTxt.fontSize  = 15;
         phTxt.color     = new Color(0.45f, 0.45f, 0.55f);
         phTxt.fontStyle = FontStyle.Italic;
         phTxt.alignment = TextAnchor.UpperLeft;
@@ -217,7 +250,7 @@ public class CommunityPublishUI : MonoBehaviour
         txtGO.transform.SetParent(go.transform, false);
         var txt = txtGO.AddComponent<Text>();
         txt.font      = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
-        txt.fontSize  = 16;
+        txt.fontSize  = 15;
         txt.color     = Color.white;
         txt.alignment = TextAnchor.UpperLeft;
         SetStretch(txtGO, 6f, 4f, -6f, -4f);

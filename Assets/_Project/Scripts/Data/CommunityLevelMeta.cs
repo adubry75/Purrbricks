@@ -1,11 +1,12 @@
 using System;
 using System.Collections.Generic;
 
-/// <summary>Metadata for a community-published level (no json_data — use CommunityLevelService.FetchLevel for that).</summary>
+/// <summary>Metadata for a community-published level, including json_data for thumbnail rendering.</summary>
 [Serializable]
 public class CommunityLevelMeta
 {
     public int    id;
+    public string levelGuid;
     public string steamId;
     public string steamName;
     public string title;
@@ -15,6 +16,7 @@ public class CommunityLevelMeta
     public int    ratingCount;
     public float  averageRating;
     public string publishedAt;
+    public string jsonData;   // full level JSON — used to render thumbnail in community browser
 }
 
 /// <summary>Paginated response from list.php.</summary>

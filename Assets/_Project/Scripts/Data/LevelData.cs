@@ -15,6 +15,8 @@ public class LevelData
     public bool nativeLevel = false;
     /// <summary>Display order in the editor browser. -1 = sort after all levels with an explicit order.</summary>
     public int levelOrder = -1;
+    /// <summary>Stable GUID generated once when the level is created. Used as the community-publish identity.</summary>
+    public string levelGuid = "";
 }
 
 [Serializable]
