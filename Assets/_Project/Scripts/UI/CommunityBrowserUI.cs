@@ -135,13 +135,12 @@ public class CommunityBrowserUI : MonoBehaviour
         // Sort tab buttons
         _sortBtns = new Button[SortKeys.Length];
         float tabW = 200f, tabH = 50f;
-        float tabStartX = 400f;
+        float[] tabX = { -175f, 50f, 275f, 500f };
         for (int i = 0; i < SortKeys.Length; i++)
         {
             int captured = i;
-            float tx = tabStartX + i * (tabW + 12f) - 960f;
             var btn = UIStyle.CreateButton(header.transform, SortLabels[i],
-                new Vector2(tx + tabW * 0.5f, 0f), new Vector2(tabW, tabH),
+                new Vector2(tabX[i], 0f), new Vector2(tabW, tabH),
                 () => OnSortTabClicked(captured), UIStyle.AccentBlue);
             _sortBtns[i] = btn;
         }
