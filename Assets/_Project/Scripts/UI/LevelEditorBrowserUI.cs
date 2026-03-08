@@ -470,9 +470,9 @@ public class LevelEditorBrowserUI : MonoBehaviour
     private void LoadLevels()
     {
         _levels.Clear();
-        var assets = Resources.LoadAll<TextAsset>("Levels");
-        var items  = new List<(string id, LevelData data)>();
+        var items = new List<(string id, LevelData data)>();
 
+        var assets = Resources.LoadAll<TextAsset>("Levels");
         foreach (var asset in assets)
         {
             try

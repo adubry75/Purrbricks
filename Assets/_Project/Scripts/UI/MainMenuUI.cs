@@ -15,19 +15,14 @@ public class MainMenuUI : MonoBehaviour
     private Canvas _canvas;
     private GameObject _panel;
 
-#if UNITY_EDITOR
     private LevelEditorBrowserUI _levelEditorBrowser;
-#endif
 
     private void Awake()
     {
         BuildUI();
-#if UNITY_EDITOR
         _levelEditorBrowser = Object.FindFirstObjectByType<LevelEditorBrowserUI>(FindObjectsInactive.Include);
-#endif
     }
 
-#if UNITY_EDITOR
     private void Update()
     {
         if (Input.GetKeyDown(KeyCode.F1) && gameObject.activeSelf)
@@ -53,7 +48,6 @@ public class MainMenuUI : MonoBehaviour
         });
         _levelEditorBrowser.Show();
     }
-#endif
 
     private void BuildUI()
     {
@@ -96,10 +90,8 @@ public class MainMenuUI : MonoBehaviour
         UIStyle.CreateButton(_panel.transform, "High Scores",      new Vector2(0f, -250f), new Vector2(360f, 84f), () => GameManager.Instance?.ShowHighScores(), UIStyle.AccentBlue);
         UIStyle.CreateButton(_panel.transform, "Settings",         new Vector2(0f, -335f), new Vector2(360f, 84f), () => GameManager.Instance?.ShowSettings(fromPause: false), UIStyle.AccentBlue);
         UIStyle.CreateButton(_panel.transform, "Quit",             new Vector2(0f, -420f), new Vector2(360f, 84f), QuitGame, UIStyle.AccentRed);
-#if UNITY_EDITOR
         UIStyle.CreateButton(_panel.transform, "Level Editor [F1]", new Vector2(0f, -500f),
             new Vector2(260f, 48f), ShowLevelEditor, UIStyle.AccentGold);
-#endif
 
         
     }

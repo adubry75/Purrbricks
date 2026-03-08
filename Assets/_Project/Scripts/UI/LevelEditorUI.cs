@@ -810,19 +810,10 @@ public class LevelEditorUI : MonoBehaviour
         _communityToggleGO = _communityToggle.gameObject;
         _communityToggleGO.SetActive(false);
 
-#if UNITY_EDITOR
         _saveBtnGO = UIStyle.CreateButton(bar.transform, "✓ Save Level",
             new Vector2(500f, 0f), new Vector2(220f, 48f),
             SaveLevel, UIStyle.AccentGreen).gameObject;
         _saveBtnRef = _saveBtnGO.GetComponent<Button>();
-#else
-        // Show greyed-out save button in builds
-        var fakeBtn = UIStyle.CreateButton(bar.transform, "✓ Save (Editor Only)",
-            new Vector2(500f, 0f), new Vector2(260f, 48f),
-            () => { }, UIStyle.AccentBlue);
-        fakeBtn.interactable = false;
-        _saveBtnGO = fakeBtn.gameObject;
-#endif
     }
 
     // ═════════════════════════════════════════════════════════════════════════
@@ -1366,12 +1357,13 @@ public class LevelEditorUI : MonoBehaviour
         bool wasPublished = CommunityLevelService.Instance?.IsPublished(_data?.levelGuid ?? "") ?? false;
 
 #if UNITY_EDITOR
-        string dir  = Path.Combine(Application.dataPath, "_Project", "Resources", "Levels");
+        string dir = Path.Combine(Application.dataPath, "_Project", "Resources", "Levels");
         if (!Directory.Exists(dir)) Directory.CreateDirectory(dir);
         string path = Path.Combine(dir, _levelId + ".json");
         File.WriteAllText(path, json);
         UnityEditor.AssetDatabase.Refresh();
         Debug.Log($"[LevelEditor] Saved '{_levelId}' → {path}");
+#endif
 
         // Uncheck while published → unpublish from community
         if (wasPublished && !submitToCommunity && CommunityLevelService.Instance != null)
@@ -1393,9 +1385,6 @@ public class LevelEditorUI : MonoBehaviour
         }
 
         ReturnToBrowser();
-#else
-        Debug.LogWarning("[LevelEditor] Save is only available in the Unity Editor.");
-#endif
     }
 
     private void ApplyTopBarMetadata(LevelData target)
