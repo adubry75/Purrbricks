@@ -678,7 +678,7 @@ public class BallController : MonoBehaviour
                 b.Hit();
         }
     }
-
+     
     private void HandlePaddleBounce(Collision2D collision)
     {
         float paddleWidth = collision.collider.bounds.size.x;

@@ -2720,54 +2720,6 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!1 &1313978737
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 1313978738}
-  - component: {fileID: 1313978739}
-  m_Layer: 5
-  m_Name: HUD
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!224 &1313978738
-RectTransform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1313978737}
-  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 2, y: 2, z: 2}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 0}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0.5, y: 0.5}
-  m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: 100, y: 100}
-  m_Pivot: {x: 0.5, y: 0.5}
---- !u!114 &1313978739
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1313978737}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 4407711bf63e4e74c8ff2bbe62cb0100, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::HudController
 --- !u!1 &1374096743
 GameObject:
   m_ObjectHideFlags: 0
@@ -3673,119 +3625,6 @@ MonoBehaviour:
   _score: 0
   _combo: 0
   _comboResetSeconds: 2
-  _levelIds:
-  - diamond_rain
-  - fortress
-  - zigzag
-  - smiley_face
-  - pyramid
-  - checkerboard
-  - powerup_bazaar
-  - cathedral
-  - dense_storm
-  - final_gauntlet
-  - pac_man
-  - spinny_guardians
-  - skull_crusher
-  - prism_quartet
-  - powerup_spiral
-  - paw_print
-  - piston_factory
-  - dual_orbits
-  - american_gothicat
-  - pinwheel
-  - color_invasion
-  - color_castle
-  - triple_threat
-  - meteor_shower
-  - the_sword
-  - inverted_funnel
-  - alien_invasion
-  - cats_playing_poker
-  - coffee_time
-  - staircase_to_hell
-  - pendulum_towers
-  - cactus
-  - prism_staircase
-  - snowflake
-  - spinny_windmills
-  - color_switch
-  - meow
-  - diamond_mine
-  - prism_trial
-  - the_vortex
-  - rubber_duck
-  - zigzag_alley
-  - color_corridor
-  - plus_sign
-  - prism_bullseye
-  - pyramid_of_doom
-  - gravity_storm
-  - pizza
-  - bumper_chaos
-  - arena_of_doom
-  - rocket_ship
-  - birth_of_purrnus
-  - low_blow
-  - double_helix
-  - big_mustache
-  - crown_jewels
-  - heart_storm
-  - head_on
-  - bumper_lane
-  - melting_clocks
-  - maximum_chaos
-  - purr_mageddon
-  - ghosts_in_the_gaps
-  - whistlers_mother
-  - ghost
-  - orbit_ring
-  - four_pillars
-  - prism_layers
-  - clock_gears
-  - vermeers_pearl
-  - dna_helix
-  - haunted_warmup
-  - sunflower
-  - diagonal_strike
-  - powerup_diamond
-  - among_us_crew
-  - four_corners
-  - creation_of_adumb
-  - butterfly
-  - the_scream
-  - metronome
-  - meowna_lisa
-  - moving_targets
-  - the_pendulum
-  - crossfire
-  - the_wave
-  - space_invader
-  - trophy
-  - saturn
-  - bumper_basics
-  - x_marks_the_spot
-  - heartbreaker
-  - cat_face
-  - fish
-  - purr_fect
-  - the_hammers
-  - mountain_range
-  - checkerboard_chaos
-  - lightning_strike
-  - brick_parade
-  - bulls_eye
-  - boss_fortress
-  - yin_yang
-  - powerup_cross
-  - tidal_force
-  - starry_night_meow
-  - castle_assault
-  - the_gauntlet
-  - grand_prism_finale
-  - tetris_stack
-  - the_zipper
-  - qr_buster
   _levelLoader: {fileID: 1184986102}
   _ball: {fileID: 1374096748}
   _paddle: {fileID: 842519041}
@@ -3864,7 +3703,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: Version 1.007 - 3/4/2006 00:36
+  m_text: Version 1.008 - 3/7/2006 23:25
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: eb27bc354c34be64980cd2d69dd4e6d9, type: 2}
   m_sharedMaterial: {fileID: -5226213460154039966, guid: eb27bc354c34be64980cd2d69dd4e6d9, type: 2}
@@ -4355,7 +4194,6 @@ SceneRoots:
   - {fileID: 75748549}
   - {fileID: 1795691122}
   - {fileID: 1948090617}
-  - {fileID: 1313978738}
   - {fileID: 408894300}
   - {fileID: 542253552}
   - {fileID: 2107879659}
