@@ -23,7 +23,7 @@ public class GameManager : MonoBehaviour
 
     [Header("Admin")]
     [Tooltip("When ON: numpad cheats apply powerups directly (ignoring inventory), AND native levels are editable in the Level Editor.")]
-    [SerializeField] private bool _adminMode = true;
+    [SerializeField] private bool _adminMode = false;
 
     /// <summary>Exposes admin mode to other systems (e.g. Level Editor read-only bypass).</summary>
     public bool AdminMode => _adminMode;
@@ -317,28 +317,14 @@ public class GameManager : MonoBehaviour
     private static bool IsFuryStrikeMouseComboPressed()
     {
         var mouse = Mouse.current;
-        if (mouse == null) 
-        {
-            Debug.Log($"null mouse in fury!");
-            return false; 
-        }
-
+        if (mouse == null) return false;
 
         var left = mouse.leftButton;
         var right = mouse.rightButton;
-        if (left == null || right == null)
-        {
-            Debug.Log($"null left or right in fury!");
-            return false;
-        }
+        if (left == null || right == null) return false;
 
         if (left.isPressed && right.isPressed)
-        {
-            Debug.Log($"left: {left.wasPressedThisFrame}! right: {right.wasPressedThisFrame}!");
             return left.wasPressedThisFrame || right.wasPressedThisFrame;
-        }
-
-        Debug.Log($"nothing, falling thru");
 
         return false;
     }
@@ -917,6 +903,15 @@ public class GameManager : MonoBehaviour
     {
         if (index == 0) return true;
         return PlayerPrefs.GetInt($"lvl_unlocked_{index}", 0) == 1;
+    }
+
+    /// <summary>Returns the array index for a given level ID, or -1 if not found.</summary>
+    public int GetLevelIndex(string levelId)
+    {
+        if (_levelIds == null) return -1;
+        for (int i = 0; i < _levelIds.Length; i++)
+            if (_levelIds[i] == levelId) return i;
+        return -1;
     }
 
     private void UnlockLevel(int index)

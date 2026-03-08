@@ -1,6 +1,5 @@
 using System.Collections.Generic;
 using System.Linq;
-using System.Text.RegularExpressions;
 using Newtonsoft.Json;
 using UnityEngine;
 using UnityEngine.UI;
@@ -677,6 +676,10 @@ public class LevelEditorBrowserUI : MonoBehaviour
 
     private void CreateCard(string levelId, LevelData data, float x, float y)
     {
+        // Use nativeLevel flag from data — reliable regardless of filename
+        bool isNative = IsNativeLevel(data);
+        bool adminMode = GameManager.Instance?.AdminMode ?? false;
+
         var card = MakePanel(_cardsRoot, "Card_" + levelId,
             new Color(0.08f, 0.10f, 0.20f, 1f));
         var cRt = card.GetComponent<RectTransform>();
@@ -727,7 +730,8 @@ public class LevelEditorBrowserUI : MonoBehaviour
         var nameGO  = new GameObject("NameLabel");
         nameGO.transform.SetParent(labelArea.transform, false);
         var nameTxt = nameGO.AddComponent<Text>();
-        nameTxt.text      = data.displayName ?? levelId;
+        string baseName   = data.displayName ?? levelId;
+        nameTxt.text      = (isNative && data.levelOrder >= 0) ? $"{data.levelOrder} - {baseName}" : baseName;
         nameTxt.font      = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
         nameTxt.fontSize  = 16;
         nameTxt.fontStyle = FontStyle.Bold;
@@ -751,13 +755,8 @@ public class LevelEditorBrowserUI : MonoBehaviour
         cols.colorMultiplier  = 1f;
         btn.colors = cols;
 
-        // Use nativeLevel flag from data — reliable regardless of filename
-        bool isNative  = IsNativeLevel(data);
-        bool adminMode = GameManager.Instance?.AdminMode ?? false;
-
-        // Level index for unlock checks: try to parse a number from the ID (native levels only)
-        var numMatch   = Regex.Match(levelId, @"\d+");
-        int levelIndex = numMatch.Success ? int.Parse(numMatch.Value) : -1;
+        // Level index for unlock checks: look up the ID in GameManager's sorted level list
+        int levelIndex = GameManager.Instance?.GetLevelIndex(levelId) ?? -1;
         bool isLocked  = _isLevelSelectMode && (GameManager.Instance == null || !GameManager.Instance.IsLevelUnlocked(levelIndex));
 
         string capturedId   = levelId;

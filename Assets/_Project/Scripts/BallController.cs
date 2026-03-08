@@ -448,8 +448,6 @@ public class BallController : MonoBehaviour
 
     public void Launch()
     {
-        Debug.Log($"LAUNCH dir={_launchDirection} vel={_rb.linearVelocity}");
-
         if (_launched) return;
         if (_rb == null) _rb = GetComponent<Rigidbody2D>();
         if (_rb == null) return;
@@ -672,7 +670,7 @@ public class BallController : MonoBehaviour
         BrickParticleGenerator.SpawnBurst(center, new Color(1f, 0.5f, 0f), 35, true);
 
         // 3×3 area = ~4.4 wide × 1.8 tall for standard bricks
-        int count = Physics2D.OverlapBox(center, new Vector2(4.4f, 1.8f), 0f, new ContactFilter2D().NoFilter(), s_overlapBuffer);
+        int count = Physics2D.OverlapBox(center, new Vector2(4.4f, 1.8f), 0f, ContactFilter2D.noFilter, s_overlapBuffer);
         for (int i = 0; i < count; i++)
         {
             var b = s_overlapBuffer[i].GetComponent<Brick>();

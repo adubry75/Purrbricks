@@ -1,4 +1,11 @@
 {
+  "permissions": {
+    "allow": [
+      "mcp__token-counter__get_session_stats",
+      "mcp__token-counter__log_usage",
+      "Bash(python:*)"
+    ]
+  },
   "hooks": {
     "SessionStart": [
       {
@@ -17,7 +24,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "powershell -NoProfile -File C:\\users\\adubr\\source\\repos\\Purrbricks\\\\.dual-graph\\stop_hook.ps1"
+            "command": "powershell -NoProfile -File \"C:\\users\\adubr\\source\\repos\\Purrbricks\\\\.dual-graph\\stop_hook.ps1\""
           }
         ]
       }
@@ -32,11 +39,6 @@
           }
         ]
       }
-    ]
-  },
-  "permissions": {
-    "allow": [
-      "mcp__token-counter__get_session_stats"
     ]
   }
 }
