@@ -1,0 +1,330 @@
+{
+  "id": "four_pillars",
+  "displayName": "Four Pillars",
+  "ballSpeed": 10.2,
+  "prismGates": [
+    {
+      "x": -10.0,
+      "y": -4.2,
+      "width": 3.2,
+      "height": 0.35,
+      "color": "red"
+    },
+    {
+      "x": -5.0,
+      "y": -4.2,
+      "width": 3.2,
+      "height": 0.35,
+      "color": "blue"
+    },
+    {
+      "x": 1.0,
+      "y": -4.2,
+      "width": 3.2,
+      "height": 0.35,
+      "color": "green"
+    },
+    {
+      "x": 6.0,
+      "y": -4.2,
+      "width": 3.2,
+      "height": 0.35,
+      "color": "pink"
+    }
+  ],
+  "grid": {
+    "cols": 12,
+    "rows": 6,
+    "brickWidth": 1.35,
+    "brickHeight": 0.45,
+    "gapX": 0.08,
+    "gapY": 0.16
+  },
+  "bricks": [
+    {
+      "col": 0,
+      "row": 0,
+      "templateId": "red",
+      "requiredBallColor": "red"
+    },
+    {
+      "col": 1,
+      "row": 0,
+      "templateId": "red",
+      "requiredBallColor": "red"
+    },
+    {
+      "col": 0,
+      "row": 1,
+      "templateId": "red",
+      "requiredBallColor": "red"
+    },
+    {
+      "col": 1,
+      "row": 1,
+      "templateId": "red",
+      "requiredBallColor": "red"
+    },
+    {
+      "col": 0,
+      "row": 2,
+      "templateId": "red",
+      "requiredBallColor": "red"
+    },
+    {
+      "col": 1,
+      "row": 2,
+      "templateId": "standard",
+      "requiredBallColor": "red",
+      "powerupId": "StickyBall"
+    },
+    {
+      "col": 0,
+      "row": 3,
+      "templateId": "red",
+      "requiredBallColor": "red"
+    },
+    {
+      "col": 1,
+      "row": 3,
+      "templateId": "red",
+      "requiredBallColor": "red"
+    },
+    {
+      "col": 0,
+      "row": 4,
+      "templateId": "red",
+      "requiredBallColor": "red"
+    },
+    {
+      "col": 1,
+      "row": 4,
+      "templateId": "red",
+      "requiredBallColor": "red"
+    },
+    {
+      "col": 3,
+      "row": 0,
+      "templateId": "blue",
+      "requiredBallColor": "blue"
+    },
+    {
+      "col": 4,
+      "row": 0,
+      "templateId": "blue",
+      "requiredBallColor": "blue"
+    },
+    {
+      "col": 3,
+      "row": 1,
+      "templateId": "blue",
+      "requiredBallColor": "blue"
+    },
+    {
+      "col": 4,
+      "row": 1,
+      "templateId": "blue",
+      "requiredBallColor": "blue"
+    },
+    {
+      "col": 3,
+      "row": 2,
+      "templateId": "blue",
+      "requiredBallColor": "blue"
+    },
+    {
+      "col": 4,
+      "row": 2,
+      "templateId": "standard",
+      "requiredBallColor": "blue",
+      "powerupId": "WidePaddle"
+    },
+    {
+      "col": 3,
+      "row": 3,
+      "templateId": "blue",
+      "requiredBallColor": "blue"
+    },
+    {
+      "col": 4,
+      "row": 3,
+      "templateId": "blue",
+      "requiredBallColor": "blue"
+    },
+    {
+      "col": 3,
+      "row": 4,
+      "templateId": "blue",
+      "requiredBallColor": "blue"
+    },
+    {
+      "col": 4,
+      "row": 4,
+      "templateId": "blue",
+      "requiredBallColor": "blue"
+    },
+    {
+      "col": 7,
+      "row": 0,
+      "templateId": "green",
+      "requiredBallColor": "green"
+    },
+    {
+      "col": 8,
+      "row": 0,
+      "templateId": "green",
+      "requiredBallColor": "green"
+    },
+    {
+      "col": 7,
+      "row": 1,
+      "templateId": "green",
+      "requiredBallColor": "green"
+    },
+    {
+      "col": 8,
+      "row": 1,
+      "templateId": "green",
+      "requiredBallColor": "green"
+    },
+    {
+      "col": 7,
+      "row": 2,
+      "templateId": "green",
+      "requiredBallColor": "green"
+    },
+    {
+      "col": 8,
+      "row": 2,
+      "templateId": "standard",
+      "requiredBallColor": "green",
+      "powerupId": "ExtraLife"
+    },
+    {
+      "col": 7,
+      "row": 3,
+      "templateId": "green",
+      "requiredBallColor": "green"
+    },
+    {
+      "col": 8,
+      "row": 3,
+      "templateId": "green",
+      "requiredBallColor": "green"
+    },
+    {
+      "col": 7,
+      "row": 4,
+      "templateId": "green",
+      "requiredBallColor": "green"
+    },
+    {
+      "col": 8,
+      "row": 4,
+      "templateId": "green",
+      "requiredBallColor": "green"
+    },
+    {
+      "col": 10,
+      "row": 0,
+      "templateId": "purple",
+      "tint": "#FF44BB",
+      "requiredBallColor": "pink"
+    },
+    {
+      "col": 11,
+      "row": 0,
+      "templateId": "purple",
+      "tint": "#FF44BB",
+      "requiredBallColor": "pink"
+    },
+    {
+      "col": 10,
+      "row": 1,
+      "templateId": "purple",
+      "tint": "#FF44BB",
+      "requiredBallColor": "pink"
+    },
+    {
+      "col": 11,
+      "row": 1,
+      "templateId": "purple",
+      "tint": "#FF44BB",
+      "requiredBallColor": "pink"
+    },
+    {
+      "col": 10,
+      "row": 2,
+      "templateId": "purple",
+      "tint": "#FF44BB",
+      "requiredBallColor": "pink"
+    },
+    {
+      "col": 11,
+      "row": 2,
+      "templateId": "standard",
+      "requiredBallColor": "pink",
+      "powerupId": "Fireball"
+    },
+    {
+      "col": 10,
+      "row": 3,
+      "templateId": "purple",
+      "tint": "#FF44BB",
+      "requiredBallColor": "pink"
+    },
+    {
+      "col": 11,
+      "row": 3,
+      "templateId": "purple",
+      "tint": "#FF44BB",
+      "requiredBallColor": "pink"
+    },
+    {
+      "col": 10,
+      "row": 4,
+      "templateId": "purple",
+      "tint": "#FF44BB",
+      "requiredBallColor": "pink"
+    },
+    {
+      "col": 11,
+      "row": 4,
+      "templateId": "purple",
+      "tint": "#FF44BB",
+      "requiredBallColor": "pink"
+    },
+    {
+      "col": 2,
+      "row": 2,
+      "templateId": "steel"
+    },
+    {
+      "col": 5,
+      "row": 0,
+      "templateId": "steel"
+    },
+    {
+      "col": 6,
+      "row": 0,
+      "templateId": "steel"
+    },
+    {
+      "col": 5,
+      "row": 2,
+      "templateId": "gold"
+    },
+    {
+      "col": 6,
+      "row": 2,
+      "templateId": "gold"
+    },
+    {
+      "col": 9,
+      "row": 2,
+      "templateId": "steel"
+    }
+  ],
+  "nativeLevel": true,
+  "levelOrder": 67
+}

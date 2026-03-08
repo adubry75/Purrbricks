@@ -184,7 +184,7 @@ public static class PurrbricksSteamLeaderboardSetup
         background.color = new Color(0f, 0f, 0f, 0.55f);
 
         var text = CreateTmpText("ResultsText", resultGO.transform, font, "Scores will appear here.", TextAlignmentOptions.TopLeft);
-        text.enableWordWrapping = true;
+        text.textWrappingMode = TextWrappingModes.NoWrap;
         text.fontSize = 18;
         text.margin = new Vector4(10, 10, 10, 10);
 
@@ -275,7 +275,7 @@ public static class PurrbricksSteamLeaderboardSetup
 
     private static void EnsureEventSystem()
     {
-        if (Object.FindObjectOfType<EventSystem>() == null)
+        if (Object.FindFirstObjectByType<EventSystem>() == null)
         {
             var es = new GameObject("EventSystem", typeof(EventSystem), typeof(StandaloneInputModule));
             Undo.RegisterCreatedObjectUndo(es, "Create EventSystem");

@@ -1,0 +1,212 @@
+{
+  "id": "dual_orbits",
+  "displayName": "Dual Orbits",
+  "grid": {
+    "cols": 12,
+    "rows": 8,
+    "brickWidth": 1.35,
+    "brickHeight": 0.45,
+    "gapX": 0.08,
+    "gapY": 0.16
+  },
+  "bricks": [
+    {
+      "col": 3,
+      "row": 4,
+      "templateId": "blue",
+      "movement": {
+        "type": "circular",
+        "amplitude": 1.5,
+        "period": 3.5,
+        "phaseOffset": 0.0
+      }
+    },
+    {
+      "col": 3,
+      "row": 4,
+      "templateId": "blue",
+      "movement": {
+        "type": "circular",
+        "amplitude": 1.5,
+        "period": 3.5,
+        "phaseOffset": 0.7854
+      }
+    },
+    {
+      "col": 3,
+      "row": 4,
+      "templateId": "blue",
+      "movement": {
+        "type": "circular",
+        "amplitude": 1.5,
+        "period": 3.5,
+        "phaseOffset": 1.5708
+      }
+    },
+    {
+      "col": 3,
+      "row": 4,
+      "templateId": "blue",
+      "movement": {
+        "type": "circular",
+        "amplitude": 1.5,
+        "period": 3.5,
+        "phaseOffset": 2.3562
+      }
+    },
+    {
+      "col": 3,
+      "row": 4,
+      "templateId": "blue",
+      "movement": {
+        "type": "circular",
+        "amplitude": 1.5,
+        "period": 3.5,
+        "phaseOffset": 3.1416
+      }
+    },
+    {
+      "col": 3,
+      "row": 4,
+      "templateId": "blue",
+      "movement": {
+        "type": "circular",
+        "amplitude": 1.5,
+        "period": 3.5,
+        "phaseOffset": 3.927
+      }
+    },
+    {
+      "col": 3,
+      "row": 4,
+      "templateId": "blue",
+      "movement": {
+        "type": "circular",
+        "amplitude": 1.5,
+        "period": 3.5,
+        "phaseOffset": 4.7124
+      }
+    },
+    {
+      "col": 3,
+      "row": 4,
+      "templateId": "blue",
+      "movement": {
+        "type": "circular",
+        "amplitude": 1.5,
+        "period": 3.5,
+        "phaseOffset": 5.4978
+      }
+    },
+    {
+      "col": 9,
+      "row": 4,
+      "templateId": "red",
+      "movement": {
+        "type": "circular",
+        "amplitude": 1.5,
+        "period": 2.5,
+        "phaseOffset": 0.3927
+      }
+    },
+    {
+      "col": 9,
+      "row": 4,
+      "templateId": "red",
+      "movement": {
+        "type": "circular",
+        "amplitude": 1.5,
+        "period": 2.5,
+        "phaseOffset": 1.1781
+      }
+    },
+    {
+      "col": 9,
+      "row": 4,
+      "templateId": "red",
+      "movement": {
+        "type": "circular",
+        "amplitude": 1.5,
+        "period": 2.5,
+        "phaseOffset": 1.9635
+      }
+    },
+    {
+      "col": 9,
+      "row": 4,
+      "templateId": "red",
+      "movement": {
+        "type": "circular",
+        "amplitude": 1.5,
+        "period": 2.5,
+        "phaseOffset": 2.7489
+      }
+    },
+    {
+      "col": 9,
+      "row": 4,
+      "templateId": "red",
+      "movement": {
+        "type": "circular",
+        "amplitude": 1.5,
+        "period": 2.5,
+        "phaseOffset": 3.5343
+      }
+    },
+    {
+      "col": 9,
+      "row": 4,
+      "templateId": "red",
+      "movement": {
+        "type": "circular",
+        "amplitude": 1.5,
+        "period": 2.5,
+        "phaseOffset": 4.3197
+      }
+    },
+    {
+      "col": 9,
+      "row": 4,
+      "templateId": "red",
+      "movement": {
+        "type": "circular",
+        "amplitude": 1.5,
+        "period": 2.5,
+        "phaseOffset": 5.1051
+      }
+    },
+    {
+      "col": 9,
+      "row": 4,
+      "templateId": "red",
+      "movement": {
+        "type": "circular",
+        "amplitude": 1.5,
+        "period": 2.5,
+        "phaseOffset": 5.8905
+      }
+    },
+    {
+      "col": 2,
+      "row": 0,
+      "templateId": "gem"
+    },
+    {
+      "col": 5,
+      "row": 0,
+      "templateId": "gem"
+    },
+    {
+      "col": 6,
+      "row": 0,
+      "templateId": "gem"
+    },
+    {
+      "col": 9,
+      "row": 0,
+      "templateId": "gem"
+    }
+  ],
+  "nativeLevel": true,
+  "levelOrder": 18
+}

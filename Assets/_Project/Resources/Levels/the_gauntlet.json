@@ -1,0 +1,465 @@
+{
+  "id": "the_gauntlet",
+  "displayName": "The Gauntlet",
+  "ballSpeed": 13.0,
+  "grid": {
+    "cols": 12,
+    "rows": 8,
+    "brickWidth": 1.35,
+    "brickHeight": 0.45,
+    "gapX": 0.08,
+    "gapY": 0.16
+  },
+  "bricks": [
+    {
+      "col": 0,
+      "row": 0,
+      "templateId": "dark",
+      "powerupId": "WidePaddle"
+    },
+    {
+      "col": 1,
+      "row": 0,
+      "templateId": "dark",
+      "powerupId": "MultiBall"
+    },
+    {
+      "col": 2,
+      "row": 0,
+      "templateId": "dark",
+      "powerupId": "ShrinkPaddle"
+    },
+    {
+      "col": 3,
+      "row": 0,
+      "templateId": "dark"
+    },
+    {
+      "col": 4,
+      "row": 0,
+      "templateId": "dark"
+    },
+    {
+      "col": 5,
+      "row": 0,
+      "templateId": "dark"
+    },
+    {
+      "col": 6,
+      "row": 0,
+      "templateId": "dark"
+    },
+    {
+      "col": 7,
+      "row": 0,
+      "templateId": "dark"
+    },
+    {
+      "col": 8,
+      "row": 0,
+      "templateId": "dark"
+    },
+    {
+      "col": 9,
+      "row": 0,
+      "templateId": "dark"
+    },
+    {
+      "col": 10,
+      "row": 0,
+      "templateId": "dark"
+    },
+    {
+      "col": 11,
+      "row": 0,
+      "templateId": "dark"
+    },
+    {
+      "col": 0,
+      "row": 1,
+      "templateId": "dark"
+    },
+    {
+      "col": 1,
+      "row": 1,
+      "templateId": "dark"
+    },
+    {
+      "col": 2,
+      "row": 1,
+      "templateId": "dark"
+    },
+    {
+      "col": 3,
+      "row": 1,
+      "templateId": "dark"
+    },
+    {
+      "col": 4,
+      "row": 1,
+      "templateId": "dark"
+    },
+    {
+      "col": 5,
+      "row": 1,
+      "templateId": "dark"
+    },
+    {
+      "col": 6,
+      "row": 1,
+      "templateId": "dark"
+    },
+    {
+      "col": 7,
+      "row": 1,
+      "templateId": "dark"
+    },
+    {
+      "col": 8,
+      "row": 1,
+      "templateId": "dark"
+    },
+    {
+      "col": 9,
+      "row": 1,
+      "templateId": "dark"
+    },
+    {
+      "col": 10,
+      "row": 1,
+      "templateId": "dark"
+    },
+    {
+      "col": 11,
+      "row": 1,
+      "templateId": "dark",
+      "powerupId": "ShieldWall"
+    },
+    {
+      "col": 0,
+      "row": 2,
+      "templateId": "dark"
+    },
+    {
+      "col": 1,
+      "row": 2,
+      "templateId": "dark"
+    },
+    {
+      "col": 2,
+      "row": 2,
+      "templateId": "steel"
+    },
+    {
+      "col": 3,
+      "row": 2,
+      "templateId": "steel"
+    },
+    {
+      "col": 4,
+      "row": 2,
+      "templateId": "steel"
+    },
+    {
+      "col": 5,
+      "row": 2,
+      "templateId": "steel"
+    },
+    {
+      "col": 6,
+      "row": 2,
+      "templateId": "steel"
+    },
+    {
+      "col": 7,
+      "row": 2,
+      "templateId": "steel"
+    },
+    {
+      "col": 8,
+      "row": 2,
+      "templateId": "steel"
+    },
+    {
+      "col": 9,
+      "row": 2,
+      "templateId": "steel"
+    },
+    {
+      "col": 10,
+      "row": 2,
+      "templateId": "dark"
+    },
+    {
+      "col": 11,
+      "row": 2,
+      "templateId": "dark"
+    },
+    {
+      "col": 0,
+      "row": 3,
+      "templateId": "dark"
+    },
+    {
+      "col": 1,
+      "row": 3,
+      "templateId": "dark"
+    },
+    {
+      "col": 2,
+      "row": 3,
+      "templateId": "steel"
+    },
+    {
+      "col": 5,
+      "row": 3,
+      "templateId": "gem",
+      "powerupId": "Fireball"
+    },
+    {
+      "col": 6,
+      "row": 3,
+      "templateId": "gem",
+      "powerupId": "MultiBall"
+    },
+    {
+      "col": 9,
+      "row": 3,
+      "templateId": "steel"
+    },
+    {
+      "col": 10,
+      "row": 3,
+      "templateId": "dark"
+    },
+    {
+      "col": 11,
+      "row": 3,
+      "templateId": "dark"
+    },
+    {
+      "col": 0,
+      "row": 4,
+      "templateId": "dark"
+    },
+    {
+      "col": 1,
+      "row": 4,
+      "templateId": "dark"
+    },
+    {
+      "col": 2,
+      "row": 4,
+      "templateId": "steel"
+    },
+    {
+      "col": 5,
+      "row": 4,
+      "templateId": "gem",
+      "powerupId": "ExtraLife"
+    },
+    {
+      "col": 6,
+      "row": 4,
+      "templateId": "gem",
+      "powerupId": "Laser"
+    },
+    {
+      "col": 9,
+      "row": 4,
+      "templateId": "steel"
+    },
+    {
+      "col": 10,
+      "row": 4,
+      "templateId": "dark"
+    },
+    {
+      "col": 11,
+      "row": 4,
+      "templateId": "dark"
+    },
+    {
+      "col": 0,
+      "row": 5,
+      "templateId": "dark"
+    },
+    {
+      "col": 1,
+      "row": 5,
+      "templateId": "dark"
+    },
+    {
+      "col": 2,
+      "row": 5,
+      "templateId": "steel"
+    },
+    {
+      "col": 3,
+      "row": 5,
+      "templateId": "steel"
+    },
+    {
+      "col": 4,
+      "row": 5,
+      "templateId": "steel"
+    },
+    {
+      "col": 5,
+      "row": 5,
+      "templateId": "steel"
+    },
+    {
+      "col": 6,
+      "row": 5,
+      "templateId": "steel"
+    },
+    {
+      "col": 7,
+      "row": 5,
+      "templateId": "steel"
+    },
+    {
+      "col": 8,
+      "row": 5,
+      "templateId": "steel"
+    },
+    {
+      "col": 9,
+      "row": 5,
+      "templateId": "steel"
+    },
+    {
+      "col": 10,
+      "row": 5,
+      "templateId": "dark"
+    },
+    {
+      "col": 11,
+      "row": 5,
+      "templateId": "dark"
+    },
+    {
+      "col": 0,
+      "row": 6,
+      "templateId": "dark"
+    },
+    {
+      "col": 1,
+      "row": 6,
+      "templateId": "dark"
+    },
+    {
+      "col": 2,
+      "row": 6,
+      "templateId": "dark"
+    },
+    {
+      "col": 3,
+      "row": 6,
+      "templateId": "dark"
+    },
+    {
+      "col": 4,
+      "row": 6,
+      "templateId": "dark"
+    },
+    {
+      "col": 5,
+      "row": 6,
+      "templateId": "dark"
+    },
+    {
+      "col": 6,
+      "row": 6,
+      "templateId": "dark"
+    },
+    {
+      "col": 7,
+      "row": 6,
+      "templateId": "dark"
+    },
+    {
+      "col": 8,
+      "row": 6,
+      "templateId": "dark"
+    },
+    {
+      "col": 9,
+      "row": 6,
+      "templateId": "dark"
+    },
+    {
+      "col": 10,
+      "row": 6,
+      "templateId": "dark"
+    },
+    {
+      "col": 11,
+      "row": 6,
+      "templateId": "dark"
+    },
+    {
+      "col": 0,
+      "row": 7,
+      "templateId": "dark"
+    },
+    {
+      "col": 1,
+      "row": 7,
+      "templateId": "dark"
+    },
+    {
+      "col": 2,
+      "row": 7,
+      "templateId": "dark"
+    },
+    {
+      "col": 3,
+      "row": 7,
+      "templateId": "dark"
+    },
+    {
+      "col": 4,
+      "row": 7,
+      "templateId": "dark"
+    },
+    {
+      "col": 5,
+      "row": 7,
+      "templateId": "dark"
+    },
+    {
+      "col": 6,
+      "row": 7,
+      "templateId": "dark"
+    },
+    {
+      "col": 7,
+      "row": 7,
+      "templateId": "dark"
+    },
+    {
+      "col": 8,
+      "row": 7,
+      "templateId": "dark"
+    },
+    {
+      "col": 9,
+      "row": 7,
+      "templateId": "dark"
+    },
+    {
+      "col": 10,
+      "row": 7,
+      "templateId": "dark"
+    },
+    {
+      "col": 11,
+      "row": 7,
+      "templateId": "dark"
+    }
+  ],
+  "nativeLevel": true,
+  "levelOrder": 108
+}

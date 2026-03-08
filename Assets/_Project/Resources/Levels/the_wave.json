@@ -1,0 +1,412 @@
+{
+  "id": "the_wave",
+  "displayName": "The Wave",
+  "grid": {
+    "cols": 12,
+    "rows": 8,
+    "brickWidth": 1.35,
+    "brickHeight": 0.45,
+    "gapX": 0.08,
+    "gapY": 0.16
+  },
+  "bricks": [
+    {
+      "col": 0,
+      "row": 0,
+      "templateId": "standard",
+      "movement": {
+        "type": "horizontal",
+        "amplitude": 2.0,
+        "period": 4.0,
+        "phaseOffset": 0.0
+      }
+    },
+    {
+      "col": 1,
+      "row": 0,
+      "templateId": "standard",
+      "movement": {
+        "type": "horizontal",
+        "amplitude": 2.0,
+        "period": 4.0,
+        "phaseOffset": 0.5236
+      }
+    },
+    {
+      "col": 2,
+      "row": 0,
+      "templateId": "standard",
+      "movement": {
+        "type": "horizontal",
+        "amplitude": 2.0,
+        "period": 4.0,
+        "phaseOffset": 1.0472
+      }
+    },
+    {
+      "col": 3,
+      "row": 0,
+      "templateId": "standard",
+      "movement": {
+        "type": "horizontal",
+        "amplitude": 2.0,
+        "period": 4.0,
+        "phaseOffset": 1.5708
+      }
+    },
+    {
+      "col": 4,
+      "row": 0,
+      "templateId": "standard",
+      "movement": {
+        "type": "horizontal",
+        "amplitude": 2.0,
+        "period": 4.0,
+        "phaseOffset": 2.0944
+      }
+    },
+    {
+      "col": 5,
+      "row": 0,
+      "templateId": "standard",
+      "movement": {
+        "type": "horizontal",
+        "amplitude": 2.0,
+        "period": 4.0,
+        "phaseOffset": 2.618
+      }
+    },
+    {
+      "col": 6,
+      "row": 0,
+      "templateId": "standard",
+      "movement": {
+        "type": "horizontal",
+        "amplitude": 2.0,
+        "period": 4.0,
+        "phaseOffset": 3.1416
+      }
+    },
+    {
+      "col": 7,
+      "row": 0,
+      "templateId": "standard",
+      "movement": {
+        "type": "horizontal",
+        "amplitude": 2.0,
+        "period": 4.0,
+        "phaseOffset": 3.6652
+      }
+    },
+    {
+      "col": 8,
+      "row": 0,
+      "templateId": "standard",
+      "movement": {
+        "type": "horizontal",
+        "amplitude": 2.0,
+        "period": 4.0,
+        "phaseOffset": 4.1888
+      }
+    },
+    {
+      "col": 9,
+      "row": 0,
+      "templateId": "standard",
+      "movement": {
+        "type": "horizontal",
+        "amplitude": 2.0,
+        "period": 4.0,
+        "phaseOffset": 4.7124
+      }
+    },
+    {
+      "col": 10,
+      "row": 0,
+      "templateId": "standard",
+      "movement": {
+        "type": "horizontal",
+        "amplitude": 2.0,
+        "period": 4.0,
+        "phaseOffset": 5.236
+      }
+    },
+    {
+      "col": 11,
+      "row": 0,
+      "templateId": "standard",
+      "movement": {
+        "type": "horizontal",
+        "amplitude": 2.0,
+        "period": 4.0,
+        "phaseOffset": 5.7596
+      }
+    },
+    {
+      "col": 0,
+      "row": 3,
+      "templateId": "blue",
+      "movement": {
+        "type": "horizontal",
+        "amplitude": 1.5,
+        "period": 3.0,
+        "phaseOffset": 0.7854
+      }
+    },
+    {
+      "col": 1,
+      "row": 3,
+      "templateId": "blue",
+      "movement": {
+        "type": "horizontal",
+        "amplitude": 1.5,
+        "period": 3.0,
+        "phaseOffset": 1.309
+      }
+    },
+    {
+      "col": 2,
+      "row": 3,
+      "templateId": "blue",
+      "movement": {
+        "type": "horizontal",
+        "amplitude": 1.5,
+        "period": 3.0,
+        "phaseOffset": 1.8326
+      }
+    },
+    {
+      "col": 3,
+      "row": 3,
+      "templateId": "blue",
+      "movement": {
+        "type": "horizontal",
+        "amplitude": 1.5,
+        "period": 3.0,
+        "phaseOffset": 2.3562
+      }
+    },
+    {
+      "col": 4,
+      "row": 3,
+      "templateId": "blue",
+      "movement": {
+        "type": "horizontal",
+        "amplitude": 1.5,
+        "period": 3.0,
+        "phaseOffset": 2.8798
+      }
+    },
+    {
+      "col": 5,
+      "row": 3,
+      "templateId": "blue",
+      "movement": {
+        "type": "horizontal",
+        "amplitude": 1.5,
+        "period": 3.0,
+        "phaseOffset": 3.4034
+      }
+    },
+    {
+      "col": 6,
+      "row": 3,
+      "templateId": "blue",
+      "movement": {
+        "type": "horizontal",
+        "amplitude": 1.5,
+        "period": 3.0,
+        "phaseOffset": 3.927
+      }
+    },
+    {
+      "col": 7,
+      "row": 3,
+      "templateId": "blue",
+      "movement": {
+        "type": "horizontal",
+        "amplitude": 1.5,
+        "period": 3.0,
+        "phaseOffset": 4.4506
+      }
+    },
+    {
+      "col": 8,
+      "row": 3,
+      "templateId": "blue",
+      "movement": {
+        "type": "horizontal",
+        "amplitude": 1.5,
+        "period": 3.0,
+        "phaseOffset": 4.9742
+      }
+    },
+    {
+      "col": 9,
+      "row": 3,
+      "templateId": "blue",
+      "movement": {
+        "type": "horizontal",
+        "amplitude": 1.5,
+        "period": 3.0,
+        "phaseOffset": 5.4978
+      }
+    },
+    {
+      "col": 10,
+      "row": 3,
+      "templateId": "blue",
+      "movement": {
+        "type": "horizontal",
+        "amplitude": 1.5,
+        "period": 3.0,
+        "phaseOffset": 6.0214
+      }
+    },
+    {
+      "col": 11,
+      "row": 3,
+      "templateId": "blue",
+      "movement": {
+        "type": "horizontal",
+        "amplitude": 1.5,
+        "period": 3.0,
+        "phaseOffset": 6.545
+      }
+    },
+    {
+      "col": 0,
+      "row": 6,
+      "templateId": "gold",
+      "movement": {
+        "type": "horizontal",
+        "amplitude": 2.0,
+        "period": 2.5,
+        "phaseOffset": 1.5708
+      }
+    },
+    {
+      "col": 1,
+      "row": 6,
+      "templateId": "gold",
+      "movement": {
+        "type": "horizontal",
+        "amplitude": 2.0,
+        "period": 2.5,
+        "phaseOffset": 2.0944
+      }
+    },
+    {
+      "col": 2,
+      "row": 6,
+      "templateId": "gold",
+      "movement": {
+        "type": "horizontal",
+        "amplitude": 2.0,
+        "period": 2.5,
+        "phaseOffset": 2.618
+      }
+    },
+    {
+      "col": 3,
+      "row": 6,
+      "templateId": "gold",
+      "movement": {
+        "type": "horizontal",
+        "amplitude": 2.0,
+        "period": 2.5,
+        "phaseOffset": 3.1416
+      }
+    },
+    {
+      "col": 4,
+      "row": 6,
+      "templateId": "gold",
+      "movement": {
+        "type": "horizontal",
+        "amplitude": 2.0,
+        "period": 2.5,
+        "phaseOffset": 3.6652
+      }
+    },
+    {
+      "col": 5,
+      "row": 6,
+      "templateId": "gold",
+      "movement": {
+        "type": "horizontal",
+        "amplitude": 2.0,
+        "period": 2.5,
+        "phaseOffset": 4.1888
+      }
+    },
+    {
+      "col": 6,
+      "row": 6,
+      "templateId": "gold",
+      "movement": {
+        "type": "horizontal",
+        "amplitude": 2.0,
+        "period": 2.5,
+        "phaseOffset": 4.7124
+      }
+    },
+    {
+      "col": 7,
+      "row": 6,
+      "templateId": "gold",
+      "movement": {
+        "type": "horizontal",
+        "amplitude": 2.0,
+        "period": 2.5,
+        "phaseOffset": 5.236
+      }
+    },
+    {
+      "col": 8,
+      "row": 6,
+      "templateId": "gold",
+      "movement": {
+        "type": "horizontal",
+        "amplitude": 2.0,
+        "period": 2.5,
+        "phaseOffset": 5.7596
+      }
+    },
+    {
+      "col": 9,
+      "row": 6,
+      "templateId": "gold",
+      "movement": {
+        "type": "horizontal",
+        "amplitude": 2.0,
+        "period": 2.5,
+        "phaseOffset": 6.2832
+      }
+    },
+    {
+      "col": 10,
+      "row": 6,
+      "templateId": "gold",
+      "movement": {
+        "type": "horizontal",
+        "amplitude": 2.0,
+        "period": 2.5,
+        "phaseOffset": 6.8068
+      }
+    },
+    {
+      "col": 11,
+      "row": 6,
+      "templateId": "gold",
+      "movement": {
+        "type": "horizontal",
+        "amplitude": 2.0,
+        "period": 2.5,
+        "phaseOffset": 7.3304
+      }
+    }
+  ],
+  "nativeLevel": true,
+  "levelOrder": 86
+}

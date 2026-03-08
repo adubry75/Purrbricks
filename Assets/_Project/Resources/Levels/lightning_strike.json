@@ -1,0 +1,249 @@
+{
+  "id": "lightning_strike",
+  "displayName": "Lightning Strike",
+  "ballSpeed": 12.0,
+  "grid": {
+    "cols": 12,
+    "rows": 10,
+    "brickWidth": 1.35,
+    "brickHeight": 0.42,
+    "gapX": 0.08,
+    "gapY": 0.1
+  },
+  "bricks": [
+    {
+      "col": 6,
+      "row": 0,
+      "templateId": "gold",
+      "powerupId": "ExtraLife"
+    },
+    {
+      "col": 7,
+      "row": 0,
+      "templateId": "gold",
+      "powerupId": "Laser"
+    },
+    {
+      "col": 8,
+      "row": 0,
+      "templateId": "gold",
+      "powerupId": "ShrinkPaddle"
+    },
+    {
+      "col": 9,
+      "row": 0,
+      "templateId": "gold"
+    },
+    {
+      "col": 10,
+      "row": 0,
+      "templateId": "gold"
+    },
+    {
+      "col": 11,
+      "row": 0,
+      "templateId": "gem",
+      "powerupId": "Fireball"
+    },
+    {
+      "col": 5,
+      "row": 1,
+      "templateId": "gold"
+    },
+    {
+      "col": 6,
+      "row": 1,
+      "templateId": "gold"
+    },
+    {
+      "col": 7,
+      "row": 1,
+      "templateId": "gold"
+    },
+    {
+      "col": 4,
+      "row": 2,
+      "templateId": "gold"
+    },
+    {
+      "col": 5,
+      "row": 2,
+      "templateId": "gold"
+    },
+    {
+      "col": 6,
+      "row": 2,
+      "templateId": "gold"
+    },
+    {
+      "col": 2,
+      "row": 3,
+      "templateId": "gold"
+    },
+    {
+      "col": 3,
+      "row": 3,
+      "templateId": "gold"
+    },
+    {
+      "col": 4,
+      "row": 3,
+      "templateId": "gold"
+    },
+    {
+      "col": 5,
+      "row": 3,
+      "templateId": "gold"
+    },
+    {
+      "col": 6,
+      "row": 3,
+      "templateId": "gold"
+    },
+    {
+      "col": 7,
+      "row": 3,
+      "templateId": "gold"
+    },
+    {
+      "col": 8,
+      "row": 3,
+      "templateId": "gold"
+    },
+    {
+      "col": 6,
+      "row": 4,
+      "templateId": "gold"
+    },
+    {
+      "col": 7,
+      "row": 4,
+      "templateId": "gold"
+    },
+    {
+      "col": 8,
+      "row": 4,
+      "templateId": "gold"
+    },
+    {
+      "col": 5,
+      "row": 5,
+      "templateId": "gold"
+    },
+    {
+      "col": 6,
+      "row": 5,
+      "templateId": "gold"
+    },
+    {
+      "col": 7,
+      "row": 5,
+      "templateId": "gold"
+    },
+    {
+      "col": 2,
+      "row": 6,
+      "templateId": "gold"
+    },
+    {
+      "col": 3,
+      "row": 6,
+      "templateId": "gold"
+    },
+    {
+      "col": 4,
+      "row": 6,
+      "templateId": "gold"
+    },
+    {
+      "col": 5,
+      "row": 6,
+      "templateId": "gold"
+    },
+    {
+      "col": 6,
+      "row": 6,
+      "templateId": "gold"
+    },
+    {
+      "col": 7,
+      "row": 6,
+      "templateId": "gold"
+    },
+    {
+      "col": 8,
+      "row": 6,
+      "templateId": "gold"
+    },
+    {
+      "col": 3,
+      "row": 7,
+      "templateId": "gold"
+    },
+    {
+      "col": 4,
+      "row": 7,
+      "templateId": "gold"
+    },
+    {
+      "col": 5,
+      "row": 7,
+      "templateId": "gold"
+    },
+    {
+      "col": 2,
+      "row": 8,
+      "templateId": "gold"
+    },
+    {
+      "col": 3,
+      "row": 8,
+      "templateId": "gold"
+    },
+    {
+      "col": 4,
+      "row": 8,
+      "templateId": "gold"
+    },
+    {
+      "col": 0,
+      "row": 9,
+      "templateId": "gem",
+      "powerupId": "Laser"
+    },
+    {
+      "col": 1,
+      "row": 9,
+      "templateId": "gold"
+    },
+    {
+      "col": 2,
+      "row": 9,
+      "templateId": "gold"
+    },
+    {
+      "col": 3,
+      "row": 9,
+      "templateId": "gold"
+    },
+    {
+      "col": 4,
+      "row": 9,
+      "templateId": "gold"
+    },
+    {
+      "col": 5,
+      "row": 9,
+      "templateId": "gold"
+    },
+    {
+      "col": 0,
+      "row": 0,
+      "templateId": "standard",
+      "tint": "#FF3333",
+      "powerupId": "FlipScreen"
+    }
+  ],
+  "nativeLevel": true,
+  "levelOrder": 99
+}

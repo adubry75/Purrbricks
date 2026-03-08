@@ -1,5 +1,7 @@
+using Newtonsoft.Json.Linq;
 using Steamworks;
 using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
@@ -34,9 +36,10 @@ public class GameManager : MonoBehaviour
     [SerializeField] private int _combo;
     [SerializeField] private float _comboResetSeconds = 22.0f;
 
-    [Header("Levels")]
-    [SerializeField] private string[] _levelIds;
-    [SerializeField] private float _levelClearDelay = 2.5f;
+    // Populated at runtime by RefreshLevelIds() — not serialized.
+    // Add a level JSON with "nativeLevel":true and it's automatically picked up.
+    private string[] _levelIds;
+
 
     [Header("Refs")]
     [SerializeField] private LevelLoader _levelLoader;
@@ -127,26 +130,32 @@ public class GameManager : MonoBehaviour
     }
 
     /// <summary>
-    /// Dynamically populates _levelIds by scanning Resources/Levels/ at runtime.
-    /// This means adding new level JSON files is automatically picked up without
-    /// needing to re-run the Purrbricks > Setup Scene editor tool.
+    /// Dynamically discovers native levels from Resources/Levels/ at startup.
+    /// Any JSON file with "nativeLevel":true is included, sorted by "levelOrder".
+    /// Set "active":false in a level JSON to exclude it without deleting the file.
+    /// No editor Setup Scene step required — just drop JSON files and hit Play.
     /// </summary>
     private void RefreshLevelIds()
     {
         var allAssets = Resources.LoadAll<TextAsset>("Levels");
-        var rx = new System.Text.RegularExpressions.Regex(@"^level_(\d+)$",
-            System.Text.RegularExpressions.RegexOptions.IgnoreCase);
-        var found = new System.Collections.Generic.List<(int index, string id)>(allAssets.Length);
+        var found = new List<(int order, string id)>(allAssets.Length);
         foreach (var asset in allAssets)
         {
-            var m = rx.Match(asset.name);
-            if (m.Success && int.TryParse(m.Groups[1].Value, out int idx))
-                found.Add((idx, asset.name));
+            try
+            {
+                var j = JObject.Parse(asset.text);
+                if (!(j["nativeLevel"]?.Value<bool>() ?? false)) continue;
+                if (!(j["active"]?.Value<bool>() ?? true)) continue; // skip inactive levels
+                int order = j["levelOrder"]?.Value<int>() ?? int.MaxValue;
+                found.Add((order, asset.name));
+            }
+            catch { /* skip malformed JSON */ }
         }
-        found.Sort((a, b) => a.index.CompareTo(b.index));
+        found.Sort((a, b) => a.order.CompareTo(b.order));
         _levelIds = new string[found.Count];
         for (int i = 0; i < found.Count; i++)
             _levelIds[i] = found[i].id;
+        Debug.Log($"[GameManager] Discovered {_levelIds.Length} active native levels.");
     }
 
     private void FindOrCreateUIScreens()

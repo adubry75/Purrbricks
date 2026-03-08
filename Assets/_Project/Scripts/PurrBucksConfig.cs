@@ -26,7 +26,7 @@ public static class PurrBucksConfig
 
     // ── Store Prices — Good Powerups ─────────────────────────────────────────
     public const int PRICE_EXTRA_LIFE        = 500;
-    public const int PRICE_FIREBALL          = 500;
+    public const int PRICE_FIREBALL          = 500; 
     public const int PRICE_LASER             = 400;
     public const int PRICE_SHIELD_WALL       = 400;
     public const int PRICE_WIDE_PADDLE       = 100;

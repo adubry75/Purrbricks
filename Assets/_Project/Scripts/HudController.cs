@@ -287,7 +287,7 @@ public class HudController : MonoBehaviour
     int fontSize,
     Color color,
     TextAlignmentOptions align,
-    string? fontOverride = null
+    string fontOverride = null
     )
     {
         var go = new GameObject("TMP");
@@ -310,7 +310,7 @@ public class HudController : MonoBehaviour
         t.color = color;
         t.alignment = align;
 
-        t.enableWordWrapping = false;
+        t.textWrappingMode = TextWrappingModes.NoWrap;
         t.overflowMode = TextOverflowModes.Ellipsis;
 
         return t;

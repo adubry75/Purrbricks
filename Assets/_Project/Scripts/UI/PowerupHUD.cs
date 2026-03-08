@@ -216,7 +216,7 @@ public class PowerupHUD : MonoBehaviour
         lbl.color            = color;
         lbl.alignment        = TextAlignmentOptions.MidlineLeft;
         lbl.raycastTarget    = false;
-        lbl.enableWordWrapping = false;
+        lbl.textWrappingMode = TextWrappingModes.NoWrap;
         lbl.overflowMode     = TextOverflowModes.Ellipsis;
         var lblRt = lbl.GetComponent<RectTransform>();
         lblRt.anchorMin = new Vector2(0f, 0.5f);

@@ -1,0 +1,121 @@
+{
+  "id": "cactus",
+  "displayName": "Cactus",
+  "grid": {
+    "cols": 12,
+    "rows": 8,
+    "brickWidth": 1.35,
+    "brickHeight": 0.45,
+    "gapX": 0.08,
+    "gapY": 0.16
+  },
+  "bricks": [
+    {
+      "col": 5,
+      "row": 0,
+      "templateId": "green"
+    },
+    {
+      "col": 5,
+      "row": 1,
+      "templateId": "green"
+    },
+    {
+      "col": 5,
+      "row": 2,
+      "templateId": "green"
+    },
+    {
+      "col": 9,
+      "row": 2,
+      "templateId": "green"
+    },
+    {
+      "col": 2,
+      "row": 2,
+      "templateId": "green"
+    },
+    {
+      "col": 2,
+      "row": 3,
+      "templateId": "green"
+    },
+    {
+      "col": 3,
+      "row": 3,
+      "templateId": "green"
+    },
+    {
+      "col": 4,
+      "row": 3,
+      "templateId": "green"
+    },
+    {
+      "col": 5,
+      "row": 3,
+      "templateId": "green"
+    },
+    {
+      "col": 6,
+      "row": 3,
+      "templateId": "green"
+    },
+    {
+      "col": 7,
+      "row": 3,
+      "templateId": "green"
+    },
+    {
+      "col": 8,
+      "row": 3,
+      "templateId": "green"
+    },
+    {
+      "col": 9,
+      "row": 3,
+      "templateId": "green"
+    },
+    {
+      "col": 5,
+      "row": 4,
+      "templateId": "green"
+    },
+    {
+      "col": 5,
+      "row": 5,
+      "templateId": "green"
+    },
+    {
+      "col": 5,
+      "row": 6,
+      "templateId": "green"
+    },
+    {
+      "col": 3,
+      "row": 7,
+      "templateId": "green"
+    },
+    {
+      "col": 4,
+      "row": 7,
+      "templateId": "green"
+    },
+    {
+      "col": 5,
+      "row": 7,
+      "templateId": "green"
+    },
+    {
+      "col": 6,
+      "row": 7,
+      "templateId": "green"
+    },
+    {
+      "col": 7,
+      "row": 7,
+      "templateId": "green"
+    }
+  ],
+  "nativeLevel": true,
+  "levelOrder": 32
+}

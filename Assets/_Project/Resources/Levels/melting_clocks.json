@@ -1,0 +1,447 @@
+{
+  "id": "melting_clocks",
+  "displayName": "Melting Clocks",
+  "ballSpeed": 7.8,
+  "grid": {
+    "cols": 20,
+    "rows": 12,
+    "brickWidth": 0.65,
+    "brickHeight": 0.4,
+    "gapX": 0.02,
+    "gapY": 0.02
+  },
+  "bricks": [
+    {
+      "col": 0,
+      "row": 0,
+      "templateId": "blue"
+    },
+    {
+      "col": 1,
+      "row": 0,
+      "templateId": "blue"
+    },
+    {
+      "col": 2,
+      "row": 0,
+      "templateId": "cyan"
+    },
+    {
+      "col": 3,
+      "row": 0,
+      "templateId": "blue"
+    },
+    {
+      "col": 4,
+      "row": 0,
+      "templateId": "blue"
+    },
+    {
+      "col": 5,
+      "row": 0,
+      "templateId": "cyan"
+    },
+    {
+      "col": 6,
+      "row": 0,
+      "templateId": "blue"
+    },
+    {
+      "col": 7,
+      "row": 0,
+      "templateId": "blue"
+    },
+    {
+      "col": 8,
+      "row": 0,
+      "templateId": "cyan"
+    },
+    {
+      "col": 9,
+      "row": 0,
+      "templateId": "blue"
+    },
+    {
+      "col": 10,
+      "row": 0,
+      "templateId": "blue"
+    },
+    {
+      "col": 11,
+      "row": 0,
+      "templateId": "cyan"
+    },
+    {
+      "col": 12,
+      "row": 0,
+      "templateId": "blue"
+    },
+    {
+      "col": 13,
+      "row": 0,
+      "templateId": "blue"
+    },
+    {
+      "col": 14,
+      "row": 0,
+      "templateId": "cyan"
+    },
+    {
+      "col": 15,
+      "row": 0,
+      "templateId": "blue"
+    },
+    {
+      "col": 16,
+      "row": 0,
+      "templateId": "blue"
+    },
+    {
+      "col": 17,
+      "row": 0,
+      "templateId": "cyan"
+    },
+    {
+      "col": 18,
+      "row": 0,
+      "templateId": "blue"
+    },
+    {
+      "col": 19,
+      "row": 0,
+      "templateId": "blue"
+    },
+    {
+      "col": 2,
+      "row": 2,
+      "templateId": "gold"
+    },
+    {
+      "col": 3,
+      "row": 2,
+      "templateId": "gold"
+    },
+    {
+      "col": 4,
+      "row": 2,
+      "templateId": "gold"
+    },
+    {
+      "col": 5,
+      "row": 2,
+      "templateId": "gold"
+    },
+    {
+      "col": 2,
+      "row": 3,
+      "templateId": "gold"
+    },
+    {
+      "col": 3,
+      "row": 3,
+      "templateId": "standard"
+    },
+    {
+      "col": 4,
+      "row": 3,
+      "templateId": "standard"
+    },
+    {
+      "col": 5,
+      "row": 3,
+      "templateId": "gold"
+    },
+    {
+      "col": 2,
+      "row": 4,
+      "templateId": "gold"
+    },
+    {
+      "col": 3,
+      "row": 4,
+      "templateId": "standard"
+    },
+    {
+      "col": 4,
+      "row": 4,
+      "templateId": "standard"
+    },
+    {
+      "col": 5,
+      "row": 4,
+      "templateId": "gold"
+    },
+    {
+      "col": 2,
+      "row": 5,
+      "templateId": "gold"
+    },
+    {
+      "col": 3,
+      "row": 5,
+      "templateId": "gold"
+    },
+    {
+      "col": 4,
+      "row": 5,
+      "templateId": "gold"
+    },
+    {
+      "col": 5,
+      "row": 5,
+      "templateId": "gold"
+    },
+    {
+      "col": 3,
+      "row": 6,
+      "templateId": "gold"
+    },
+    {
+      "col": 3,
+      "row": 7,
+      "templateId": "gold"
+    },
+    {
+      "col": 9,
+      "row": 2,
+      "templateId": "gold"
+    },
+    {
+      "col": 10,
+      "row": 2,
+      "templateId": "gold"
+    },
+    {
+      "col": 11,
+      "row": 2,
+      "templateId": "gold"
+    },
+    {
+      "col": 12,
+      "row": 2,
+      "templateId": "gold"
+    },
+    {
+      "col": 9,
+      "row": 3,
+      "templateId": "gold"
+    },
+    {
+      "col": 10,
+      "row": 3,
+      "templateId": "standard"
+    },
+    {
+      "col": 11,
+      "row": 3,
+      "templateId": "standard"
+    },
+    {
+      "col": 12,
+      "row": 3,
+      "templateId": "gold"
+    },
+    {
+      "col": 10,
+      "row": 4,
+      "templateId": "gold"
+    },
+    {
+      "col": 11,
+      "row": 4,
+      "templateId": "gold"
+    },
+    {
+      "col": 11,
+      "row": 5,
+      "templateId": "gold"
+    },
+    {
+      "col": 12,
+      "row": 6,
+      "templateId": "gold"
+    },
+    {
+      "col": 15,
+      "row": 3,
+      "templateId": "gold"
+    },
+    {
+      "col": 16,
+      "row": 3,
+      "templateId": "gold"
+    },
+    {
+      "col": 17,
+      "row": 3,
+      "templateId": "gold"
+    },
+    {
+      "col": 18,
+      "row": 3,
+      "templateId": "gold"
+    },
+    {
+      "col": 15,
+      "row": 4,
+      "templateId": "gold"
+    },
+    {
+      "col": 16,
+      "row": 4,
+      "templateId": "standard"
+    },
+    {
+      "col": 17,
+      "row": 4,
+      "templateId": "standard"
+    },
+    {
+      "col": 18,
+      "row": 4,
+      "templateId": "gold"
+    },
+    {
+      "col": 15,
+      "row": 5,
+      "templateId": "gold"
+    },
+    {
+      "col": 16,
+      "row": 5,
+      "templateId": "standard"
+    },
+    {
+      "col": 17,
+      "row": 5,
+      "templateId": "standard"
+    },
+    {
+      "col": 18,
+      "row": 5,
+      "templateId": "gold"
+    },
+    {
+      "col": 15,
+      "row": 6,
+      "templateId": "gold"
+    },
+    {
+      "col": 16,
+      "row": 6,
+      "templateId": "gold"
+    },
+    {
+      "col": 17,
+      "row": 6,
+      "templateId": "gold"
+    },
+    {
+      "col": 18,
+      "row": 6,
+      "templateId": "gold"
+    },
+    {
+      "col": 0,
+      "row": 7,
+      "templateId": "gold"
+    },
+    {
+      "col": 1,
+      "row": 7,
+      "templateId": "gold"
+    },
+    {
+      "col": 2,
+      "row": 7,
+      "templateId": "gold"
+    },
+    {
+      "col": 3,
+      "row": 7,
+      "templateId": "gold"
+    },
+    {
+      "col": 4,
+      "row": 7,
+      "templateId": "gold"
+    },
+    {
+      "col": 5,
+      "row": 7,
+      "templateId": "gold"
+    },
+    {
+      "col": 6,
+      "row": 7,
+      "templateId": "gold"
+    },
+    {
+      "col": 7,
+      "row": 7,
+      "templateId": "gold"
+    },
+    {
+      "col": 8,
+      "row": 7,
+      "templateId": "gold"
+    },
+    {
+      "col": 9,
+      "row": 7,
+      "templateId": "gold"
+    },
+    {
+      "col": 10,
+      "row": 7,
+      "templateId": "gold"
+    },
+    {
+      "col": 11,
+      "row": 7,
+      "templateId": "gold"
+    },
+    {
+      "col": 12,
+      "row": 7,
+      "templateId": "gold"
+    },
+    {
+      "col": 13,
+      "row": 7,
+      "templateId": "gold"
+    },
+    {
+      "col": 14,
+      "row": 7,
+      "templateId": "gold"
+    },
+    {
+      "col": 15,
+      "row": 7,
+      "templateId": "gold"
+    },
+    {
+      "col": 16,
+      "row": 7,
+      "templateId": "gold"
+    },
+    {
+      "col": 17,
+      "row": 7,
+      "templateId": "gold"
+    },
+    {
+      "col": 18,
+      "row": 7,
+      "templateId": "gold"
+    },
+    {
+      "col": 19,
+      "row": 7,
+      "templateId": "gold"
+    }
+  ],
+  "nativeLevel": true,
+  "levelOrder": 60
+}
