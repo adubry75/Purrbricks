@@ -25,20 +25,20 @@ public static class PurrBucksConfig
     public const bool  INVENTORY_DROP_BAD_POWERUPS = true;
 
     // ── Store Prices — Good Powerups ─────────────────────────────────────────
-    public const int PRICE_EXTRA_LIFE        = 80;
-    public const int PRICE_FIREBALL          = 50;
-    public const int PRICE_LASER             = 35;
-    public const int PRICE_SHIELD_WALL       = 25;
-    public const int PRICE_WIDE_PADDLE       = 15;
-    public const int PRICE_MULTI_BALL        = 15;
-    public const int PRICE_STICKY_BALL       = 15;
-    public const int PRICE_SPEED_BALL        = 15;
-    public const int PRICE_BOMB_BRICK        = 15;
-    public const int PRICE_BIG_BALL          = 15;
-    public const int PRICE_SCORE_FRENZY      = 15;
-    public const int PRICE_PERMANENT_STICKY  = 15;
+    public const int PRICE_EXTRA_LIFE        = 500;
+    public const int PRICE_FIREBALL          = 500;
+    public const int PRICE_LASER             = 400;
+    public const int PRICE_SHIELD_WALL       = 400;
+    public const int PRICE_WIDE_PADDLE       = 100;
+    public const int PRICE_MULTI_BALL        = 100;
+    public const int PRICE_STICKY_BALL       = 100;
+    public const int PRICE_SPEED_BALL        = 100;
+    public const int PRICE_BOMB_BRICK        = 100;
+    public const int PRICE_BIG_BALL          = 100;
+    public const int PRICE_SCORE_FRENZY      = 100;
+    public const int PRICE_PERMANENT_STICKY  = 100;
 
     // ── Store Prices — Bad (Cursed) Powerups ─────────────────────────────────
     /// <summary>All nine bad powerups share the same discounted price.</summary>
-    public const int PRICE_CURSED            = 6;
+    public const int PRICE_CURSED            = 50;
 }

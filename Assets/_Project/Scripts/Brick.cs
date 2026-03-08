@@ -33,7 +33,10 @@ public class Brick : MonoBehaviour
     {
         _hitPoints = Mathf.Clamp(hp, 1, 99);
         _maxHitPoints = _hitPoints;
-        _visual?.UpdateDamageState(_hitPoints, _maxHitPoints);
+        // Skip visual update if the controller is disabled (e.g. bumper bricks disable it
+        // before this call so their custom sprite isn't overwritten by the default brick art).
+        if (_visual != null && _visual.enabled)
+            _visual.UpdateDamageState(_hitPoints, _maxHitPoints);
     }
 
     public void SetPoints(int points)

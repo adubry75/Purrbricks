@@ -188,7 +188,7 @@ public class HudController : MonoBehaviour
         livLE.preferredWidth = 110f;
         livLE.flexibleWidth  = 0f;
 
-        _comboText = MakeTMP(row1.transform, "×1", 15, ColorGrayLight, TextAlignmentOptions.MidlineLeft);
+        _comboText = MakeTMP(row1.transform, "Combo ×1", 15, ColorGrayLight, TextAlignmentOptions.MidlineLeft);
         var comLE = _comboText.gameObject.AddComponent<LayoutElement>();
         comLE.flexibleWidth = 1f;
 
@@ -224,8 +224,8 @@ public class HudController : MonoBehaviour
         _scoreText.fontStyle = FontStyles.Bold;
         _scoreText.gameObject.AddComponent<LayoutElement>().flexibleHeight = 1f;
 
-        _levelText = MakeTMP(zone.transform, "LEVEL 1", 12, ColorGrayLight, TextAlignmentOptions.Center);
-        _levelText.gameObject.AddComponent<LayoutElement>().preferredHeight = 15f;
+        _levelText = MakeTMP(zone.transform, "LEVEL 1", 18, ColorGrayLight, TextAlignmentOptions.Center);
+        _levelText.gameObject.AddComponent<LayoutElement>().preferredHeight = 25f;
     }
 
     private void BuildRightZone(Transform parent)
@@ -252,7 +252,7 @@ public class HudController : MonoBehaviour
         pbBtn.targetGraphic = pbBg;
         ApplyButtonColors(pbBtn);
         pbBtn.onClick.AddListener(() => GameManager.Instance?.ShowStore());
-        _pbText = MakeTMP(pbGO.transform, "🐾 0 PB", 12, ColorGold, TextAlignmentOptions.Center);
+        _pbText = MakeTMP(pbGO.transform, "🐾 0 PB", 20, ColorGold, TextAlignmentOptions.Center, "Segue Emoji");
         _pbText.raycastTarget = false;
         FillRT(_pbText.GetComponent<RectTransform>());
         var pbLE = pbGO.AddComponent<LayoutElement>();
@@ -286,7 +286,8 @@ public class HudController : MonoBehaviour
     string text,
     int fontSize,
     Color color,
-    TextAlignmentOptions align
+    TextAlignmentOptions align,
+    string? fontOverride = null
     )
     {
         var go = new GameObject("TMP");
@@ -294,9 +295,16 @@ public class HudController : MonoBehaviour
         go.AddComponent<RectTransform>();
 
         var font = Resources.Load<TMP_FontAsset>("Fonts & Materials/Orbitron-VariableFont_wght SDF");
+        if (fontOverride != null)
+        {
+            if (fontOverride == "Segue Emoji")
+            {
+                font = Resources.Load<TMP_FontAsset>("Fonts & Materials/SEGUIEMJ SDF");
+            }
+        }
 
         var t = go.AddComponent<TextMeshProUGUI>();
-        t.font = font;          // 👈 THIS is the missing piece
+        t.font = font;
         t.text = text;
         t.fontSize = fontSize;
         t.color = color;
@@ -398,13 +406,13 @@ public class HudController : MonoBehaviour
         int mult = 1 + combo;
         if (mult <= 1)
         {
-            _comboText.text     = "×1";
+            _comboText.text     = "Combo ×1";
             _comboText.fontSize = 14;
             _comboText.color    = ColorGrayLight;
         }
         else
         {
-            _comboText.text     = $"×{mult}";
+            _comboText.text     = $"Combo ×{mult}";
             _comboText.fontSize = mult >= 8 ? 22 : mult >= 4 ? 19 : 16;
             _comboText.color    = ColorCyan;
         }

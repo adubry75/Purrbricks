@@ -2604,6 +2604,10 @@ MonoBehaviour:
   - {fileID: 8300000, guid: 316efa3c146aba5469c1f16776d092e9, type: 3}
   - {fileID: 8300000, guid: 5e590c31a5c558a48aaa5ae26aa5b437, type: 3}
   - {fileID: 8300000, guid: 34950e41c50bc5944ad7c7f43205e568, type: 3}
+  - {fileID: 8300000, guid: f4a2d0b195895d74aa0b6e4dfe22e734, type: 3}
+  - {fileID: 8300000, guid: fb8b98c80ca65a542a7ef08a7b8adf94, type: 3}
+  - {fileID: 8300000, guid: 5215f3659a92bd843a57b394bea2912e, type: 3}
+  - {fileID: 8300000, guid: 20a257d57055586439b332a3f350527c, type: 3}
   _gameOverTrack: {fileID: 8300000, guid: 51c362cfccbd93e43a5b4a56154a95d6, type: 3}
   _levelFinishTrack: {fileID: 8300000, guid: 8e13f77b10a04584b916c92745aac7b4, type: 3}
   _musicVolume: 0.5
@@ -2658,6 +2662,7 @@ MonoBehaviour:
   - {fileID: 21300000, guid: 9fee5f036c9d9494ca7641af3e8aac81, type: 3}
   - {fileID: 21300000, guid: 835a73a7b7c45b549a37c833b7387026, type: 3}
   - {fileID: 21300000, guid: 0f6aa798a19b4a348b20c18f3ad15f92, type: 3}
+  - {fileID: 21300000, guid: 5a44c90a801952d4d9d90be4d75b5fee, type: 3}
   _skins: []
 --- !u!4 &1202018263
 Transform:
