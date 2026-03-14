@@ -2604,8 +2604,13 @@ MonoBehaviour:
   - {fileID: 8300000, guid: 316efa3c146aba5469c1f16776d092e9, type: 3}
   - {fileID: 8300000, guid: 5e590c31a5c558a48aaa5ae26aa5b437, type: 3}
   - {fileID: 8300000, guid: 34950e41c50bc5944ad7c7f43205e568, type: 3}
+  - {fileID: 8300000, guid: f4a2d0b195895d74aa0b6e4dfe22e734, type: 3}
+  - {fileID: 8300000, guid: fb8b98c80ca65a542a7ef08a7b8adf94, type: 3}
+  - {fileID: 8300000, guid: 5215f3659a92bd843a57b394bea2912e, type: 3}
+  - {fileID: 8300000, guid: 20a257d57055586439b332a3f350527c, type: 3}
   _gameOverTrack: {fileID: 8300000, guid: 51c362cfccbd93e43a5b4a56154a95d6, type: 3}
   _levelFinishTrack: {fileID: 8300000, guid: 8e13f77b10a04584b916c92745aac7b4, type: 3}
+  _gameFinishedTrack: {fileID: 8300000, guid: d63dab68963b53f4ba6a0c115d30df21, type: 3}
   _musicVolume: 0.5
   _crossfadeDuration: 1.5
   _furyPitchMax: 1.28
@@ -3238,6 +3243,58 @@ Transform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1433496315}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &1542071815
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1542071817}
+  - component: {fileID: 1542071816}
+  m_Layer: 0
+  m_Name: CreditsUI
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &1542071816
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1542071815}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 28d9bb7898a03de4585c1693a6403c96, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::CreditsUI
+  _catAvatars:
+  - {fileID: 21300000, guid: b15acbb6a3c63c5448676a6b118d0a36, type: 3}
+  - {fileID: 21300000, guid: ceab0932ef8ba444da3af4789453caa2, type: 3}
+  - {fileID: 21300000, guid: 905ad4bdcd8c4b04b878d91016f1195e, type: 3}
+  - {fileID: 21300000, guid: d0a0041b2138c47488220cc26d0557e0, type: 3}
+  - {fileID: 21300000, guid: 1f4b60653a9ef614b8aab0839941f8f1, type: 3}
+  - {fileID: 21300000, guid: c23a80786fbb37746945a0660bc61f68, type: 3}
+  - {fileID: 21300000, guid: fd101a4e16383364494f08eb104956ab, type: 3}
+--- !u!4 &1542071817
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1542071815}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
@@ -4236,3 +4293,4 @@ SceneRoots:
   - {fileID: 597141411}
   - {fileID: 223699623}
   - {fileID: 1566832514}
+  - {fileID: 1542071817}

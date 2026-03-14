@@ -14,8 +14,11 @@ public class MainMenuUI : MonoBehaviour
 
     private Canvas _canvas;
     private GameObject _panel;
+    private GameObject _creditsButton;
 
     private LevelEditorBrowserUI _levelEditorBrowser;
+
+    private const string PREF_GAME_COMPLETED = "game_completed";
 
     private void Awake()
     {
@@ -84,16 +87,80 @@ public class MainMenuUI : MonoBehaviour
 
         CreateTitle();
 
-        UIStyle.CreateButton(_panel.transform, "Play",             new Vector2(0f,  20f), new Vector2(360f, 84f), () => GameManager.Instance?.StartGame(), UIStyle.AccentMagenta);
-        UIStyle.CreateButton(_panel.transform, "Level Select",     new Vector2(0f, -70f), new Vector2(360f, 84f), ShowLevelSelect, UIStyle.AccentGreen);
-        UIStyle.CreateButton(_panel.transform, "Community Levels", new Vector2(0f, -160f), new Vector2(360f, 84f), ShowCommunityBrowser, UIStyle.AccentGold);
-        UIStyle.CreateButton(_panel.transform, "High Scores",      new Vector2(0f, -250f), new Vector2(360f, 84f), () => GameManager.Instance?.ShowHighScores(), UIStyle.AccentBlue);
-        UIStyle.CreateButton(_panel.transform, "Settings",         new Vector2(0f, -335f), new Vector2(360f, 84f), () => GameManager.Instance?.ShowSettings(fromPause: false), UIStyle.AccentBlue);
-        UIStyle.CreateButton(_panel.transform, "Quit",             new Vector2(0f, -420f), new Vector2(360f, 84f), QuitGame, UIStyle.AccentRed);
-        UIStyle.CreateButton(_panel.transform, "Level Editor [F1]", new Vector2(0f, -500f),
-            new Vector2(260f, 48f), ShowLevelEditor, UIStyle.AccentGold);
+        // BUTTONS!
+        float startY = 30f;           // was 65f, now moved up by 60
+        float buttonSpacing = 75f;   // vertical spacing between standard buttons
+        Vector2 buttonSize = new Vector2(300f, 69f);
 
-        
+        bool creditsUnlocked = PlayerPrefs.GetInt(PREF_GAME_COMPLETED, 0) == 1;
+
+        // Main buttons
+        UIStyle.CreateButton(_panel.transform, "Play",
+            new Vector2(0f, startY),
+            buttonSize,
+            () => GameManager.Instance?.StartGame(),
+            UIStyle.AccentMagenta);
+
+        UIStyle.CreateButton(_panel.transform, "Level Select",
+            new Vector2(0f, startY - (buttonSpacing * 1)),
+            buttonSize,
+            ShowLevelSelect,
+            UIStyle.AccentGreen);
+
+        UIStyle.CreateButton(_panel.transform, "Community Levels",
+            new Vector2(0f, startY - (buttonSpacing * 2)),
+            buttonSize,
+            ShowCommunityBrowser,
+            UIStyle.AccentGold);
+
+        UIStyle.CreateButton(_panel.transform, "High Scores",
+            new Vector2(0f, startY - (buttonSpacing * 3)),
+            buttonSize,
+            () => GameManager.Instance?.ShowHighScores(),
+            UIStyle.AccentBlue);
+
+        UIStyle.CreateButton(_panel.transform, "Settings",
+            new Vector2(0f, startY - (buttonSpacing * 4)),
+            buttonSize,
+            () => GameManager.Instance?.ShowSettings(fromPause: false),
+            UIStyle.AccentBlue);
+
+        UIStyle.CreateButton(_panel.transform, "Quit",
+            new Vector2(0f, startY - (buttonSpacing * 5)),
+            buttonSize,
+            QuitGame,
+            UIStyle.AccentRed);
+
+        // Optional Credits button
+        if (creditsUnlocked)
+        {
+            var creditsBtn = UIStyle.CreateButton(_panel.transform, "Credits",
+                new Vector2(0f, startY - (buttonSpacing * 6)),
+                buttonSize,
+                ShowCredits,
+                UIStyle.AccentBlue);
+
+            _creditsButton = creditsBtn.gameObject;
+            _creditsButton.SetActive(true);
+
+            UIStyle.CreateButton(_panel.transform, "Level Editor [F1]",
+                new Vector2(0f, startY - (buttonSpacing * 7)),
+                buttonSize,
+                ShowLevelEditor,
+                UIStyle.AccentGold);
+        }
+        else
+        {
+            _creditsButton = null;
+
+            UIStyle.CreateButton(_panel.transform, "Level Editor [F1]",
+                new Vector2(0f, startY - (buttonSpacing * 6)),
+                buttonSize,
+                ShowLevelEditor,
+                UIStyle.AccentGold);
+        }
+
+
     }
 
     private void CreateTitle()
@@ -192,6 +259,14 @@ public class MainMenuUI : MonoBehaviour
         });
     }
 
+    private void ShowCredits()
+    {
+        Hide();
+        var creditsUI = Object.FindFirstObjectByType<CreditsUI>(FindObjectsInactive.Include);
+        if (creditsUI == null) { Show(); return; }
+        creditsUI.ShowCredits(0);
+    }
+
     private void QuitGame()
     {
 #if UNITY_EDITOR
@@ -201,6 +276,13 @@ public class MainMenuUI : MonoBehaviour
 #endif
     }
 
-    public void Show() { gameObject.SetActive(true); }
+    public void Show()
+    {
+        gameObject.SetActive(true);
+        // Refresh Credits button visibility in case it was just unlocked
+        if (_creditsButton != null)
+            _creditsButton.SetActive(PlayerPrefs.GetInt(PREF_GAME_COMPLETED, 0) == 1);
+    }
+
     public void Hide() { gameObject.SetActive(false); }
 }

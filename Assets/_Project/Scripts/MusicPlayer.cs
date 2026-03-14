@@ -15,6 +15,7 @@ public class MusicPlayer : MonoBehaviour
     [SerializeField] private AudioClip[] _gameplayTracks;   // cycles 1→2→3→1…
     [SerializeField] private AudioClip   _gameOverTrack;
     [SerializeField] private AudioClip   _levelFinishTrack;
+    [SerializeField] private AudioClip   _gameFinishedTrack; // plays during end credits
 
     [Header("Settings")]
     [SerializeField] [Range(0f, 1f)] private float _musicVolume      = 0.50f;
@@ -105,6 +106,12 @@ public class MusicPlayer : MonoBehaviour
         Run(Stinger(_levelFinishTrack));
     }
 
+    public void PlayGameFinished()
+    {
+        _inGameplay = false;
+        Run(GameFinishedLoop());
+    }
+
     /// <summary>Applies a new master volume to the active source immediately (0–1).</summary>
     public void SetVolume(float volume)
     {
@@ -152,6 +159,11 @@ public class MusicPlayer : MonoBehaviour
     private IEnumerator Stinger(AudioClip clip)
     {
         yield return Crossfade(clip, loop: false);
+    }
+
+    private IEnumerator GameFinishedLoop()
+    {
+        yield return Crossfade(_gameFinishedTrack, loop: true);
     }
 
     /// <summary>Crossfades from the current active source to a new clip.</summary>

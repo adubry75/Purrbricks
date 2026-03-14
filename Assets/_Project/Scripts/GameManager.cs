@@ -14,7 +14,8 @@ public enum GameState
     Cleared,
     Paused,
     GameOver,
-    Victory
+    Victory,
+    Credits
 }
 
 public class GameManager : MonoBehaviour
@@ -52,12 +53,14 @@ public class GameManager : MonoBehaviour
     private MainMenuUI       _mainMenuUI;
     private GameOverUI       _gameOverUI;
     private VictoryUI        _victoryUI;
+    private CreditsUI        _creditsUI;
     private HighScoresUI     _highScoresUI;
     private PauseMenuUI      _pauseMenuUI;
     private SettingsUI       _settingsUI;
     private LevelCodeEntryUI _levelCodeEntryUI;
     private StoreUI          _storeUI;
 
+    private const string PREF_GAME_COMPLETED = "game_completed";
     private int _currentLevelIndex = 0;
     private Coroutine _advanceRoutine;
     private bool _isAdvancingLevel;
@@ -164,6 +167,7 @@ public class GameManager : MonoBehaviour
         _mainMenuUI       = FindFirstObjectByType<MainMenuUI>(FindObjectsInactive.Include);
         _gameOverUI       = FindFirstObjectByType<GameOverUI>(FindObjectsInactive.Include);
         _victoryUI        = FindFirstObjectByType<VictoryUI>(FindObjectsInactive.Include);
+        _creditsUI        = FindFirstObjectByType<CreditsUI>(FindObjectsInactive.Include);
         _highScoresUI     = FindFirstObjectByType<HighScoresUI>(FindObjectsInactive.Include);
         _pauseMenuUI      = FindFirstObjectByType<PauseMenuUI>(FindObjectsInactive.Include);
         _settingsUI       = FindFirstObjectByType<SettingsUI>(FindObjectsInactive.Include);
@@ -457,14 +461,66 @@ public class GameManager : MonoBehaviour
             "Hold LEFT CLICK to aim the ball.\nRelease to launch!\n\nPress ESCAPE to pause at any time.");
     }
 
+    /// <summary>
+    /// Called by CreditsUI once the screen has faded to full black.
+    /// Tears down all game elements so only the parallax background remains
+    /// when the overlay fades back to OVERLAY_ALPHA.
+    /// </summary>
+    public void HideAllForCredits()
+    {
+        // Stop demo / gameplay
+        _isDemoMode = false;
+        _paddle?.SetDemoMode(false);
+
+        // Hide all UI panels
+        _mainMenuUI?.Hide();
+        _gameOverUI?.Hide();
+        _victoryUI?.Hide();
+        _pauseMenuUI?.Hide();
+        _settingsUI?.Hide();
+        _highScoresUI?.Hide();
+        _hud?.SetVisible(false);
+        PowerupHUD.Instance?.SetVisible(false);
+        HavocBar.Instance?.gameObject.SetActive(false);
+        PurrBucksManager.Instance?.SetVisible(false);
+        TutorialManager.Instance?.gameObject.SetActive(false);
+
+        // Clear all bricks and powerup pickups
+        LevelLoader.Instance?.ClearLevel();
+        PowerupManager.Instance?.ResetAll();
+        ClearAllParticles();
+
+        // Hide the ball, paddle, and playfield frame
+        if (_ball != null)     _ball.gameObject.SetActive(false);
+        if (_paddle != null)   _paddle.gameObject.SetActive(false);
+
+        var frame = Object.FindFirstObjectByType<PlayfieldFrame>();
+        if (frame != null) frame.gameObject.SetActive(false);
+
+        var deathZone = Object.FindFirstObjectByType<DeathZone>();
+        if (deathZone != null) deathZone.gameObject.SetActive(false);
+    }
+
     public void ShowMainMenu()
     {
         _isEditorTestMode = false;
         RestoreGameplayAfterHighScores();
+
+        // Restore anything that HideAllForCredits() may have disabled
+        if (_ball   != null) _ball.gameObject.SetActive(true);
+        if (_paddle != null) _paddle.gameObject.SetActive(true);
+        var frame = Object.FindFirstObjectByType<PlayfieldFrame>(FindObjectsInactive.Include);
+        if (frame != null) frame.gameObject.SetActive(true);
+        var deathZone = Object.FindFirstObjectByType<DeathZone>(FindObjectsInactive.Include);
+        if (deathZone != null) deathZone.gameObject.SetActive(true);
+        if (HavocBar.Instance != null)       HavocBar.Instance.gameObject.SetActive(true);
+        if (TutorialManager.Instance != null) TutorialManager.Instance.gameObject.SetActive(true);
+
         _isDemoMode = true;
         _paddle?.SetDemoMode(true);
         _gameOverUI?.Hide();
         _victoryUI?.Hide();
+        _creditsUI?.Hide();
         _highScoresUI?.Hide();
         _pauseMenuUI?.Hide();
         _settingsUI?.Hide();
@@ -790,9 +846,8 @@ public class GameManager : MonoBehaviour
 
         if (next >= _levelIds.Length)
         {
-            // All levels complete - show final victory with high score entry
-            SetState(GameState.GameOver);
-            _gameOverUI?.ShowGameComplete(_score);
+            // All levels complete — show the end credits screen
+            SetState(GameState.Credits);
             return;
         }
 
@@ -1108,6 +1163,31 @@ public class GameManager : MonoBehaviour
                 _hud?.SetState("Paused");
                 _hud?.HideCenter();
                 ShowPauseMenu();
+                break;
+
+            case GameState.Credits:
+                SetCursorMenuMode();
+                Time.timeScale = 1f;
+                _hud?.SetVisible(false);
+                PowerupHUD.Instance?.SetVisible(false);
+                _pauseMenuUI?.Hide();
+                _victoryUI?.Hide();
+                // Permanently unlock the Credits button on the main menu
+                PlayerPrefs.SetInt(PREF_GAME_COMPLETED, 1);
+                PlayerPrefs.Save();
+                if (_creditsUI == null)
+                    _creditsUI = FindFirstObjectByType<CreditsUI>(FindObjectsInactive.Include);
+                // Submit final score to Steam global leaderboards before showing credits
+                if (_score > 0)
+                {
+                    string allTimeBoard = PurrbricksLeaderboards.OverallAllTime;
+                    string weeklyBoard  = PurrbricksLeaderboards.Scoped(allTimeBoard, LeaderboardTimeScope.Weekly);
+                    string dailyBoard   = PurrbricksLeaderboards.Scoped(allTimeBoard, LeaderboardTimeScope.Daily);
+                    SteamLeaderboardManager.Instance?.SubmitScore(allTimeBoard, _score);
+                    SteamLeaderboardManager.Instance?.SubmitScore(weeklyBoard,  _score);
+                    SteamLeaderboardManager.Instance?.SubmitScore(dailyBoard,   _score);
+                }
+                _creditsUI?.ShowCredits(_score);
                 break;
 
             case GameState.GameOver:

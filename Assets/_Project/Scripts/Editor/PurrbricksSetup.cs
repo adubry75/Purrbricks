@@ -283,6 +283,11 @@ public static class PurrbricksSetup
         var gp21 = AssetDatabase.LoadAssetAtPath<AudioClip>("Assets/_Project/Audio/purrbricks-gameplay21.mp3");
         var gp22 = AssetDatabase.LoadAssetAtPath<AudioClip>("Assets/_Project/Audio/purrbricks-gameplay22.mp3");
         var gp23 = AssetDatabase.LoadAssetAtPath<AudioClip>("Assets/_Project/Audio/purrbricks-gameplay23.mp3");
+        var gp24 = AssetDatabase.LoadAssetAtPath<AudioClip>("Assets/_Project/Audio/purrbricks-gameplay24.mp3");
+        var gp25 = AssetDatabase.LoadAssetAtPath<AudioClip>("Assets/_Project/Audio/purrbricks-gameplay25.mp3");
+        var gp26 = AssetDatabase.LoadAssetAtPath<AudioClip>("Assets/_Project/Audio/purrbricks-gameplay26.mp3");
+        var gp27 = AssetDatabase.LoadAssetAtPath<AudioClip>("Assets/_Project/Audio/purrbricks-gameplay27.mp3");
+
 
         musicSo.FindProperty("_menuTrack").objectReferenceValue      = menuClip;
         musicSo.FindProperty("_gameOverTrack").objectReferenceValue  = goClip;
@@ -313,6 +318,10 @@ public static class PurrbricksSetup
         gpArr.GetArrayElementAtIndex(20).objectReferenceValue = gp21;
         gpArr.GetArrayElementAtIndex(21).objectReferenceValue = gp22;
         gpArr.GetArrayElementAtIndex(22).objectReferenceValue = gp23;
+        gpArr.GetArrayElementAtIndex(23).objectReferenceValue = gp24;
+        gpArr.GetArrayElementAtIndex(24).objectReferenceValue = gp25;
+        gpArr.GetArrayElementAtIndex(25).objectReferenceValue = gp26;
+        gpArr.GetArrayElementAtIndex(26).objectReferenceValue = gp27;
 
         musicSo.ApplyModifiedProperties();
         Debug.Log("Wired MusicPlayer with all audio clips.");
@@ -337,6 +346,13 @@ public static class PurrbricksSetup
         {
             victoryGO.AddComponent<VictoryUI>();
             Debug.Log("Added VictoryUI.");
+        }
+
+        var creditsGO = EnsureGO("CreditsUI");
+        if (creditsGO.GetComponent<CreditsUI>() == null)
+        {
+            creditsGO.AddComponent<CreditsUI>();
+            Debug.Log("Added CreditsUI.");
         }
 
         var highScoresGO = EnsureGO("HighScoresUI");
