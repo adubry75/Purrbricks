@@ -19,7 +19,8 @@
     {
       "col": 3,
       "row": 0,
-      "templateId": "dark"
+      "templateId": "dark",
+      "powerupId": "DrunkVision"
     },
     {
       "col": 4,
@@ -99,7 +100,8 @@
     {
       "col": 10,
       "row": 1,
-      "templateId": "gold"
+      "templateId": "gold",
+      "powerupId": "ExtraLife"
     },
     {
       "col": 11,
@@ -249,7 +251,8 @@
     {
       "col": 17,
       "row": 3,
-      "templateId": "dark"
+      "templateId": "dark",
+      "powerupId": "PermanentStickyBall"
     },
     {
       "col": 3,
@@ -324,7 +327,8 @@
     {
       "col": 11,
       "row": 5,
-      "templateId": "green"
+      "templateId": "green",
+      "powerupId": "BombBrick"
     },
     {
       "col": 12,
@@ -334,7 +338,8 @@
     {
       "col": 13,
       "row": 5,
-      "templateId": "green"
+      "templateId": "green",
+      "powerupId": "ShrinkPaddle"
     },
     {
       "col": 14,
@@ -349,7 +354,8 @@
     {
       "col": 16,
       "row": 5,
-      "templateId": "green"
+      "templateId": "green",
+      "powerupId": "InvisiBall"
     },
     {
       "col": 17,
@@ -359,7 +365,8 @@
     {
       "col": 18,
       "row": 5,
-      "templateId": "green"
+      "templateId": "green",
+      "powerupId": "BigBall"
     },
     {
       "col": 19,
@@ -374,7 +381,8 @@
     {
       "col": 5,
       "row": 6,
-      "templateId": "standard"
+      "templateId": "standard",
+      "powerupId": "Laser"
     },
     {
       "col": 9,
@@ -439,7 +447,8 @@
     {
       "col": 9,
       "row": 8,
-      "templateId": "standard"
+      "templateId": "standard",
+      "powerupId": "MultiBall"
     },
     {
       "col": 10,

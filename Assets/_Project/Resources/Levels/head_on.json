@@ -305,7 +305,8 @@
         "amplitude": 2.0,
         "period": 2.5,
         "phaseOffset": 4.7124
-      }
+      },
+      "powerupId": "Fireball"
     },
     {
       "col": 9,
@@ -316,7 +317,8 @@
         "amplitude": 2.0,
         "period": 2.5,
         "phaseOffset": 4.7124
-      }
+      },
+      "powerupId": "SpeedBall"
     },
     {
       "col": 10,
@@ -338,7 +340,8 @@
         "amplitude": 2.0,
         "period": 2.5,
         "phaseOffset": 4.7124
-      }
+      },
+      "powerupId": "ScoreFrenzy"
     },
     {
       "col": 0,
@@ -458,7 +461,8 @@
     {
       "col": 6,
       "row": 1,
-      "templateId": "steel"
+      "templateId": "steel",
+      "powerupId": "InvisiBall"
     },
     {
       "col": 5,
@@ -468,7 +472,8 @@
     {
       "col": 6,
       "row": 3,
-      "templateId": "steel"
+      "templateId": "steel",
+      "powerupId": "TinyBall"
     },
     {
       "col": 5,

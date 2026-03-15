@@ -96,7 +96,8 @@
         "amplitude": 0.4,
         "period": 2.0,
         "phaseOffset": 3.6652
-      }
+      },
+      "powerupId": "ShrinkPaddle"
     },
     {
       "col": 8,
@@ -294,7 +295,8 @@
         "amplitude": 1.5,
         "period": 3.0,
         "phaseOffset": 1.309
-      }
+      },
+      "powerupId": "StickyBall"
     },
     {
       "col": 2,
@@ -305,7 +307,8 @@
         "amplitude": 1.5,
         "period": 3.0,
         "phaseOffset": 1.8326
-      }
+      },
+      "powerupId": "ShieldWall"
     },
     {
       "col": 3,
@@ -338,7 +341,8 @@
         "amplitude": 1.5,
         "period": 3.0,
         "phaseOffset": 3.4034
-      }
+      },
+      "powerupId": "PermanentStickyBall"
     },
     {
       "col": 6,
@@ -448,7 +452,8 @@
         "amplitude": 2.0,
         "period": 3.5,
         "phaseOffset": 4.7124
-      }
+      },
+      "powerupId": "SpeedBall"
     },
     {
       "col": 4,
@@ -459,7 +464,8 @@
         "amplitude": 2.0,
         "period": 3.5,
         "phaseOffset": 5.236
-      }
+      },
+      "powerupId": "MultiBall"
     },
     {
       "col": 5,

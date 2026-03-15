@@ -74,7 +74,8 @@
         "amplitude": 2.0,
         "period": 2.5,
         "phaseOffset": 2.618
-      }
+      },
+      "powerupId": "PermanentStickyBall"
     },
     {
       "col": 6,
@@ -173,7 +174,8 @@
         "amplitude": 2.0,
         "period": 2.5,
         "phaseOffset": 1.0472
-      }
+      },
+      "powerupId": "TinyBall"
     },
     {
       "col": 3,
@@ -184,7 +186,8 @@
         "amplitude": 2.0,
         "period": 2.5,
         "phaseOffset": 1.5708
-      }
+      },
+      "powerupId": "ScoreFrenzy"
     },
     {
       "col": 4,
@@ -217,7 +220,8 @@
         "amplitude": 2.0,
         "period": 2.5,
         "phaseOffset": 3.1416
-      }
+      },
+      "powerupId": "StickyBall"
     },
     {
       "col": 7,
@@ -283,7 +287,8 @@
         "amplitude": 1.8,
         "period": 2.0,
         "phaseOffset": 1.5708
-      }
+      },
+      "powerupId": "InvisiBall"
     },
     {
       "col": 1,
@@ -316,7 +321,8 @@
         "amplitude": 1.8,
         "period": 2.0,
         "phaseOffset": 3.1416
-      }
+      },
+      "powerupId": "MultiBall"
     },
     {
       "col": 4,
@@ -437,7 +443,8 @@
         "amplitude": 1.8,
         "period": 2.0,
         "phaseOffset": 2.618
-      }
+      },
+      "powerupId": "SpeedBall"
     },
     {
       "col": 3,

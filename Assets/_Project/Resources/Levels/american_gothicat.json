@@ -84,7 +84,8 @@
     {
       "col": 5,
       "row": 2,
-      "templateId": "dark"
+      "templateId": "dark",
+      "powerupId": "BombBrick"
     },
     {
       "col": 6,
@@ -114,7 +115,8 @@
     {
       "col": 5,
       "row": 3,
-      "templateId": "dark"
+      "templateId": "dark",
+      "powerupId": "DrunkVision"
     },
     {
       "col": 6,
@@ -214,7 +216,8 @@
     {
       "col": 6,
       "row": 6,
-      "templateId": "dark"
+      "templateId": "dark",
+      "powerupId": "FlipControls"
     },
     {
       "col": 9,
@@ -309,7 +312,8 @@
     {
       "col": 9,
       "row": 8,
-      "templateId": "dark"
+      "templateId": "dark",
+      "powerupId": "CursedBall"
     },
     {
       "col": 10,
@@ -349,7 +353,8 @@
     {
       "col": 4,
       "row": 9,
-      "templateId": "dark"
+      "templateId": "dark",
+      "powerupId": "Fireball"
     },
     {
       "col": 5,
@@ -359,7 +364,8 @@
     {
       "col": 6,
       "row": 9,
-      "templateId": "dark"
+      "templateId": "dark",
+      "powerupId": "ShieldWall"
     },
     {
       "col": 7,
@@ -399,12 +405,14 @@
     {
       "col": 16,
       "row": 9,
-      "templateId": "dark"
+      "templateId": "dark",
+      "powerupId": "BigBall"
     },
     {
       "col": 3,
       "row": 10,
-      "templateId": "green"
+      "templateId": "green",
+      "powerupId": "ZipBall"
     },
     {
       "col": 4,
@@ -444,7 +452,8 @@
     {
       "col": 11,
       "row": 10,
-      "templateId": "green"
+      "templateId": "green",
+      "powerupId": "WidePaddle"
     },
     {
       "col": 12,

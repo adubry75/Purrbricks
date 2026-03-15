@@ -18,7 +18,8 @@
     {
       "col": 6,
       "row": 0,
-      "templateId": "cyan"
+      "templateId": "cyan",
+      "powerupId": "GremlinBounces"
     },
     {
       "col": 5,
@@ -173,12 +174,14 @@
     {
       "col": 10,
       "row": 3,
-      "templateId": "cyan"
+      "templateId": "cyan",
+      "powerupId": "WidePaddle"
     },
     {
       "col": 10,
       "row": 4,
-      "templateId": "cyan"
+      "templateId": "cyan",
+      "powerupId": "ScoreFrenzy"
     },
     {
       "col": 11,
@@ -193,7 +196,8 @@
     {
       "col": 2,
       "row": 1,
-      "templateId": "blue"
+      "templateId": "blue",
+      "powerupId": "BombBrick"
     },
     {
       "col": 3,
@@ -233,7 +237,8 @@
     {
       "col": 8,
       "row": 4,
-      "templateId": "blue"
+      "templateId": "blue",
+      "powerupId": "DrunkVision"
     },
     {
       "col": 9,

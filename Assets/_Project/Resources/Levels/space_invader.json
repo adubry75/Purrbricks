@@ -13,7 +13,8 @@
     {
       "col": 2,
       "row": 0,
-      "templateId": "purple"
+      "templateId": "purple",
+      "powerupId": "ZipBall"
     },
     {
       "col": 9,
@@ -108,7 +109,8 @@
     {
       "col": 8,
       "row": 3,
-      "templateId": "cyan"
+      "templateId": "cyan",
+      "powerupId": "MultiBall"
     },
     {
       "col": 9,
@@ -178,12 +180,14 @@
     {
       "col": 3,
       "row": 5,
-      "templateId": "purple"
+      "templateId": "purple",
+      "powerupId": "CursedBall"
     },
     {
       "col": 8,
       "row": 5,
-      "templateId": "purple"
+      "templateId": "purple",
+      "powerupId": "Laser"
     },
     {
       "col": 9,

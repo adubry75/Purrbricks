@@ -33,12 +33,14 @@
     {
       "col": 3,
       "row": 2,
-      "templateId": "standard"
+      "templateId": "standard",
+      "powerupId": "ExtraLife"
     },
     {
       "col": 4,
       "row": 2,
-      "templateId": "standard"
+      "templateId": "standard",
+      "powerupId": "FlipControls"
     },
     {
       "col": 5,
@@ -58,7 +60,8 @@
     {
       "col": 8,
       "row": 2,
-      "templateId": "standard"
+      "templateId": "standard",
+      "powerupId": "DrunkenPaddle"
     },
     {
       "col": 3,
@@ -153,7 +156,8 @@
     {
       "col": 1,
       "row": 1,
-      "templateId": "blue"
+      "templateId": "blue",
+      "powerupId": "StickyBall"
     },
     {
       "col": 2,

@@ -32,7 +32,8 @@
     {
       "col": 5,
       "row": 0,
-      "templateId": "gold"
+      "templateId": "gold",
+      "powerupId": "DrunkVision"
     },
     {
       "col": 6,
@@ -60,7 +61,8 @@
     {
       "col": 3,
       "row": 1,
-      "templateId": "gold"
+      "templateId": "gold",
+      "powerupId": "SpeedBall"
     },
     {
       "col": 4,

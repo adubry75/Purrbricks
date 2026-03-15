@@ -78,7 +78,8 @@
     {
       "col": 4,
       "row": 2,
-      "templateId": "red"
+      "templateId": "red",
+      "powerupId": "ExtraLife"
     },
     {
       "col": 1,
@@ -108,7 +109,8 @@
     {
       "col": 5,
       "row": 3,
-      "templateId": "purple"
+      "templateId": "purple",
+      "powerupId": "Laser"
     },
     {
       "col": 7,
@@ -133,7 +135,8 @@
     {
       "col": 6,
       "row": 4,
-      "templateId": "purple"
+      "templateId": "purple",
+      "powerupId": "ZipBall"
     },
     {
       "col": 7,
@@ -238,12 +241,14 @@
     {
       "col": 7,
       "row": 2,
-      "templateId": "red"
+      "templateId": "red",
+      "powerupId": "SpeedBall"
     },
     {
       "col": 8,
       "row": 2,
-      "templateId": "red"
+      "templateId": "red",
+      "powerupId": "DrunkenPaddle"
     },
     {
       "col": 9,

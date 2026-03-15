@@ -41,7 +41,8 @@
         "amplitude": 2.5,
         "period": 3.5,
         "phaseOffset": 0.0
-      }
+      },
+      "powerupId": "BigBall"
     },
     {
       "col": 3,
@@ -52,7 +53,8 @@
         "amplitude": 2.5,
         "period": 3.5,
         "phaseOffset": 0.0
-      }
+      },
+      "powerupId": "MultiBall"
     },
     {
       "col": 4,
@@ -118,7 +120,8 @@
         "amplitude": 2.5,
         "period": 3.5,
         "phaseOffset": 0.5236
-      }
+      },
+      "powerupId": "CursedBall"
     },
     {
       "col": 4,
@@ -250,7 +253,8 @@
         "amplitude": 2.5,
         "period": 3.5,
         "phaseOffset": 1.5708
-      }
+      },
+      "powerupId": "ShrinkPaddle"
     },
     {
       "col": 4,
@@ -503,7 +507,8 @@
         "amplitude": 2.5,
         "period": 3.5,
         "phaseOffset": 3.6652
-      }
+      },
+      "powerupId": "ShieldWall"
     },
     {
       "col": 9,
@@ -525,7 +530,8 @@
         "amplitude": 2.5,
         "period": 3.5,
         "phaseOffset": 3.6652
-      }
+      },
+      "powerupId": "TinyBall"
     },
     {
       "col": 11,
@@ -624,7 +630,8 @@
         "amplitude": 2.5,
         "period": 3.5,
         "phaseOffset": 4.7124
-      }
+      },
+      "powerupId": "BombBrick"
     },
     {
       "col": 8,

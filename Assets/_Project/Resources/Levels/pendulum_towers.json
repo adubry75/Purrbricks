@@ -151,7 +151,8 @@
         "amplitude": 1.8,
         "period": 2.5,
         "phaseOffset": 2.0944
-      }
+      },
+      "powerupId": "StickyBall"
     },
     {
       "col": 5,
@@ -195,7 +196,8 @@
         "amplitude": 1.8,
         "period": 2.5,
         "phaseOffset": 3.1416
-      }
+      },
+      "powerupId": "BigBall"
     },
     {
       "col": 7,
@@ -217,7 +219,8 @@
         "amplitude": 1.8,
         "period": 2.5,
         "phaseOffset": 3.1416
-      }
+      },
+      "powerupId": "TinyBall"
     },
     {
       "col": 7,

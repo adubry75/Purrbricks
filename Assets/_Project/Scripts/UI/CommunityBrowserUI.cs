@@ -379,10 +379,15 @@ public class CommunityBrowserUI : MonoBehaviour
         // Want button center at ~(CARD_W-46, -(CARD_H-11)) from top-left
         // → offset from card center: (CARD_W/2 - 46, -(CARD_H/2 - 11))
         int capturedId = meta.id;
-        var reportBtn = UIStyle.CreateButton(card.transform, "Report",
+        bool alreadyReported = CommunityLevelService.Instance != null &&
+                               CommunityLevelService.Instance.HasReported(meta.id);
+        Button reportBtn = null;
+        reportBtn = UIStyle.CreateButton(card.transform,
+            alreadyReported ? "Reported" : "Report",
             new Vector2(CARD_W * 0.5f - 46f, -(CARD_H * 0.5f - 11f)),
             new Vector2(76f, 22f),
-            () => OnReportClicked(capturedId), UIStyle.AccentRed);
+            () => OnReportClicked(capturedId, reportBtn), UIStyle.AccentRed);
+        reportBtn.interactable = !alreadyReported;
         var reportTxt = reportBtn.GetComponentInChildren<Text>();
         if (reportTxt != null) reportTxt.fontSize = 11;
 
@@ -460,10 +465,18 @@ public class CommunityBrowserUI : MonoBehaviour
         });
     }
 
-    private void OnReportClicked(int id)
+    private void OnReportClicked(int id, Button btn)
     {
-        CommunityLevelService.Instance?.ReportLevel(id, () =>
-            Debug.Log($"[CommunityBrowserUI] Reported level {id}"));
+        if (CommunityLevelService.Instance == null) return;
+        if (CommunityLevelService.Instance.HasReported(id)) return;
+
+        btn.interactable = false;
+        CommunityLevelService.Instance.ReportLevel(id, () =>
+        {
+            Debug.Log($"[CommunityBrowserUI] Reported level {id}");
+            var txt = btn.GetComponentInChildren<Text>();
+            if (txt != null) txt.text = "Reported";
+        });
     }
 
     // ── Pagination helpers ────────────────────────────────────────────────────

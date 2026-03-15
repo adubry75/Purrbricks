@@ -272,7 +272,8 @@
         "amplitude": 1.0,
         "period": 4.0,
         "phaseOffset": 5.497787143782138
-      }
+      },
+      "powerupId": "TinyBall"
     },
     {
       "col": 2,
@@ -338,7 +339,8 @@
         "amplitude": 1.8,
         "period": 2.5,
         "phaseOffset": 3.9269908169872414
-      }
+      },
+      "powerupId": "ScoreFrenzy"
     },
     {
       "col": 8,
@@ -360,7 +362,8 @@
         "amplitude": 1.8,
         "period": 2.5,
         "phaseOffset": 5.497787143782138
-      }
+      },
+      "powerupId": "ExtraLife"
     }
   ],
   "nativeLevel": true,

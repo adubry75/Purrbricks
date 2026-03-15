@@ -19,7 +19,8 @@
         "amplitude": 1.5,
         "period": 3.5,
         "phaseOffset": 0.0
-      }
+      },
+      "powerupId": "Laser"
     },
     {
       "col": 3,
@@ -118,7 +119,8 @@
         "amplitude": 1.5,
         "period": 2.5,
         "phaseOffset": 1.1781
-      }
+      },
+      "powerupId": "FlipControls"
     },
     {
       "col": 9,

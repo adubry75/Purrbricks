@@ -250,7 +250,8 @@
         "amplitude": 1.5,
         "period": 3.0,
         "phaseOffset": 5.4978
-      }
+      },
+      "powerupId": "PermanentStickyBall"
     },
     {
       "col": 10,
@@ -261,7 +262,8 @@
         "amplitude": 1.5,
         "period": 3.0,
         "phaseOffset": 6.0214
-      }
+      },
+      "powerupId": "DrunkVision"
     },
     {
       "col": 11,
@@ -283,7 +285,8 @@
         "amplitude": 2.0,
         "period": 2.5,
         "phaseOffset": 1.5708
-      }
+      },
+      "powerupId": "WidePaddle"
     },
     {
       "col": 1,
@@ -404,7 +407,8 @@
         "amplitude": 2.0,
         "period": 2.5,
         "phaseOffset": 7.3304
-      }
+      },
+      "powerupId": "Laser"
     }
   ],
   "nativeLevel": true,

@@ -27,7 +27,8 @@
       "rotation": {
         "speed": -180,
         "startAngle": 25
-      }
+      },
+      "powerupId": "WidePaddle"
     },
     {
       "col": 5,

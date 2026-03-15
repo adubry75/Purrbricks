@@ -195,7 +195,8 @@
         "amplitude": 0.35,
         "period": 0.9,
         "phaseOffset": 3.1416
-      }
+      },
+      "powerupId": "Laser"
     },
     {
       "col": 11,
@@ -239,7 +240,8 @@
         "amplitude": 0.3,
         "period": 1.1,
         "phaseOffset": 1.5708
-      }
+      },
+      "powerupId": "DrunkenPaddle"
     },
     {
       "col": 6,
@@ -261,7 +263,8 @@
         "amplitude": 0.3,
         "period": 1.1,
         "phaseOffset": 1.5708
-      }
+      },
+      "powerupId": "BombBrick"
     },
     {
       "col": 6,
@@ -294,7 +297,8 @@
         "amplitude": 0.3,
         "period": 1.1,
         "phaseOffset": 1.5708
-      }
+      },
+      "powerupId": "InvisiBall"
     },
     {
       "col": 10,

@@ -16,7 +16,8 @@
       "row": 0,
       "templateId": "gem",
       "points": 20000,
-      "tint": "#FFF3A0"
+      "tint": "#FFF3A0",
+      "powerupId": "ExtraLife"
     },
     {
       "col": 4,

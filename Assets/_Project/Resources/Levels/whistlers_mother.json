@@ -89,12 +89,14 @@
     {
       "col": 12,
       "row": 2,
-      "templateId": "standard"
+      "templateId": "standard",
+      "powerupId": "StickyBall"
     },
     {
       "col": 17,
       "row": 2,
-      "templateId": "standard"
+      "templateId": "standard",
+      "powerupId": "InvisiBall"
     },
     {
       "col": 18,
@@ -124,7 +126,8 @@
     {
       "col": 12,
       "row": 3,
-      "templateId": "standard"
+      "templateId": "standard",
+      "powerupId": "BigBall"
     },
     {
       "col": 17,
@@ -159,7 +162,8 @@
     {
       "col": 11,
       "row": 4,
-      "templateId": "standard"
+      "templateId": "standard",
+      "powerupId": "WidePaddle"
     },
     {
       "col": 12,
@@ -299,7 +303,8 @@
     {
       "col": 2,
       "row": 8,
-      "templateId": "dark"
+      "templateId": "dark",
+      "powerupId": "CursedBall"
     },
     {
       "col": 3,
@@ -409,7 +414,8 @@
     {
       "col": 2,
       "row": 11,
-      "templateId": "dark"
+      "templateId": "dark",
+      "powerupId": "BombBrick"
     },
     {
       "col": 3,
@@ -429,17 +435,20 @@
     {
       "col": 6,
       "row": 11,
-      "templateId": "dark"
+      "templateId": "dark",
+      "powerupId": "ShrinkPaddle"
     },
     {
       "col": 7,
       "row": 11,
-      "templateId": "dark"
+      "templateId": "dark",
+      "powerupId": "ZipBall"
     },
     {
       "col": 8,
       "row": 11,
-      "templateId": "dark"
+      "templateId": "dark",
+      "powerupId": "Laser"
     },
     {
       "col": 9,

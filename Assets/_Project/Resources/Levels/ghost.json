@@ -38,7 +38,8 @@
     {
       "col": 4,
       "row": 1,
-      "templateId": "standard"
+      "templateId": "standard",
+      "powerupId": "StickyBall"
     },
     {
       "col": 5,
@@ -113,7 +114,8 @@
     {
       "col": 4,
       "row": 4,
-      "templateId": "standard"
+      "templateId": "standard",
+      "powerupId": "DrunkVision"
     },
     {
       "col": 5,
@@ -133,7 +135,8 @@
     {
       "col": 8,
       "row": 4,
-      "templateId": "standard"
+      "templateId": "standard",
+      "powerupId": "GremlinBounces"
     },
     {
       "col": 9,
@@ -188,12 +191,14 @@
     {
       "col": 4,
       "row": 6,
-      "templateId": "standard"
+      "templateId": "standard",
+      "powerupId": "Fireball"
     },
     {
       "col": 6,
       "row": 6,
-      "templateId": "standard"
+      "templateId": "standard",
+      "powerupId": "ExtraLife"
     },
     {
       "col": 8,

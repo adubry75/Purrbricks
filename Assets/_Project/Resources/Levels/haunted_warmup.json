@@ -65,7 +65,8 @@
       "templateId": "ghost",
       "tint": "#99EAFF",
       "hp": 1,
-      "points": 300
+      "points": 300,
+      "powerupId": "Laser"
     },
     {
       "col": 7,
@@ -88,7 +89,8 @@
       "templateId": "ghost",
       "tint": "#99EAFF",
       "hp": 1,
-      "points": 300
+      "points": 300,
+      "powerupId": "FlipControls"
     },
     {
       "col": 6,

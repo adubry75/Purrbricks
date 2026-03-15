@@ -78,7 +78,8 @@
     {
       "col": 4,
       "row": 3,
-      "templateId": "gold"
+      "templateId": "gold",
+      "powerupId": "ScoreFrenzy"
     },
     {
       "col": 5,
@@ -103,7 +104,8 @@
     {
       "col": 2,
       "row": 4,
-      "templateId": "gold"
+      "templateId": "gold",
+      "powerupId": "ExtraLife"
     },
     {
       "col": 3,
@@ -173,7 +175,8 @@
     {
       "col": 2,
       "row": 6,
-      "templateId": "gold"
+      "templateId": "gold",
+      "powerupId": "WidePaddle"
     },
     {
       "col": 3,
@@ -233,7 +236,8 @@
     {
       "col": 2,
       "row": 7,
-      "templateId": "standard"
+      "templateId": "standard",
+      "powerupId": "ShrinkPaddle"
     },
     {
       "col": 3,
@@ -248,7 +252,8 @@
     {
       "col": 5,
       "row": 7,
-      "templateId": "standard"
+      "templateId": "standard",
+      "powerupId": "CursedBall"
     },
     {
       "col": 6,

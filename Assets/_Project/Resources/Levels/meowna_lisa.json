@@ -64,7 +64,8 @@
     {
       "col": 10,
       "row": 1,
-      "templateId": "gold"
+      "templateId": "gold",
+      "powerupId": "InvisiBall"
     },
     {
       "col": 11,
@@ -84,7 +85,8 @@
     {
       "col": 6,
       "row": 2,
-      "templateId": "dark"
+      "templateId": "dark",
+      "powerupId": "CursedBall"
     },
     {
       "col": 7,
@@ -104,7 +106,8 @@
     {
       "col": 10,
       "row": 2,
-      "templateId": "gold"
+      "templateId": "gold",
+      "powerupId": "ZipBall"
     },
     {
       "col": 11,
@@ -139,7 +142,8 @@
     {
       "col": 9,
       "row": 3,
-      "templateId": "dark"
+      "templateId": "dark",
+      "powerupId": "SpeedBall"
     },
     {
       "col": 10,
@@ -239,7 +243,8 @@
     {
       "col": 5,
       "row": 6,
-      "templateId": "dark"
+      "templateId": "dark",
+      "powerupId": "ScoreFrenzy"
     },
     {
       "col": 6,
@@ -304,7 +309,8 @@
     {
       "col": 10,
       "row": 7,
-      "templateId": "purple"
+      "templateId": "purple",
+      "powerupId": "StickyBall"
     },
     {
       "col": 11,
@@ -364,7 +370,8 @@
     {
       "col": 4,
       "row": 10,
-      "templateId": "blue"
+      "templateId": "blue",
+      "powerupId": "WidePaddle"
     },
     {
       "col": 5,
@@ -414,7 +421,8 @@
     {
       "col": 14,
       "row": 10,
-      "templateId": "green"
+      "templateId": "green",
+      "powerupId": "ExtraLife"
     },
     {
       "col": 15,

@@ -23,7 +23,8 @@
     {
       "col": 2,
       "row": 0,
-      "templateId": "gem"
+      "templateId": "gem",
+      "powerupId": "TinyBall"
     },
     {
       "col": 3,
@@ -123,7 +124,8 @@
     {
       "col": 10,
       "row": 1,
-      "templateId": "gold"
+      "templateId": "gold",
+      "powerupId": "BigBall"
     },
     {
       "col": 11,
@@ -153,7 +155,8 @@
     {
       "col": 4,
       "row": 2,
-      "templateId": "gold"
+      "templateId": "gold",
+      "powerupId": "Laser"
     },
     {
       "col": 5,
@@ -253,12 +256,14 @@
     {
       "col": 4,
       "row": 4,
-      "templateId": "gold"
+      "templateId": "gold",
+      "powerupId": "BombBrick"
     },
     {
       "col": 5,
       "row": 4,
-      "templateId": "gold"
+      "templateId": "gold",
+      "powerupId": "CursedBall"
     },
     {
       "col": 6,

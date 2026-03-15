@@ -96,7 +96,8 @@
         "amplitude": 2.2,
         "period": 3.0,
         "phaseOffset": 0.0
-      }
+      },
+      "powerupId": "ExtraLife"
     },
     {
       "col": 0,
@@ -305,7 +306,8 @@
         "amplitude": 2.2,
         "period": 3.0,
         "phaseOffset": 3.1416
-      }
+      },
+      "powerupId": "MultiBall"
     },
     {
       "col": 11,
@@ -338,7 +340,8 @@
         "amplitude": 2.2,
         "period": 3.0,
         "phaseOffset": 3.1416
-      }
+      },
+      "powerupId": "ShieldWall"
     },
     {
       "col": 10,
@@ -371,7 +374,8 @@
         "amplitude": 2.2,
         "period": 3.0,
         "phaseOffset": 3.1416
-      }
+      },
+      "powerupId": "Fireball"
     },
     {
       "col": 9,
@@ -492,7 +496,8 @@
         "amplitude": 2.2,
         "period": 3.0,
         "phaseOffset": 3.1416
-      }
+      },
+      "powerupId": "ShrinkPaddle"
     },
     {
       "col": 8,
@@ -525,7 +530,8 @@
         "amplitude": 2.2,
         "period": 3.0,
         "phaseOffset": 3.1416
-      }
+      },
+      "powerupId": "InvisiBall"
     },
     {
       "col": 11,

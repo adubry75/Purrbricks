@@ -52,7 +52,8 @@
         "amplitude": 1.5,
         "period": 3.0,
         "phaseOffset": 1.5708
-      }
+      },
+      "powerupId": "Laser"
     },
     {
       "col": 4,
@@ -261,7 +262,8 @@
         "amplitude": 1.5,
         "period": 3.0,
         "phaseOffset": 8.3776
-      }
+      },
+      "powerupId": "SpeedBall"
     },
     {
       "col": 11,
@@ -272,7 +274,8 @@
         "amplitude": 1.5,
         "period": 3.0,
         "phaseOffset": 8.9012
-      }
+      },
+      "powerupId": "FlipControls"
     },
     {
       "col": 0,
@@ -305,7 +308,8 @@
         "amplitude": 1.2,
         "period": 2.5,
         "phaseOffset": 2.618
-      }
+      },
+      "powerupId": "Fireball"
     },
     {
       "col": 3,
@@ -481,7 +485,8 @@
         "amplitude": 1.2,
         "period": 2.5,
         "phaseOffset": 7.854
-      }
+      },
+      "powerupId": "DrunkVision"
     },
     {
       "col": 7,

@@ -107,7 +107,8 @@
         "amplitude": 1.8,
         "period": 1.4,
         "phaseOffset": 1.5708
-      }
+      },
+      "powerupId": "ScoreFrenzy"
     },
     {
       "col": 8,
@@ -118,7 +119,8 @@
         "amplitude": 1.8,
         "period": 1.4,
         "phaseOffset": 0.0
-      }
+      },
+      "powerupId": "FlipControls"
     },
     {
       "col": 10,
@@ -203,7 +205,8 @@
     {
       "col": 5,
       "row": 0,
-      "templateId": "standard"
+      "templateId": "standard",
+      "powerupId": "PermanentStickyBall"
     },
     {
       "col": 6,
@@ -283,7 +286,8 @@
     {
       "col": 9,
       "row": 1,
-      "templateId": "red"
+      "templateId": "red",
+      "powerupId": "SpeedBall"
     },
     {
       "col": 10,

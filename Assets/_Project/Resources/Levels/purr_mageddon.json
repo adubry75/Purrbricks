@@ -74,7 +74,8 @@
         "amplitude": 2.5,
         "period": 2.0,
         "phaseOffset": 2.618
-      }
+      },
+      "powerupId": "GremlinBounces"
     },
     {
       "col": 6,
@@ -294,7 +295,8 @@
         "amplitude": 2.0,
         "period": 2.5,
         "phaseOffset": 0.5236
-      }
+      },
+      "powerupId": "WidePaddle"
     },
     {
       "col": 2,
@@ -371,7 +373,8 @@
         "amplitude": 2.0,
         "period": 2.5,
         "phaseOffset": 4.1888
-      }
+      },
+      "powerupId": "MultiBall"
     },
     {
       "col": 9,
@@ -404,7 +407,8 @@
         "amplitude": 2.0,
         "period": 2.5,
         "phaseOffset": 5.7596
-      }
+      },
+      "powerupId": "BombBrick"
     },
     {
       "col": 0,
@@ -448,7 +452,8 @@
         "amplitude": 2.0,
         "period": 2.5,
         "phaseOffset": 1.5708
-      }
+      },
+      "powerupId": "TinyBall"
     },
     {
       "col": 4,
@@ -481,7 +486,8 @@
         "amplitude": 2.0,
         "period": 2.5,
         "phaseOffset": 3.1416
-      }
+      },
+      "powerupId": "BigBall"
     },
     {
       "col": 7,
@@ -745,7 +751,8 @@
         "amplitude": 1.5,
         "period": 2.5,
         "phaseOffset": 1.5708
-      }
+      },
+      "powerupId": "ScoreFrenzy"
     },
     {
       "col": 9,
@@ -800,7 +807,8 @@
         "amplitude": 1.5,
         "period": 2.5,
         "phaseOffset": 5.4978
-      }
+      },
+      "powerupId": "ShrinkPaddle"
     },
     {
       "col": 0,
@@ -811,7 +819,8 @@
         "amplitude": 2.5,
         "period": 1.8,
         "phaseOffset": 0.0
-      }
+      },
+      "powerupId": "StickyBall"
     },
     {
       "col": 1,
@@ -1086,7 +1095,8 @@
         "amplitude": 2.0,
         "period": 1.2,
         "phaseOffset": 0.0
-      }
+      },
+      "powerupId": "DrunkVision"
     },
     {
       "col": 4,
@@ -1130,7 +1140,8 @@
         "amplitude": 2.0,
         "period": 1.2,
         "phaseOffset": 0.0
-      }
+      },
+      "powerupId": "Fireball"
     },
     {
       "col": 1,

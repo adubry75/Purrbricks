@@ -23,6 +23,7 @@ public class CommunityLevelService : MonoBehaviour
     // PlayerPrefs key prefixes
     private const string KEY_MY_RATING     = "cl_rating_";    // int 0-5 keyed by server id
     private const string KEY_CLEARED       = "cl_cleared_";   // int 0/1 keyed by server id
+    private const string KEY_REPORTED      = "cl_reported_";  // int 0/1 keyed by server id
     private const string KEY_PUBLISHED_GUID = "cl_pguid_";    // int server id keyed by levelGuid
 
     // Cache directory: persistentDataPath/community_cache/{id}.json
@@ -71,6 +72,10 @@ public class CommunityLevelService : MonoBehaviour
     /// <summary>Returns whether the player has cleared this community level before.</summary>
     public bool HasCleared(int id)
         => PlayerPrefs.GetInt(KEY_CLEARED + id, 0) == 1;
+
+    /// <summary>Returns whether the current player has already reported this community level.</summary>
+    public bool HasReported(int id)
+        => PlayerPrefs.GetInt(KEY_REPORTED + id, 0) == 1;
 
     /// <summary>Returns the server row id that was assigned when this GUID was published (0 = never published).</summary>
     public int GetPublishedServerId(string levelGuid)
@@ -300,6 +305,9 @@ public class CommunityLevelService : MonoBehaviour
 
     private IEnumerator ReportLevelRoutine(int id, Action cb)
     {
+        // One report per user per level — enforce locally so we never spam the server
+        if (HasReported(id)) { cb?.Invoke(); yield break; }
+
         string steamId = "";
         try { steamId = SteamUser.GetSteamID().m_SteamID.ToString(); } catch { }
 
@@ -312,6 +320,13 @@ public class CommunityLevelService : MonoBehaviour
         req.downloadHandler = new DownloadHandlerBuffer();
         req.SetRequestHeader("Content-Type", "application/json");
         yield return req.SendWebRequest();
+
+        if (req.result == UnityWebRequest.Result.Success)
+        {
+            PlayerPrefs.SetInt(KEY_REPORTED + id, 1);
+            PlayerPrefs.Save();
+        }
+
         cb?.Invoke();
     }
 

@@ -3,7 +3,9 @@
     "allow": [
       "mcp__token-counter__get_session_stats",
       "mcp__token-counter__log_usage",
-      "Bash(python:*)"
+      "Bash(python:*)",
+      "Bash(cd \"C:\\\\Users\\\\adubr\\\\source\\\\repos\\\\Purrbricks\\\\Assets\\\\_Project\\\\Resources\\\\Levels\" && ls -1 *.json | sort)",
+      "Bash(cd \"C:\\\\Users\\\\adubr\\\\source\\\\repos\\\\Purrbricks\\\\Assets\\\\_Project\\\\Resources\\\\Levels\" && for f in *.json; do if ! grep -q \"powerupId\" \"$f\"; then echo \"$f\"; fi; done | sort)"
     ]
   },
   "hooks": {

@@ -33,7 +33,8 @@
     {
       "col": 6,
       "row": 0,
-      "templateId": "gold"
+      "templateId": "gold",
+      "powerupId": "TinyBall"
     },
     {
       "col": 7,
@@ -43,7 +44,8 @@
     {
       "col": 8,
       "row": 0,
-      "templateId": "gold"
+      "templateId": "gold",
+      "powerupId": "ScoreFrenzy"
     },
     {
       "col": 9,
@@ -93,7 +95,8 @@
     {
       "col": 9,
       "row": 1,
-      "templateId": "gold"
+      "templateId": "gold",
+      "powerupId": "Fireball"
     },
     {
       "col": 10,
@@ -148,7 +151,8 @@
     {
       "col": 10,
       "row": 2,
-      "templateId": "gold"
+      "templateId": "gold",
+      "powerupId": "DrunkVision"
     },
     {
       "col": 1,
@@ -228,7 +232,8 @@
     {
       "col": 9,
       "row": 4,
-      "templateId": "gold"
+      "templateId": "gold",
+      "powerupId": "BigBall"
     },
     {
       "col": 4,
@@ -248,7 +253,8 @@
     {
       "col": 7,
       "row": 5,
-      "templateId": "standard"
+      "templateId": "standard",
+      "powerupId": "WidePaddle"
     },
     {
       "col": 3,

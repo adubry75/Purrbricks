@@ -63,7 +63,8 @@
         "amplitude": 2.5,
         "period": 7.0,
         "phaseOffset": 2.0944
-      }
+      },
+      "powerupId": "Laser"
     },
     {
       "col": 6,
@@ -184,7 +185,8 @@
         "amplitude": 1.6,
         "period": 3.5,
         "phaseOffset": 2.3562
-      }
+      },
+      "powerupId": "BombBrick"
     },
     {
       "col": 6,
@@ -228,7 +230,8 @@
         "amplitude": 1.6,
         "period": 3.5,
         "phaseOffset": 5.4978
-      }
+      },
+      "powerupId": "ZipBall"
     },
     {
       "col": 6,

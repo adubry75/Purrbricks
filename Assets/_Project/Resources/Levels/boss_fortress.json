@@ -153,7 +153,8 @@
     {
       "col": 4,
       "row": 2,
-      "templateId": "steel"
+      "templateId": "steel",
+      "powerupId": "CursedBall"
     },
     {
       "col": 5,
@@ -258,12 +259,14 @@
     {
       "col": 1,
       "row": 4,
-      "templateId": "dark"
+      "templateId": "dark",
+      "powerupId": "ZipBall"
     },
     {
       "col": 2,
       "row": 4,
-      "templateId": "steel"
+      "templateId": "steel",
+      "powerupId": "ShrinkPaddle"
     },
     {
       "col": 3,
@@ -288,7 +291,8 @@
     {
       "col": 7,
       "row": 4,
-      "templateId": "dark"
+      "templateId": "dark",
+      "powerupId": "DrunkenPaddle"
     },
     {
       "col": 8,
@@ -333,7 +337,8 @@
     {
       "col": 4,
       "row": 5,
-      "templateId": "steel"
+      "templateId": "steel",
+      "powerupId": "MultiBall"
     },
     {
       "col": 5,
@@ -353,7 +358,8 @@
     {
       "col": 8,
       "row": 5,
-      "templateId": "steel"
+      "templateId": "steel",
+      "powerupId": "BigBall"
     },
     {
       "col": 9,
@@ -368,7 +374,8 @@
     {
       "col": 11,
       "row": 5,
-      "templateId": "steel"
+      "templateId": "steel",
+      "powerupId": "Laser"
     },
     {
       "col": 0,
@@ -388,7 +395,8 @@
     {
       "col": 3,
       "row": 6,
-      "templateId": "dark"
+      "templateId": "dark",
+      "powerupId": "BombBrick"
     },
     {
       "col": 4,
@@ -398,7 +406,8 @@
     {
       "col": 5,
       "row": 6,
-      "templateId": "dark"
+      "templateId": "dark",
+      "powerupId": "SpeedBall"
     },
     {
       "col": 6,
@@ -473,7 +482,8 @@
     {
       "col": 8,
       "row": 7,
-      "templateId": "steel"
+      "templateId": "steel",
+      "powerupId": "ExtraLife"
     },
     {
       "col": 9,

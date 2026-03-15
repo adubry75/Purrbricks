@@ -68,7 +68,8 @@
     {
       "col": 5,
       "row": 5,
-      "templateId": "red"
+      "templateId": "red",
+      "powerupId": "TinyBall"
     },
     {
       "col": 3,
@@ -88,7 +89,8 @@
     {
       "col": 5,
       "row": 4,
-      "templateId": "purple"
+      "templateId": "purple",
+      "powerupId": "Fireball"
     },
     {
       "col": 6,
@@ -153,7 +155,8 @@
     {
       "col": 7,
       "row": 1,
-      "templateId": "steel"
+      "templateId": "steel",
+      "powerupId": "GremlinBounces"
     },
     {
       "col": 8,
@@ -188,7 +191,8 @@
     {
       "col": 4,
       "row": 3,
-      "templateId": "dark"
+      "templateId": "dark",
+      "powerupId": "StickyBall"
     },
     {
       "col": 0,

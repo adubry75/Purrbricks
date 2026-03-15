@@ -34,7 +34,8 @@
     {
       "col": 4,
       "row": 0,
-      "templateId": "red"
+      "templateId": "red",
+      "powerupId": "DrunkVision"
     },
     {
       "col": 5,
@@ -89,7 +90,8 @@
     {
       "col": 15,
       "row": 0,
-      "templateId": "gold"
+      "templateId": "gold",
+      "powerupId": "ShieldWall"
     },
     {
       "col": 16,
@@ -134,7 +136,8 @@
     {
       "col": 8,
       "row": 1,
-      "templateId": "gold"
+      "templateId": "gold",
+      "powerupId": "StickyBall"
     },
     {
       "col": 10,
@@ -169,7 +172,8 @@
     {
       "col": 10,
       "row": 2,
-      "templateId": "dark"
+      "templateId": "dark",
+      "powerupId": "SpeedBall"
     },
     {
       "col": 11,
@@ -239,12 +243,14 @@
     {
       "col": 6,
       "row": 5,
-      "templateId": "dark"
+      "templateId": "dark",
+      "powerupId": "PermanentStickyBall"
     },
     {
       "col": 7,
       "row": 5,
-      "templateId": "dark"
+      "templateId": "dark",
+      "powerupId": "Fireball"
     },
     {
       "col": 8,
@@ -314,7 +320,8 @@
     {
       "col": 1,
       "row": 7,
-      "templateId": "dark"
+      "templateId": "dark",
+      "powerupId": "BigBall"
     },
     {
       "col": 2,
@@ -339,7 +346,8 @@
     {
       "col": 14,
       "row": 7,
-      "templateId": "dark"
+      "templateId": "dark",
+      "powerupId": "GremlinBounces"
     },
     {
       "col": 15,
@@ -369,7 +377,8 @@
     {
       "col": 2,
       "row": 8,
-      "templateId": "blue"
+      "templateId": "blue",
+      "powerupId": "CursedBall"
     },
     {
       "col": 3,

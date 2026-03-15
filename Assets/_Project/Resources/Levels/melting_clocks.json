@@ -34,7 +34,8 @@
     {
       "col": 4,
       "row": 0,
-      "templateId": "blue"
+      "templateId": "blue",
+      "powerupId": "InvisiBall"
     },
     {
       "col": 5,
@@ -74,7 +75,8 @@
     {
       "col": 12,
       "row": 0,
-      "templateId": "blue"
+      "templateId": "blue",
+      "powerupId": "BigBall"
     },
     {
       "col": 13,
@@ -89,7 +91,8 @@
     {
       "col": 15,
       "row": 0,
-      "templateId": "blue"
+      "templateId": "blue",
+      "powerupId": "Fireball"
     },
     {
       "col": 16,
@@ -174,7 +177,8 @@
     {
       "col": 2,
       "row": 5,
-      "templateId": "gold"
+      "templateId": "gold",
+      "powerupId": "MultiBall"
     },
     {
       "col": 3,
@@ -204,7 +208,8 @@
     {
       "col": 9,
       "row": 2,
-      "templateId": "gold"
+      "templateId": "gold",
+      "powerupId": "DrunkenPaddle"
     },
     {
       "col": 10,
@@ -219,7 +224,8 @@
     {
       "col": 12,
       "row": 2,
-      "templateId": "gold"
+      "templateId": "gold",
+      "powerupId": "CursedBall"
     },
     {
       "col": 9,
@@ -234,7 +240,8 @@
     {
       "col": 11,
       "row": 3,
-      "templateId": "standard"
+      "templateId": "standard",
+      "powerupId": "ZipBall"
     },
     {
       "col": 12,
@@ -299,7 +306,8 @@
     {
       "col": 18,
       "row": 4,
-      "templateId": "gold"
+      "templateId": "gold",
+      "powerupId": "ScoreFrenzy"
     },
     {
       "col": 15,
@@ -399,7 +407,8 @@
     {
       "col": 11,
       "row": 7,
-      "templateId": "gold"
+      "templateId": "gold",
+      "powerupId": "StickyBall"
     },
     {
       "col": 12,

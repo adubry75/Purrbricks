@@ -18,7 +18,8 @@
     {
       "col": 2,
       "row": 0,
-      "templateId": "gold"
+      "templateId": "gold",
+      "powerupId": "BombBrick"
     },
     {
       "col": 0,
@@ -88,7 +89,8 @@
     {
       "col": 5,
       "row": 0,
-      "templateId": "red"
+      "templateId": "red",
+      "powerupId": "Fireball"
     },
     {
       "col": 3,
@@ -148,7 +150,8 @@
     {
       "col": 8,
       "row": 0,
-      "templateId": "cyan"
+      "templateId": "cyan",
+      "powerupId": "PermanentStickyBall"
     },
     {
       "col": 6,
@@ -163,7 +166,8 @@
     {
       "col": 6,
       "row": 2,
-      "templateId": "cyan"
+      "templateId": "cyan",
+      "powerupId": "CursedBall"
     },
     {
       "col": 8,
@@ -213,7 +217,8 @@
     {
       "col": 11,
       "row": 0,
-      "templateId": "purple"
+      "templateId": "purple",
+      "powerupId": "Laser"
     },
     {
       "col": 9,

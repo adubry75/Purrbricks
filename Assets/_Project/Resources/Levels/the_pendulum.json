@@ -272,7 +272,8 @@
         "amplitude": 2.0,
         "period": 3.0,
         "phaseOffset": 4.0415926535897935
-      }
+      },
+      "powerupId": "DrunkenPaddle"
     },
     {
       "col": 6,
@@ -382,7 +383,8 @@
         "amplitude": 1.5,
         "period": 2.5,
         "phaseOffset": 0.8999999999999999
-      }
+      },
+      "powerupId": "WidePaddle"
     },
     {
       "col": 9,
@@ -426,7 +428,8 @@
         "amplitude": 1.5,
         "period": 2.5,
         "phaseOffset": 0.6
-      }
+      },
+      "powerupId": "ScoreFrenzy"
     },
     {
       "col": 10,
@@ -503,7 +506,8 @@
         "amplitude": 1.5,
         "period": 2.5,
         "phaseOffset": 1.2
-      }
+      },
+      "powerupId": "InvisiBall"
     }
   ],
   "nativeLevel": true,

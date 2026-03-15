@@ -19,7 +19,8 @@
         "amplitude": 2.5,
         "period": 3.0,
         "phaseOffset": 1.5708
-      }
+      },
+      "powerupId": "StickyBall"
     },
     {
       "col": 2,
@@ -228,7 +229,8 @@
         "amplitude": 3.2,
         "period": 4.0,
         "phaseOffset": 3.6652
-      }
+      },
+      "powerupId": "ZipBall"
     },
     {
       "col": 1,

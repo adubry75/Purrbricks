@@ -19,7 +19,8 @@
     {
       "col": 10,
       "row": 0,
-      "templateId": "steel"
+      "templateId": "steel",
+      "powerupId": "Laser"
     },
     {
       "col": 11,
@@ -169,7 +170,8 @@
     {
       "col": 13,
       "row": 4,
-      "templateId": "dark"
+      "templateId": "dark",
+      "powerupId": "BombBrick"
     },
     {
       "col": 8,
@@ -219,7 +221,8 @@
     {
       "col": 12,
       "row": 6,
-      "templateId": "dark"
+      "templateId": "dark",
+      "powerupId": "Fireball"
     },
     {
       "col": 13,
@@ -230,12 +233,14 @@
       "col": 13,
       "row": 7,
       "templateId": "gem",
-      "points": 12000
+      "points": 12000,
+      "powerupId": "FlipControls"
     },
     {
       "col": 9,
       "row": 8,
-      "templateId": "dark"
+      "templateId": "dark",
+      "powerupId": "MultiBall"
     },
     {
       "col": 10,
@@ -260,7 +265,8 @@
     {
       "col": 14,
       "row": 8,
-      "templateId": "dark"
+      "templateId": "dark",
+      "powerupId": "CursedBall"
     },
     {
       "col": 15,

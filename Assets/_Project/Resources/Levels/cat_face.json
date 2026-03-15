@@ -13,7 +13,8 @@
     {
       "col": 1,
       "row": 0,
-      "templateId": "steel"
+      "templateId": "steel",
+      "powerupId": "FlipControls"
     },
     {
       "col": 2,
@@ -58,7 +59,8 @@
     {
       "col": 3,
       "row": 1,
-      "templateId": "gold"
+      "templateId": "gold",
+      "powerupId": "ZipBall"
     },
     {
       "col": 4,
@@ -78,7 +80,8 @@
     {
       "col": 7,
       "row": 1,
-      "templateId": "gold"
+      "templateId": "gold",
+      "powerupId": "ExtraLife"
     },
     {
       "col": 8,
@@ -88,7 +91,8 @@
     {
       "col": 9,
       "row": 1,
-      "templateId": "gold"
+      "templateId": "gold",
+      "powerupId": "MultiBall"
     },
     {
       "col": 1,
@@ -123,7 +127,8 @@
     {
       "col": 7,
       "row": 2,
-      "templateId": "gold"
+      "templateId": "gold",
+      "powerupId": "GremlinBounces"
     },
     {
       "col": 8,
@@ -203,7 +208,8 @@
     {
       "col": 3,
       "row": 4,
-      "templateId": "gold"
+      "templateId": "gold",
+      "powerupId": "Laser"
     },
     {
       "col": 4,
@@ -238,7 +244,8 @@
     {
       "col": 10,
       "row": 4,
-      "templateId": "gold"
+      "templateId": "gold",
+      "powerupId": "SpeedBall"
     },
     {
       "col": 1,

@@ -184,7 +184,8 @@
         "amplitude": 1.8,
         "period": 3.0,
         "phaseOffset": 4.7124
-      }
+      },
+      "powerupId": "GremlinBounces"
     },
     {
       "col": 4,
@@ -206,7 +207,8 @@
         "amplitude": 1.8,
         "period": 3.0,
         "phaseOffset": 5.7596
-      }
+      },
+      "powerupId": "PermanentStickyBall"
     },
     {
       "col": 6,
@@ -316,7 +318,8 @@
         "amplitude": 1.8,
         "period": 3.0,
         "phaseOffset": 1.5708
-      }
+      },
+      "powerupId": "ZipBall"
     },
     {
       "col": 4,
@@ -371,7 +374,8 @@
         "amplitude": 1.8,
         "period": 3.0,
         "phaseOffset": 4.1888
-      }
+      },
+      "powerupId": "SpeedBall"
     },
     {
       "col": 9,
@@ -393,7 +397,8 @@
         "amplitude": 1.8,
         "period": 3.0,
         "phaseOffset": 5.236
-      }
+      },
+      "powerupId": "ExtraLife"
     },
     {
       "col": 11,
@@ -712,7 +717,8 @@
         "amplitude": 1.8,
         "period": 3.0,
         "phaseOffset": 4.7124
-      }
+      },
+      "powerupId": "Fireball"
     },
     {
       "col": 4,
@@ -800,7 +806,8 @@
         "amplitude": 1.8,
         "period": 3.0,
         "phaseOffset": 8.9012
-      }
+      },
+      "powerupId": "WidePaddle"
     }
   ],
   "nativeLevel": true,

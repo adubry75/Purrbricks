@@ -162,7 +162,8 @@
         "amplitude": 1.7,
         "period": 3.5,
         "phaseOffset": 4.3197
-      }
+      },
+      "powerupId": "DrunkVision"
     },
     {
       "col": 6,
@@ -272,7 +273,8 @@
         "amplitude": 2.6,
         "period": 5.5,
         "phaseOffset": 5.4978
-      }
+      },
+      "powerupId": "BigBall"
     },
     {
       "col": 6,

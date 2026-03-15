@@ -107,7 +107,8 @@
         "amplitude": 2.5,
         "period": 6.0,
         "phaseOffset": 4.1888
-      }
+      },
+      "powerupId": "MultiBall"
     },
     {
       "col": 6,
@@ -140,7 +141,8 @@
         "amplitude": 2.5,
         "period": 6.0,
         "phaseOffset": 5.7596
-      }
+      },
+      "powerupId": "DrunkenPaddle"
     },
     {
       "col": 6,

@@ -41,7 +41,8 @@
         "amplitude": 1.8,
         "period": 4.0,
         "phaseOffset": 1.5707963267948966
-      }
+      },
+      "powerupId": "GremlinBounces"
     },
     {
       "col": 3,
@@ -63,7 +64,8 @@
         "amplitude": 1.8,
         "period": 4.0,
         "phaseOffset": 3.141592653589793
-      }
+      },
+      "powerupId": "MultiBall"
     },
     {
       "col": 3,
@@ -204,7 +206,8 @@
     {
       "col": 6,
       "row": 4,
-      "templateId": "steel"
+      "templateId": "steel",
+      "powerupId": "PermanentStickyBall"
     },
     {
       "col": 6,
@@ -219,7 +222,8 @@
     {
       "col": 0,
       "row": 0,
-      "templateId": "gem"
+      "templateId": "gem",
+      "powerupId": "SpeedBall"
     },
     {
       "col": 1,

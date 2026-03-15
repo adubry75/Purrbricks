@@ -43,7 +43,8 @@
     {
       "col": 6,
       "row": 2,
-      "templateId": "red"
+      "templateId": "red",
+      "powerupId": "Fireball"
     },
     {
       "col": 3,
@@ -93,7 +94,8 @@
     {
       "col": 6,
       "row": 4,
-      "templateId": "red"
+      "templateId": "red",
+      "powerupId": "StickyBall"
     },
     {
       "col": 7,
@@ -153,7 +155,8 @@
     {
       "col": 6,
       "row": 6,
-      "templateId": "gold"
+      "templateId": "gold",
+      "powerupId": "DrunkVision"
     },
     {
       "col": 4,

@@ -24,12 +24,14 @@
     {
       "col": 2,
       "row": 1,
-      "templateId": "steel"
+      "templateId": "steel",
+      "powerupId": "Fireball"
     },
     {
       "col": 3,
       "row": 1,
-      "templateId": "steel"
+      "templateId": "steel",
+      "powerupId": "InvisiBall"
     },
     {
       "col": 4,
@@ -104,7 +106,8 @@
     {
       "col": 12,
       "row": 2,
-      "templateId": "steel"
+      "templateId": "steel",
+      "powerupId": "SpeedBall"
     },
     {
       "col": 13,
@@ -204,7 +207,8 @@
     {
       "col": 16,
       "row": 3,
-      "templateId": "gold"
+      "templateId": "gold",
+      "powerupId": "MultiBall"
     },
     {
       "col": 17,
@@ -214,7 +218,8 @@
     {
       "col": 18,
       "row": 3,
-      "templateId": "gold"
+      "templateId": "gold",
+      "powerupId": "BigBall"
     },
     {
       "col": 19,
@@ -224,7 +229,8 @@
     {
       "col": 1,
       "row": 4,
-      "templateId": "gold"
+      "templateId": "gold",
+      "powerupId": "FlipControls"
     },
     {
       "col": 2,
@@ -239,7 +245,8 @@
     {
       "col": 4,
       "row": 4,
-      "templateId": "gold"
+      "templateId": "gold",
+      "powerupId": "DrunkenPaddle"
     },
     {
       "col": 5,
@@ -374,7 +381,8 @@
     {
       "col": 7,
       "row": 6,
-      "templateId": "gold"
+      "templateId": "gold",
+      "powerupId": "StickyBall"
     },
     {
       "col": 8,
