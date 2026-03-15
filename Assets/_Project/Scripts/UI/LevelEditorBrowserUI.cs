@@ -805,6 +805,31 @@ public class LevelEditorBrowserUI : MonoBehaviour
             badgeRt.anchoredPosition = new Vector2(-4f, -4f);
         }
 
+        // Star overlay (level select mode, unlocked levels that have been played)
+        if (_isLevelSelectMode && !isLocked && levelIndex >= 0)
+        {
+            int bestStars = LevelStarsHelper.GetBestStars(levelId);
+            if (bestStars > 0)
+            {
+                var starGO  = new GameObject("PerfStars");
+                starGO.transform.SetParent(card.transform, false);
+                var starTxt = starGO.AddComponent<Text>();
+                starTxt.text          = new string('\u2605', bestStars) + new string('\u2606', 3 - bestStars);
+                starTxt.font          = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
+                starTxt.fontSize      = 20;
+                starTxt.fontStyle     = FontStyle.Bold;
+                starTxt.alignment     = TextAnchor.LowerRight;
+                starTxt.color         = new Color(1f, 0.84f, 0.10f);
+                starTxt.raycastTarget = false;
+                var sRt = starGO.GetComponent<RectTransform>();
+                sRt.anchorMin        = new Vector2(1f, 0f);
+                sRt.anchorMax        = new Vector2(1f, 0f);
+                sRt.pivot            = new Vector2(1f, 0f);
+                sRt.anchoredPosition = new Vector2(-6f, 5f);
+                sRt.sizeDelta        = new Vector2(80f, 24f);
+            }
+        }
+
         // Lock overlay (level select mode, locked levels only)
         if (isLocked)
         {

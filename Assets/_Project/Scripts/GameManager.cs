@@ -255,12 +255,14 @@ public class GameManager : MonoBehaviour
         if (Input.GetKeyDown(KeyCode.K) && _state == GameState.Playing)
             ClearAllButOneBrick();
 
+        // Speed up FURY for testing.
         if (Input.GetKeyDown(KeyCode.X))
         {
             _rampBoosted = !_rampBoosted;
             if (_ball != null) _ball.RAMP_RATE = _rampBoosted ? 0.5f : 0.015f;
         }
 
+        // Turn on bottom wall so no balls can be lost. for testing.
         if (Input.GetKeyDown(KeyCode.Z))
         {
             if (bottomWall != null)
@@ -269,11 +271,14 @@ public class GameManager : MonoBehaviour
             }
         }
 
+        // Instant kill your ball. 
         if (_state == GameState.Playing && Input.GetKeyDown(KeyCode.Backslash))
             DebugDropPrimaryBallIntoDeathZone();
 
+        // Instant complete level
         if (_state == GameState.Playing && Input.GetKeyDown(KeyCode.RightBracket))
             DebugClearLevelBricks();
+
 
         if ((_state == GameState.Playing || _state == GameState.Ready) && Input.GetKeyDown(KeyCode.Escape)
             && (TutorialManager.Instance == null || !TutorialManager.Instance.IsShowing))
@@ -1237,7 +1242,10 @@ public class GameManager : MonoBehaviour
                 {
                     string levelId = (_levelIds != null && _currentLevelIndex < _levelIds.Length)
                         ? _levelIds[_currentLevelIndex] : "";
+                    CurrentLevelPar = ComputeLevelPar(levelId);
                     _victoryUI?.ShowVictory(_score - _levelStartScore, _levelComboBonus, _levelBestCombo, levelId, _currentLevelIndex);
+                    if (_levelIds != null)
+                        AchievementManager.Instance?.CheckAllThreeStarred(_levelIds);
                 }
                 MusicPlayer.Instance?.PlayLevelFinish();
 
@@ -1254,6 +1262,35 @@ public class GameManager : MonoBehaviour
                  break;
              }
         }
+    }
+
+    // ── Performance star support ──────────────────────────────────────────────
+
+    /// <summary>Base-point sum of all destructible bricks on the current level. Set just before ShowVictory.</summary>
+    public int CurrentLevelPar { get; private set; }
+
+    /// <summary>Exposes the ordered level ID array for star-achievement checks.</summary>
+    public string[] GetAllLevelIds() => _levelIds;
+
+    private int ComputeLevelPar(string levelId)
+    {
+        if (string.IsNullOrEmpty(levelId)) return 0;
+        var asset = Resources.Load<TextAsset>($"Levels/{levelId}");
+        if (asset == null) return 0;
+        try
+        {
+            var data = Newtonsoft.Json.JsonConvert.DeserializeObject<LevelData>(asset.text);
+            if (data?.bricks == null) return 0;
+            int total = 0;
+            foreach (var b in data.bricks)
+            {
+                var template = BrickTemplateRegistry.Instance?.Get(b.templateId);
+                if (template != null && !template.isIndestructible)
+                    total += template.defaultPoints;
+            }
+            return total;
+        }
+        catch { return 0; }
     }
 
     private void SetCursorPlayMode()

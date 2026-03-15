@@ -60,6 +60,9 @@ public class AchievementManager : MonoBehaviour
         public const string SpeedRunner    = "ACH_SPEED_RUNNER";
         public const string Curiosity      = "ACH_CURIOSITY";
         public const string Catastrophe    = "ACH_CATASTROPHE";
+
+        // Mastery
+        public const string AllThreeStarred = "ACH_ALL_3_STARS";
     }
 
     // Steam stat name for cumulative Fury Strike count
@@ -232,6 +235,13 @@ public class AchievementManager : MonoBehaviour
         if (count >= 5) Unlock(ID.BallPit);
     }
 
+    /// <summary>Call after saving performance stars to check if all levels are 3-starred.</summary>
+    public void CheckAllThreeStarred(string[] levelIds)
+    {
+        if (LevelStarsHelper.AllLevelsThreeStarred(levelIds))
+            Unlock(ID.AllThreeStarred);
+    }
+
     /// <summary>Call when a Gem brick is destroyed (template ID "gem").</summary>
     public void OnGemBrickDestroyed()
     {
@@ -350,6 +360,7 @@ public class AchievementManager : MonoBehaviour
             ID.BallPit, ID.DoubleTrouble, ID.NineLives, ID.Cursed,
             ID.LastLife, ID.Unbroken, ID.LongHaul, ID.Blindfolded, ID.TinyTerror, ID.DrunkDriver,
             ID.Catastrophic, ID.Level1GameOver, ID.Pacifist, ID.SpeedRunner, ID.Curiosity, ID.Catastrophe,
+            ID.AllThreeStarred,
         };
 
         int cleared = 0;

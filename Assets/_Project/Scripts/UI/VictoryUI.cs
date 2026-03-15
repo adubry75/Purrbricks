@@ -1,6 +1,7 @@
 using System.Collections;
 using UnityEngine;
 using UnityEngine.UI;
+using System.Collections.Generic;
 
 /// <summary>
 /// Victory screen: shows level score stats, an optional "New Personal Best" banner,
@@ -23,9 +24,15 @@ public class VictoryUI : MonoBehaviour
     // Personal best banner (hidden unless score beats previous best)
     private GameObject _newBestBanner;
 
-    // Star rating
+    // 1-5 community star rating
     private readonly Text[] _starGlyphs = new Text[5];
     private int _currentRating;
+
+    // 1-3 performance star rating
+    private readonly Text[]       _perfStarGlyphs = new Text[3];
+    private readonly GameObject[] _perfStarGOs    = new GameObject[3];
+    private GameObject _perfStarsSection;
+    private Coroutine  _starAnimRoutine;
 
     // Per-call state
     private int    _currentLevelScore;
@@ -93,15 +100,18 @@ public class VictoryUI : MonoBehaviour
 
 
         // ── Title ────────────────────────────────────────────────────────────
-        CreateText(_panel, "LEVEL COMPLETE!", new Vector2(0f, 230f), 80, ColorGreen);
+        CreateText(_panel, "LEVEL COMPLETE!", new Vector2(0f, 265f), 80, ColorGreen);
+
+        // ── Performance stars (1-3 based on score vs par) ─────────────────────
+        BuildPerfStarsSection();
 
         // ── Score stats ──────────────────────────────────────────────────────
-        _levelScoreText = CreateTextGO(_panel, "Level Score:  0",  new Vector2(0f, 148f), 50, Color.white,                  "LevelScoreText").GetComponent<Text>();
-        _comboBonusText = CreateTextGO(_panel, "Combo Bonus:  —",  new Vector2(0f,  90f), 36, new Color(1f, 0.85f, 0.15f), "ComboBonusText").GetComponent<Text>();
-        _bestComboText  = CreateTextGO(_panel, "Best Combo:  —",   new Vector2(0f,  42f), 36, new Color(0.45f, 0.85f, 1f), "BestComboText").GetComponent<Text>();
+        _levelScoreText = CreateTextGO(_panel, "Level Score:  0",  new Vector2(0f, 120f), 50, Color.white,                  "LevelScoreText").GetComponent<Text>();
+        _comboBonusText = CreateTextGO(_panel, "Combo Bonus:  —",  new Vector2(0f,  66f), 36, new Color(1f, 0.85f, 0.15f), "ComboBonusText").GetComponent<Text>();
+        _bestComboText  = CreateTextGO(_panel, "Best Combo:  —",   new Vector2(0f,  20f), 36, new Color(0.45f, 0.85f, 1f), "BestComboText").GetComponent<Text>();
 
         // ── Purr Bucks award label (shown after rank resolves) ───────────────
-        _purrBucksText = CreateTextGO(_panel, "🐾 +?? PB", new Vector2(0f, -55f), 32, ColorGold, "PurrBucksText").GetComponent<Text>();
+        _purrBucksText = CreateTextGO(_panel, "🐾 +?? PB", new Vector2(0f, -38f), 32, ColorGold, "PurrBucksText").GetComponent<Text>();
         _purrBucksText.gameObject.SetActive(false);
 
         // ── Personal best banner (hidden by default) ──────────────────────────
@@ -110,35 +120,32 @@ public class VictoryUI : MonoBehaviour
         var nbRt = _newBestBanner.AddComponent<RectTransform>();
         nbRt.anchorMin        = new Vector2(0.5f, 0.5f);
         nbRt.anchorMax        = new Vector2(0.5f, 0.5f);
-        nbRt.sizeDelta        = new Vector2(820f, 55f);
-        nbRt.anchoredPosition = new Vector2(0f, -20f);
-        CreateText(_newBestBanner, "★  NEW PERSONAL BEST!  ★", new Vector2(0f, 0f), 40, ColorGold);
+        nbRt.sizeDelta        = new Vector2(820f, 50f);
+        nbRt.anchoredPosition = new Vector2(0f, -10f);
+        CreateText(_newBestBanner, "★  NEW PERSONAL BEST!  ★", new Vector2(0f, 0f), 36, ColorGold);
         _newBestBanner.SetActive(false);
 
         // ── Buttons ───────────────────────────────────────────────────────────
-        // Level Rankings button (top center)
         UIStyle.CreateButton(_panel.transform, "High Scores",
-            new Vector2(0f, -110f), new Vector2(320f, 70f),
+            new Vector2(0f, -95f), new Vector2(320f, 65f),
             OnLevelBoard, UIStyle.AccentBlue);
 
-        // Next Level / Replay (side by side)
         var nextLevelBtn = UIStyle.CreateButton(_panel.transform, "Next Level",
-            new Vector2(162f, -200f), new Vector2(300f, 70f),
+            new Vector2(162f, -178f), new Vector2(300f, 65f),
             OnNextLevel, UIStyle.AccentGreen);
         _nextLevelBtnGO = nextLevelBtn.gameObject;
 
         UIStyle.CreateButton(_panel.transform, "Replay Level",
-            new Vector2(-162f, -200f), new Vector2(300f, 70f),
+            new Vector2(-162f, -178f), new Vector2(300f, 65f),
             OnReplayLevel, UIStyle.AccentBlue);
 
-        // Level Select (below, centered)
         UIStyle.CreateButton(_panel.transform, "Level Select",
-            new Vector2(0f, -290f), new Vector2(280f, 60f),
+            new Vector2(0f, -260f), new Vector2(280f, 55f),
             OnLevelSelect, UIStyle.AccentBlue);
 
         // Browse More (community mode only — hidden by default)
         var browseBtn = UIStyle.CreateButton(_panel.transform, "Browse More",
-            new Vector2(162f, -200f), new Vector2(300f, 70f),
+            new Vector2(162f, -178f), new Vector2(300f, 65f),
             OnBrowseMore, UIStyle.AccentGold);
         _browseMoreBtnGO = browseBtn.gameObject;
         _browseMoreBtnGO.SetActive(false);
@@ -146,10 +153,111 @@ public class VictoryUI : MonoBehaviour
         BuildRatingSection();
     }
 
+    private void BuildPerfStarsSection()
+    {
+        _perfStarsSection = new GameObject("PerfStarsSection");
+        _perfStarsSection.transform.SetParent(_panel.transform, false);
+        var sRt = _perfStarsSection.AddComponent<RectTransform>();
+        sRt.anchorMin = sRt.anchorMax = new Vector2(0.5f, 0.5f);
+        sRt.sizeDelta = Vector2.zero;
+        sRt.anchoredPosition = Vector2.zero;
+
+        const float spacing = 88f;
+        const float startX  = -spacing;   // 3 stars: -88, 0, +88
+        const float starY   = 195f;
+
+        for (int i = 0; i < 3; i++)
+        {
+            var go = new GameObject($"PerfStar_{i + 1}");
+            go.transform.SetParent(_perfStarsSection.transform, false);
+
+            var rt = go.AddComponent<RectTransform>();
+            rt.anchorMin        = new Vector2(0.5f, 0.5f);
+            rt.anchorMax        = new Vector2(0.5f, 0.5f);
+            rt.sizeDelta        = new Vector2(80f, 90f);
+            rt.anchoredPosition = new Vector2(startX + i * spacing, starY);
+
+            var txt = go.AddComponent<Text>();
+            txt.text          = "\u2606";   // ☆ hollow
+            txt.font          = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
+            txt.fontSize      = 72;
+            txt.alignment     = TextAnchor.UpperCenter;
+            txt.color         = ColorStarEmpty;
+            txt.raycastTarget = false;
+
+            _perfStarGlyphs[i] = txt;
+            _perfStarGOs[i]    = go;
+        }
+    }
+
+    private void InitPerfStars()
+    {
+        for (int i = 0; i < 3; i++)
+        {
+            if (_perfStarGlyphs[i] == null) continue;
+            _perfStarGlyphs[i].text  = "\u2606";
+            _perfStarGlyphs[i].color = ColorStarEmpty;
+            if (_perfStarGOs[i] != null)
+                _perfStarGOs[i].transform.localScale = Vector3.one;
+        }
+    }
+
+    private IEnumerator AnimatePerfStars(int starsEarned)
+    {
+        // Show unearned stars immediately as hollow so the player sees the full 3-star frame
+        for (int i = starsEarned; i < 3; i++)
+        {
+            if (_perfStarGlyphs[i] != null)
+            {
+                _perfStarGlyphs[i].text  = "\u2606";
+                _perfStarGlyphs[i].color = ColorStarEmpty;
+            }
+        }
+
+        yield return new WaitForSecondsRealtime(0.9f);
+
+        for (int i = 0; i < starsEarned; i++)
+        {
+            if (_perfStarGlyphs[i] == null || _perfStarGOs[i] == null) continue;
+
+            _perfStarGlyphs[i].text  = "\u2605";   // ★ filled
+            _perfStarGlyphs[i].color = ColorGold;
+            SfxPlayer.Instance?.PlayStarEarned();
+
+            // Pop-in: 0 → 1.4 → 1.0
+            var go = _perfStarGOs[i];
+            go.transform.localScale = Vector3.zero;
+            float elapsed = 0f;
+            const float popDur    = 0.10f;
+            const float settleDur = 0.22f;
+
+            while (elapsed < popDur)
+            {
+                elapsed += Time.unscaledDeltaTime;
+                float s  = Mathf.Lerp(0f, 1.4f, elapsed / popDur);
+                go.transform.localScale = new Vector3(s, s, 1f);
+                yield return null;
+            }
+            elapsed = 0f;
+            while (elapsed < settleDur)
+            {
+                elapsed += Time.unscaledDeltaTime;
+                float s  = Mathf.Lerp(1.4f, 1f, Mathf.SmoothStep(0f, 1f, elapsed / settleDur));
+                go.transform.localScale = new Vector3(s, s, 1f);
+                yield return null;
+            }
+            go.transform.localScale = Vector3.one;
+
+            yield return new WaitForSecondsRealtime(0.38f);
+        }
+
+        _starAnimRoutine = null;
+    }
+
     private void BuildRatingSection()
     {
         // "Rate This Level" label
-        var labelGO = CreateTextGO(_panel, "Rate This Level", new Vector2(0f, -375f), 26,
+        var labelGO = CreateTextGO(_panel, "Rate This Level", new Vector2(0f, -340f), 24,
             new Color(0.65f, 0.65f, 0.80f, 0.85f), "RateLabel");
         labelGO.GetComponent<Text>().raycastTarget = false;
 
@@ -171,7 +279,7 @@ public class VictoryUI : MonoBehaviour
             rt.anchorMin        = new Vector2(0.5f, 0.5f);
             rt.anchorMax        = new Vector2(0.5f, 0.5f);
             rt.sizeDelta        = new Vector2(72f, 90f);
-            rt.anchoredPosition = new Vector2(startX + i * spacing, -445f);
+            rt.anchoredPosition = new Vector2(startX + i * spacing, -408f);
 
             var btn = go.AddComponent<Button>();
             btn.targetGraphic = bg;
@@ -282,6 +390,26 @@ public class VictoryUI : MonoBehaviour
         }
         UpdateStars(_currentRating);
 
+        // ── Performance stars ────────────────────────────────────────────────
+        if (_perfStarsSection != null) _perfStarsSection.SetActive(true);
+        int par          = GameManager.Instance?.CurrentLevelPar ?? 0;
+        int starsEarned  = LevelStarsHelper.CalculateStars(levelScore, par);
+        LevelStarsHelper.SaveBestStars(levelId, starsEarned);
+
+        InitPerfStars();
+        if (_starAnimRoutine != null) StopCoroutine(_starAnimRoutine);
+        _starAnimRoutine = StartCoroutine(AnimatePerfStars(starsEarned));
+
+        TutorialManager.Instance?.TriggerIfNew(
+            TutorialManager.ID.PerfStars,
+            "\u2605 \u2605 \u2605",
+            "STAR RATINGS",
+            "Your score is compared to the level's base brick value.\n\n" +
+            "\u2605\u2606\u2606  Completed = 1 Star\n" +
+            "\u2605\u2605\u2606  Score \u2265 1.5\u00d7 par = 2 Stars\n" +
+            "\u2605\u2605\u2605  Score \u2265 3\u00d7 par = 3 Stars\n\n" +
+            "Stars appear on the Level Select screen.\nCan you purrfect them all?");
+
         SpawnVictoryFireworks();
     }
 
@@ -336,6 +464,10 @@ public class VictoryUI : MonoBehaviour
             ? $"Best Combo:  ×{bestCombo + 1}" : "Best Combo:  —";
 
         _newBestBanner?.SetActive(false); // no personal best tracking for community levels
+
+        // Hide performance stars — not applicable to community levels
+        if (_perfStarsSection != null) _perfStarsSection.SetActive(false);
+        if (_starAnimRoutine != null) { StopCoroutine(_starAnimRoutine); _starAnimRoutine = null; }
 
         // Pre-load community rating
         _currentRating = CommunityLevelService.Instance?.GetMyRating(meta.id) ?? 0;
@@ -429,6 +561,7 @@ public class VictoryUI : MonoBehaviour
 
     public void Hide()
     {
+        if (_starAnimRoutine != null) { StopCoroutine(_starAnimRoutine); _starAnimRoutine = null; }
         // Reset community mode state so next ShowVictory starts clean
         _isCommunityMode      = false;
         _currentCommunityMeta = null;

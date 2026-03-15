@@ -26,6 +26,7 @@ public class TutorialManager : MonoBehaviour
         public const string FuryStrike    = "tut_fury_strike";
         public const string Inventory     = "tut_inventory";
         public const string MultiBallFury = "tut_multiball_fury";
+        public const string PerfStars     = "tut_perf_stars";
     }
 
     // ── Palette ───────────────────────────────────────────────────────────────
@@ -141,11 +142,12 @@ public class TutorialManager : MonoBehaviour
         ShowNext(); // chain to next queued tutorial
     }
 
-    // ── Dev helper: reset all tutorial flags (C key) ──────────────────────────
+    // ── Dev helper: reset all tutorial flags (Ctrl+Shift+F11) ───────────────
 
     private void Update()
     {
-        if (Input.GetKeyDown(KeyCode.C))
+        if (Input.GetKey(KeyCode.LeftControl) && Input.GetKey(KeyCode.LeftShift)
+            && Input.GetKeyDown(KeyCode.F11))
             ResetAllTutorials();
     }
 
@@ -156,6 +158,7 @@ public class TutorialManager : MonoBehaviour
         PlayerPrefs.DeleteKey(ID.FuryStrike);
         PlayerPrefs.DeleteKey(ID.Inventory);
         PlayerPrefs.DeleteKey(ID.MultiBallFury);
+        PlayerPrefs.DeleteKey(ID.PerfStars);
         PlayerPrefs.Save();
         Debug.Log("[TutorialManager] All tutorial flags reset.");
     }
