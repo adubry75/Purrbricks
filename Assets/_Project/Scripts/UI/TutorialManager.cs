@@ -59,6 +59,14 @@ public class TutorialManager : MonoBehaviour
     private Text   _titleText;
     private Text   _bodyText;
 
+    // RectTransforms needed for dynamic card resizing
+    private RectTransform _cardRt;
+    private RectTransform _glyphRt;
+    private RectTransform _titleRt;
+    private RectTransform _dividerRt;
+    private RectTransform _bodyRt;
+    private RectTransform _okBtnRt;
+
     // ── Lifecycle ─────────────────────────────────────────────────────────────
 
     private void Awake()
@@ -129,6 +137,7 @@ public class TutorialManager : MonoBehaviour
         if (_bodyText  != null) _bodyText.text  = card.Body;
 
         _panelRoot.SetActive(true);
+        ResizeCard();
     }
 
     private void OnOkClicked()
@@ -161,6 +170,75 @@ public class TutorialManager : MonoBehaviour
         PlayerPrefs.DeleteKey(ID.PerfStars);
         PlayerPrefs.Save();
         Debug.Log("[TutorialManager] All tutorial flags reset.");
+    }
+
+    // ── Dynamic card resizing ─────────────────────────────────────────────────
+
+    private void ResizeCard()
+    {
+        if (_cardRt == null || _bodyRt == null || _bodyText == null) return;
+
+        // Set a generous body height before measuring so the Text wraps at the correct width
+        // but doesn't clip vertically.
+        _bodyRt.sizeDelta = new Vector2(600f, 2000f);
+
+        // Force a layout rebuild so preferredHeight is accurate for the current text content.
+        Canvas.ForceUpdateCanvases();
+
+        float bodyH   = _bodyText.preferredHeight + 4f;  // +4 for sub-pixel safety
+        bool hasGlyph = _glyphText != null && _glyphText.gameObject.activeSelf;
+
+        // Fixed spacing constants (canvas units at 1920×1080 reference resolution)
+        const float topPad   = 36f;
+        const float glyphH   = 68f;
+        const float glyphGap = 12f;
+        const float titleH   = 64f;
+        const float titleGap = 16f;
+        const float divH     = 2f;
+        const float divGap   = 20f;
+        const float bodyGap  = 26f;
+        const float btnH     = 60f;
+        const float botPad   = 28f;
+
+        float cardH = topPad
+                    + (hasGlyph ? glyphH + glyphGap : 0f)
+                    + titleH + titleGap + divH + divGap
+                    + bodyH + bodyGap + btnH + botPad;
+
+        cardH = Mathf.Max(cardH, 380f);
+        _cardRt.sizeDelta = new Vector2(680f, cardH);
+
+        // Lay out children top-down; y is distance from card center (positive = up).
+        float y = cardH * 0.5f - topPad;
+
+        if (hasGlyph && _glyphRt != null)
+        {
+            _glyphRt.anchoredPosition = new Vector2(0f, y - glyphH * 0.5f);
+            _glyphRt.sizeDelta        = new Vector2(640f, glyphH);
+            y -= glyphH + glyphGap;
+        }
+
+        if (_titleRt != null)
+        {
+            _titleRt.anchoredPosition = new Vector2(0f, y - titleH * 0.5f);
+            y -= titleH + titleGap;
+        }
+
+        if (_dividerRt != null)
+        {
+            _dividerRt.anchoredPosition = new Vector2(0f, y - divH * 0.5f);
+            y -= divH + divGap;
+        }
+
+        if (_bodyRt != null)
+        {
+            _bodyRt.sizeDelta        = new Vector2(600f, bodyH);
+            _bodyRt.anchoredPosition = new Vector2(0f, y - bodyH * 0.5f);
+            y -= bodyH + bodyGap;
+        }
+
+        if (_okBtnRt != null)
+            _okBtnRt.anchoredPosition = new Vector2(0f, y - btnH * 0.5f);
     }
 
     // ── UI Construction ────────────────────────────────────────────────────────
@@ -208,12 +286,12 @@ public class TutorialManager : MonoBehaviour
         cardOl.effectColor    = new Color(0.30f, 0.65f, 1f, 0.55f);
         cardOl.effectDistance = new Vector2(3f, -3f);
 
-        var cardRt = _card.GetComponent<RectTransform>();
-        cardRt.anchorMin        = new Vector2(0.5f, 0.5f);
-        cardRt.anchorMax        = new Vector2(0.5f, 0.5f);
-        cardRt.pivot            = new Vector2(0.5f, 0.5f);
-        cardRt.sizeDelta        = new Vector2(680f, 440f);
-        cardRt.anchoredPosition = new Vector2(-160f, 0f);
+        _cardRt = _card.GetComponent<RectTransform>();
+        _cardRt.anchorMin        = new Vector2(0.5f, 0.5f);
+        _cardRt.anchorMax        = new Vector2(0.5f, 0.5f);
+        _cardRt.pivot            = new Vector2(0.5f, 0.5f);
+        _cardRt.sizeDelta        = new Vector2(680f, 440f);  // initial size; ResizeCard() overrides height
+        _cardRt.anchoredPosition = new Vector2(-160f, 0f);
 
         // ── Accent bar at top edge ─────────────────────────────────────────────
         var barGO = new GameObject("AccentBar");
@@ -238,11 +316,11 @@ public class TutorialManager : MonoBehaviour
         _glyphText.alignment     = TextAnchor.MiddleCenter;
         _glyphText.color         = new Color(ColorGold.r, ColorGold.g, ColorGold.b, 0.80f);
         _glyphText.raycastTarget = false;
-        var glyphRt = _glyphText.GetComponent<RectTransform>();
-        glyphRt.anchorMin        = new Vector2(0.5f, 0.5f);
-        glyphRt.anchorMax        = new Vector2(0.5f, 0.5f);
-        glyphRt.sizeDelta        = new Vector2(640f, 68f);
-        glyphRt.anchoredPosition = new Vector2(0f, 158f);
+        _glyphRt = _glyphText.GetComponent<RectTransform>();
+        _glyphRt.anchorMin        = new Vector2(0.5f, 0.5f);
+        _glyphRt.anchorMax        = new Vector2(0.5f, 0.5f);
+        _glyphRt.sizeDelta        = new Vector2(640f, 68f);
+        _glyphRt.anchoredPosition = new Vector2(0f, 158f);  // overridden by ResizeCard
 
         // ── Title ──────────────────────────────────────────────────────────────
         var titleGO = new GameObject("Title");
@@ -257,11 +335,11 @@ public class TutorialManager : MonoBehaviour
         var titleOl = titleGO.AddComponent<Outline>();
         titleOl.effectColor    = Color.black;
         titleOl.effectDistance = new Vector2(3f, -3f);
-        var titleRt = _titleText.GetComponent<RectTransform>();
-        titleRt.anchorMin        = new Vector2(0.5f, 0.5f);
-        titleRt.anchorMax        = new Vector2(0.5f, 0.5f);
-        titleRt.sizeDelta        = new Vector2(640f, 64f);
-        titleRt.anchoredPosition = new Vector2(0f, 86f);
+        _titleRt = _titleText.GetComponent<RectTransform>();
+        _titleRt.anchorMin        = new Vector2(0.5f, 0.5f);
+        _titleRt.anchorMax        = new Vector2(0.5f, 0.5f);
+        _titleRt.sizeDelta        = new Vector2(640f, 64f);
+        _titleRt.anchoredPosition = new Vector2(0f, 86f);  // overridden by ResizeCard
 
         // ── Divider ────────────────────────────────────────────────────────────
         var divGO = new GameObject("Divider");
@@ -269,11 +347,11 @@ public class TutorialManager : MonoBehaviour
         var divImg = divGO.AddComponent<Image>();
         divImg.color = new Color(0.30f, 0.60f, 1f, 0.35f);
         divImg.raycastTarget = false;
-        var divRt = divGO.GetComponent<RectTransform>();
-        divRt.anchorMin        = new Vector2(0.5f, 0.5f);
-        divRt.anchorMax        = new Vector2(0.5f, 0.5f);
-        divRt.sizeDelta        = new Vector2(580f, 2f);
-        divRt.anchoredPosition = new Vector2(0f, 50f);
+        _dividerRt = divGO.GetComponent<RectTransform>();
+        _dividerRt.anchorMin        = new Vector2(0.5f, 0.5f);
+        _dividerRt.anchorMax        = new Vector2(0.5f, 0.5f);
+        _dividerRt.sizeDelta        = new Vector2(580f, 2f);
+        _dividerRt.anchoredPosition = new Vector2(0f, 50f);  // overridden by ResizeCard
 
         // ── Body text ──────────────────────────────────────────────────────────
         var bodyGO = new GameObject("Body");
@@ -285,16 +363,17 @@ public class TutorialManager : MonoBehaviour
         _bodyText.color         = ColorBody;
         _bodyText.lineSpacing   = 1.35f;
         _bodyText.raycastTarget = false;
-        var bodyRt = _bodyText.GetComponent<RectTransform>();
-        bodyRt.anchorMin        = new Vector2(0.5f, 0.5f);
-        bodyRt.anchorMax        = new Vector2(0.5f, 0.5f);
-        bodyRt.sizeDelta        = new Vector2(600f, 180f);
-        bodyRt.anchoredPosition = new Vector2(0f, -52f);
+        _bodyRt = _bodyText.GetComponent<RectTransform>();
+        _bodyRt.anchorMin        = new Vector2(0.5f, 0.5f);
+        _bodyRt.anchorMax        = new Vector2(0.5f, 0.5f);
+        _bodyRt.sizeDelta        = new Vector2(600f, 180f);
+        _bodyRt.anchoredPosition = new Vector2(0f, -52f);  // overridden by ResizeCard
 
         // ── OK / GOT IT button ─────────────────────────────────────────────────
-        UIStyle.CreateButton(_card.transform, "GOT IT!",
+        var okBtn = UIStyle.CreateButton(_card.transform, "GOT IT!",
             new Vector2(0f, -182f), new Vector2(240f, 60f),
             OnOkClicked, UIStyle.AccentGreen);
+        _okBtnRt = okBtn.GetComponent<RectTransform>();  // overridden by ResizeCard
 
         // Start hidden
         _panelRoot.SetActive(false);
