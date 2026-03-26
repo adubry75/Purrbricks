@@ -164,9 +164,11 @@ public class PurrBucksManager : MonoBehaviour
 
     /// <summary>
     /// Awards Purr Bucks for level completion. Base floor + bonuses paid immediately;
-    /// Steam rank tier resolved asynchronously and fire OnRankAwardResolved when done.
+    /// Steam AllTime rank resolved asynchronously via OnRankAwardResolved.
+    /// Daily and weekly ranks come from LevelScoreService (already resolved before this call).
     /// </summary>
-    public void AwardLevelComplete(string levelId, int levelIndex, bool perfectClear, int livesLost)
+    public void AwardLevelComplete(string levelId, int levelIndex, bool perfectClear, int livesLost,
+                                   int dailyRank = 0, int weeklyRank = 0)
     {
         _pendingAward = 0;
 
@@ -181,78 +183,48 @@ public class PurrBucksManager : MonoBehaviour
         _pendingAward = immediate;
         AddCurrency(immediate);
 
-        // Show something immediately (rank/bonus may resolve later).
+        // Show something immediately (AllTime rank bonus may resolve later).
         OnRankAwardResolved?.Invoke(_pendingAward);
 
-        // ── Rank bonus ────────────────────────────────────────────────────────
+        // Daily/Weekly rank bonuses come from LevelScoreService (already resolved).
+        int weeklyBonus = Mathf.RoundToInt(GetRankBonus(weeklyRank) * 0.60f);
+        int dailyBonus  = Mathf.RoundToInt(GetRankBonus(dailyRank)  * 0.40f);
+
+        // ── AllTime rank bonus (from Steam, async) ────────────────────────────
         if (LeaderboardTestData.Enabled)
         {
-            // In debug builds we simulate ranks locally so the Victory UI updates instantly.
             string allTimeBoard = PurrbricksLeaderboards.LevelAllTime(levelIndex);
-            string weeklyBoard  = PurrbricksLeaderboards.Scoped(allTimeBoard, LeaderboardTimeScope.Weekly);
-            string dailyBoard   = PurrbricksLeaderboards.Scoped(allTimeBoard, LeaderboardTimeScope.Daily);
-
-            int allTimeRank = LeaderboardTestData.GetOrRollDesiredRank(allTimeBoard);
-            int weeklyRank  = LeaderboardTestData.GetOrRollDesiredRank(weeklyBoard);
-            int dailyRank   = LeaderboardTestData.GetOrRollDesiredRank(dailyBoard);
-
-            int allTimeBonus = GetRankBonus(allTimeRank);
-            int weeklyBonus  = Mathf.RoundToInt(GetRankBonus(weeklyRank) * 0.60f);
-            int dailyBonus   = Mathf.RoundToInt(GetRankBonus(dailyRank)  * 0.40f);
+            int    allTimeRank  = LeaderboardTestData.GetOrRollDesiredRank(allTimeBoard);
+            int    allTimeBonus = GetRankBonus(allTimeRank);
 
             int rankBonus = allTimeBonus + weeklyBonus + dailyBonus;
-            if (rankBonus > 0)
-            {
-                _pendingAward += rankBonus;
-                AddCurrency(rankBonus);
-            }
-
+            if (rankBonus > 0) { _pendingAward += rankBonus; AddCurrency(rankBonus); }
             OnRankAwardResolved?.Invoke(_pendingAward);
             return;
         }
 
-        // ── Async Steam rank ──────────────────────────────────────────────────
-        StartCoroutine(FetchRankAndAward(levelIndex));
+        StartCoroutine(FetchRankAndAward(levelIndex, weeklyBonus, dailyBonus));
     }
 
-    private IEnumerator FetchRankAndAward(int levelIndex)
+    private IEnumerator FetchRankAndAward(int levelIndex, int weeklyBonus, int dailyBonus)
     {
         // Give Steam time to finish uploading the score before we query rank.
         yield return new WaitForSecondsRealtime(1.5f);
 
         string allTimeBoard = PurrbricksLeaderboards.LevelAllTime(levelIndex);
-        string weeklyBoard  = PurrbricksLeaderboards.Scoped(allTimeBoard, LeaderboardTimeScope.Weekly);
-        string dailyBoard   = PurrbricksLeaderboards.Scoped(allTimeBoard, LeaderboardTimeScope.Daily);
-
-        int allTimeRank = 0;
-        int weeklyRank  = 0;
-        int dailyRank   = 0;
+        int    allTimeRank  = 0;
 
         if (SteamLeaderboardManager.Instance != null)
         {
-            // Kick off all three fetches simultaneously so they can pipeline through the
-            // SteamLeaderboardManager queue rather than timing out one-by-one.
-            bool allTimeDone = false, weeklyDone = false, dailyDone = false;
-
+            bool done = false;
             SteamLeaderboardManager.Instance.FetchAroundMe(allTimeBoard, 0, entries =>
             {
                 if (entries != null && entries.Count > 0) allTimeRank = entries[0].Rank;
-                allTimeDone = true;
-            });
-            SteamLeaderboardManager.Instance.FetchAroundMe(weeklyBoard, 0, entries =>
-            {
-                if (entries != null && entries.Count > 0) weeklyRank = entries[0].Rank;
-                weeklyDone = true;
-            });
-            SteamLeaderboardManager.Instance.FetchAroundMe(dailyBoard, 0, entries =>
-            {
-                if (entries != null && entries.Count > 0) dailyRank = entries[0].Rank;
-                dailyDone = true;
+                done = true;
             });
 
-            // Wait up to 8 s for all three to complete (new boards need FindOrCreateLeaderboard).
             float elapsed = 0f;
-            while ((!allTimeDone || !weeklyDone || !dailyDone) && elapsed < 8f)
+            while (!done && elapsed < 8f)
             {
                 elapsed += Time.unscaledDeltaTime;
                 yield return null;
@@ -260,15 +232,8 @@ public class PurrBucksManager : MonoBehaviour
         }
 
         int allTimeBonus = GetRankBonus(allTimeRank);
-        int weeklyBonus  = Mathf.RoundToInt(GetRankBonus(weeklyRank) * 0.60f);
-        int dailyBonus   = Mathf.RoundToInt(GetRankBonus(dailyRank)  * 0.40f);
-
-        int rankBonus = allTimeBonus + weeklyBonus + dailyBonus;
-        if (rankBonus > 0)
-        {
-            _pendingAward += rankBonus;
-            AddCurrency(rankBonus);
-        }
+        int rankBonus    = allTimeBonus + weeklyBonus + dailyBonus;
+        if (rankBonus > 0) { _pendingAward += rankBonus; AddCurrency(rankBonus); }
 
         OnRankAwardResolved?.Invoke(_pendingAward);
     }
