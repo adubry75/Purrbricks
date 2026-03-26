@@ -8,7 +8,7 @@ using UnityEngine.UI;
 /// <summary>
 /// Steam-only leaderboard screen.
 ///
-/// Board selector: OVERALL + Level 01–80 (per-level).
+/// Board selector: OVERALL + one board per level (per-level count is dynamic).
 /// Scope toggle: ALL TIME / WEEKLY / DAILY.
 /// Results show all scores in a scroll view and auto-focus around the current user when possible.
 /// </summary>
@@ -95,12 +95,11 @@ public class HighScoresUI : MonoBehaviour
     /// </summary>
     private void PrewarmCurrentBoardScopes()
     {
+        // Per-level Daily/Weekly boards now use MySQL — only prewarm Steam for the OVERALL board.
+        if (_boardIndex != 0) return;
         if (SteamLeaderboardManager.Instance == null) return;
-        string allTime = _boardIndex == 0
-            ? PurrbricksLeaderboards.OverallAllTime
-            : PurrbricksLeaderboards.LevelAllTime(_boardIndex - 1);
 
-        // AllTime is warmed implicitly by the first Fetch(); skip it to keep the queue lean.
+        string allTime = PurrbricksLeaderboards.OverallAllTime;
         SteamLeaderboardManager.Instance.PrewarmBoard(
             PurrbricksLeaderboards.Scoped(allTime, LeaderboardTimeScope.Weekly));
         SteamLeaderboardManager.Instance.PrewarmBoard(
@@ -316,12 +315,21 @@ public class HighScoresUI : MonoBehaviour
         SetStatus("Loading...");
         ClearRows();
 
+        // Per-level Daily/Weekly → MySQL path (Steam no longer has these boards).
+        // LevelScoreService manages its own 8s timeout; no FetchTimeout coroutine needed here.
+        if (_boardIndex > 0 && _scope != LeaderboardTimeScope.AllTime)
+        {
+            FetchFromMySQL(token);
+            return;
+        }
+
         string board = BoardName();
         if (Debug.isDebugBuild)
             Debug.Log($"HighScoresUI: Fetch board='{board}' scope={_scope}");
 
         // In debug builds, Weekly/Daily boards are generated locally so we never block on a
         // slow FindOrCreateLeaderboard round-trip for date-encoded board names.
+        // (Only fires for OVERALL board now — per-level Daily/Weekly went through FetchFromMySQL above.)
         if (LeaderboardTestData.Enabled && _scope != LeaderboardTimeScope.AllTime)
         {
             _fetching = false;
@@ -353,6 +361,53 @@ public class HighScoresUI : MonoBehaviour
 
         _fetching = false;
         SetStatus("Timed out loading leaderboard.\n(See console for Steam callback logs.)");
+    }
+
+    // ── MySQL fetch (per-level Daily / Weekly) ────────────────────────────────
+
+    private void FetchFromMySQL(int token)
+    {
+        if (LevelScoreService.Instance == null)
+        {
+            _fetching = false;
+            SetStatus("Score service unavailable.\nRun Purrbricks > Setup Scene.");
+            return;
+        }
+
+        int    levelIndex = _boardIndex - 1;
+        var    ids        = GameManager.Instance?.GetAllLevelIds();
+        string levelId    = (ids != null && levelIndex >= 0 && levelIndex < ids.Length)
+                            ? ids[levelIndex] : "";
+
+        if (string.IsNullOrEmpty(levelId))
+        {
+            _fetching = false;
+            SetStatus("Level not found.");
+            return;
+        }
+
+        ulong steamId = SteamworksBootstrap.Instance?.IsSteamAvailable == true
+                        ? SteamUser.GetSteamID().m_SteamID : 0UL;
+
+        LevelScoreService.Instance.FetchScores(levelId, _scope, 50, steamId, (entries, playerRank) =>
+        {
+            if (token != _fetchToken) return; // stale — a newer fetch has started
+
+            _fetching = false;
+
+            if (entries == null || entries.Length == 0)
+            {
+                SetStatus("No scores yet — be the first!");
+                return;
+            }
+
+            var models = new System.Collections.Generic.List<LeaderboardEntryModel>();
+            foreach (var e in entries)
+                models.Add(new LeaderboardEntryModel(e.Rank, e.Score,
+                    new CSteamID(e.SteamId), e.SteamName));
+
+            PopulateRows(models, highlightMe: true);
+        });
     }
 
     private void OnFetchedAroundMe(int token, string boardName, List<LeaderboardEntryModel> entries)
@@ -542,7 +597,9 @@ public class HighScoresUI : MonoBehaviour
             // If the game hasn't been played yet this session, fall back to the local personal best.
             if (score <= 0 && HighScoreManager.Instance != null)
             {
-                string levelId = $"level_{(_boardIndex - 1):D2}";
+                var ids    = GameManager.Instance?.GetAllLevelIds();
+                int idx    = _boardIndex - 1;
+                string levelId = (ids != null && idx >= 0 && idx < ids.Length) ? ids[idx] : "";
                 int pb = HighScoreManager.Instance.GetPersonalBest(levelId);
                 if (pb > 0) score = pb;
             }
@@ -657,15 +714,18 @@ public class HighScoresUI : MonoBehaviour
 
     private static string LoadLevelTitle(int levelIndex)
     {
-        var ta = Resources.Load<TextAsset>($"Levels/level_{levelIndex:D2}");
-        if (ta == null) return $"Level {levelIndex + 1:D2}";
+        var ids = GameManager.Instance?.GetAllLevelIds();
+        if (ids == null || levelIndex < 0 || levelIndex >= ids.Length)
+            return $"Level {levelIndex + 1:D2}";
+        var ta = Resources.Load<TextAsset>($"Levels/{ids[levelIndex]}");
+        if (ta == null) return ids[levelIndex];
         try
         {
-            var obj = JObject.Parse(ta.text);
-            var token = obj["displayName"] ?? obj["title"]; // legacy fallback
-            return token?.ToString() ?? $"Level {levelIndex + 1:D2}";
+            var obj   = JObject.Parse(ta.text);
+            var token = obj["displayName"] ?? obj["title"];
+            return token?.ToString() ?? ids[levelIndex];
         }
-        catch { return $"Level {levelIndex + 1:D2}"; }
+        catch { return ids[levelIndex]; }
     }
 
     // ── Builder helpers ───────────────────────────────────────────────────────
