@@ -389,6 +389,7 @@ public class HighScoresUI : MonoBehaviour
         ulong steamId = SteamworksBootstrap.Instance?.IsSteamAvailable == true
                         ? SteamUser.GetSteamID().m_SteamID : 0UL;
 
+        // playerRank is available here if we ever want to show "Your rank: N" — unused for now.
         LevelScoreService.Instance.FetchScores(levelId, _scope, 50, steamId, (entries, playerRank) =>
         {
             if (token != _fetchToken) return; // stale — a newer fetch has started
