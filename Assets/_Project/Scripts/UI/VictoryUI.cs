@@ -2,6 +2,7 @@ using System.Collections;
 using UnityEngine;
 using UnityEngine.UI;
 using System.Collections.Generic;
+using Steamworks;
 
 /// <summary>
 /// Victory screen: shows level score stats, an optional "New Personal Best" banner,
@@ -465,29 +466,40 @@ public class VictoryUI : MonoBehaviour
         // AwardLevelComplete fires it (synchronously in debug builds).
         gameObject.SetActive(true);
 
-        // Submit to Steam per-level leaderboards immediately (KeepBest)
+        // Submit to Steam per-level all-time leaderboard (KeepBest) — daily/weekly now use MySQL.
         if (levelScore > 0)
         {
             string allTimeBoard = PurrbricksLeaderboards.LevelAllTime(levelIndex);
-            string weeklyBoard = PurrbricksLeaderboards.Scoped(allTimeBoard, LeaderboardTimeScope.Weekly);
-            string dailyBoard = PurrbricksLeaderboards.Scoped(allTimeBoard, LeaderboardTimeScope.Daily);
-
             SteamLeaderboardManager.Instance?.SubmitScore(allTimeBoard, levelScore);
-            SteamLeaderboardManager.Instance?.SubmitScore(weeklyBoard, levelScore);
-            SteamLeaderboardManager.Instance?.SubmitScore(dailyBoard, levelScore);
-
             LeaderboardTestData.RerollForBoard(allTimeBoard);
-            LeaderboardTestData.RerollForBoard(weeklyBoard);
-            LeaderboardTestData.RerollForBoard(dailyBoard);
         }
 
-        // Award Purr Bucks (OnEnable already subscribed above)
+        // Submit to MySQL daily/weekly leaderboard; use the returned ranks to award Purr Bucks.
+        int livesLost     = (GameManager.Instance?.LivesAtLevelStart ?? 0) - (GameManager.Instance?.GetLives() ?? 0);
+        bool perfectClear = livesLost <= 0;
+        _purrBucksText?.gameObject.SetActive(false);
+
         if (PurrBucksManager.Instance != null && !string.IsNullOrEmpty(levelId))
         {
-            int livesLost = (GameManager.Instance?.LivesAtLevelStart ?? 0) - (GameManager.Instance?.GetLives() ?? 0);
-            bool perfectClear = livesLost <= 0;
-            _purrBucksText?.gameObject.SetActive(false);
-            PurrBucksManager.Instance.AwardLevelComplete(levelId, levelIndex, perfectClear, livesLost);
+            if (levelScore > 0 && LevelScoreService.Instance != null)
+            {
+                ulong  steamId   = SteamworksBootstrap.Instance?.IsSteamAvailable == true
+                                   ? SteamUser.GetSteamID().m_SteamID : 0UL;
+                string steamName = SteamworksBootstrap.Instance?.IsSteamAvailable == true
+                                   ? SteamFriends.GetPersonaName() : "Player";
+
+                LevelScoreService.Instance.SubmitScore(levelId, steamId, steamName, levelScore, result =>
+                {
+                    PurrBucksManager.Instance?.AwardLevelComplete(
+                        levelId, levelIndex, perfectClear, livesLost,
+                        result.DailyRank, result.WeeklyRank);
+                });
+            }
+            else
+            {
+                // Fallback: no score or service unavailable — award without rank bonus.
+                PurrBucksManager.Instance.AwardLevelComplete(levelId, levelIndex, perfectClear, livesLost);
+            }
         }
 
         if (_levelScoreText != null) _levelScoreText.text = $"Level Score:  {levelScore:N0}";
