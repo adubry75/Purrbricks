@@ -3678,7 +3678,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9dd5c0e3953c82943b2f61f9b5baad60, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::GameManager
-  _adminMode: 0
+  _adminMode: 1
   _startingLives: 3
   _score: 0
   _combo: 0
@@ -3761,7 +3761,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: Version 1.010 - 3/24/2026 21:18
+  m_text: Version 1.009 - 3/15/2006 00:28
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: eb27bc354c34be64980cd2d69dd4e6d9, type: 2}
   m_sharedMaterial: {fileID: -5226213460154039966, guid: eb27bc354c34be64980cd2d69dd4e6d9, type: 2}

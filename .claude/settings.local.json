@@ -5,7 +5,14 @@
       "mcp__token-counter__log_usage",
       "Bash(python:*)",
       "Bash(cd \"C:\\\\Users\\\\adubr\\\\source\\\\repos\\\\Purrbricks\\\\Assets\\\\_Project\\\\Resources\\\\Levels\" && ls -1 *.json | sort)",
-      "Bash(cd \"C:\\\\Users\\\\adubr\\\\source\\\\repos\\\\Purrbricks\\\\Assets\\\\_Project\\\\Resources\\\\Levels\" && for f in *.json; do if ! grep -q \"powerupId\" \"$f\"; then echo \"$f\"; fi; done | sort)"
+      "Bash(cd \"C:\\\\Users\\\\adubr\\\\source\\\\repos\\\\Purrbricks\\\\Assets\\\\_Project\\\\Resources\\\\Levels\" && for f in *.json; do if ! grep -q \"powerupId\" \"$f\"; then echo \"$f\"; fi; done | sort)",
+      "Read(//c/Users/adubr/.claude/**)",
+      "Read(//c/Users/adubr/AppData/Roaming/Claude/**)",
+      "Bash(python3 -c \"import sys,json; d=json.load\\(sys.stdin\\); print\\(json.dumps\\(d.get\\(''''mcpServers'''', {}\\), indent=2\\)\\)\")",
+      "Bash(node --version && npx --version 2>/dev/null)",
+      "Bash(python3 -c \"\nimport json\nwith open\\('/c/Users/adubr/.claude.json', 'r'\\) as f:\n    d = json.load\\(f\\)\nd['mcpServers']['sequential-thinking'] = {\n    'type': 'stdio',\n    'command': 'npx',\n    'args': ['-y', '@modelcontextprotocol/server-sequential-thinking']\n}\nwith open\\('/c/Users/adubr/.claude.json', 'w'\\) as f:\n    json.dump\\(d, f, indent=2\\)\nprint\\('Done'\\)\n\")",
+      "Bash(python3 -c \"\nimport json\npath = 'C:/Users/adubr/.claude.json'\nwith open\\(path, 'r'\\) as f:\n    d = json.load\\(f\\)\nd['mcpServers']['sequential-thinking'] = {\n    'type': 'stdio',\n    'command': 'npx',\n    'args': ['-y', '@modelcontextprotocol/server-sequential-thinking']\n}\nwith open\\(path, 'w'\\) as f:\n    json.dump\\(d, f, indent=2\\)\nprint\\('Done'\\)\n\")",
+      "Bash(python3 -c \"\nimport json\nwith open\\('C:/Users/adubr/.claude.json', 'r'\\) as f:\n    d = json.load\\(f\\)\nprint\\(json.dumps\\(d['mcpServers'], indent=2\\)\\)\n\")"
     ]
   },
   "hooks": {

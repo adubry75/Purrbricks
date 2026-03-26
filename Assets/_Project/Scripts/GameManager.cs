@@ -252,18 +252,18 @@ public class GameManager : MonoBehaviour
         }
 
         // Debug hotkey: clear all but 1 brick
-        if (Input.GetKeyDown(KeyCode.K) && _state == GameState.Playing)
+        if (Input.GetKeyDown(KeyCode.K) && _state == GameState.Playing && _adminMode)
             ClearAllButOneBrick();
 
         // Speed up FURY for testing.
-        if (Input.GetKeyDown(KeyCode.X))
+        if (Input.GetKeyDown(KeyCode.X) && _adminMode)
         {
             _rampBoosted = !_rampBoosted;
             if (_ball != null) _ball.RAMP_RATE = _rampBoosted ? 0.5f : 0.015f;
         }
 
         // Turn on bottom wall so no balls can be lost. for testing.
-        if (Input.GetKeyDown(KeyCode.Z))
+        if (Input.GetKeyDown(KeyCode.Z) && _adminMode)
         {
             if (bottomWall != null)
             {
@@ -272,11 +272,11 @@ public class GameManager : MonoBehaviour
         }
 
         // Instant kill your ball. 
-        if (_state == GameState.Playing && Input.GetKeyDown(KeyCode.Backslash))
+        if (_state == GameState.Playing && Input.GetKeyDown(KeyCode.Backslash) && _adminMode)
             DebugDropPrimaryBallIntoDeathZone();
 
         // Instant complete level
-        if (_state == GameState.Playing && Input.GetKeyDown(KeyCode.RightBracket))
+        if (_state == GameState.Playing && Input.GetKeyDown(KeyCode.RightBracket) && _adminMode)
             DebugClearLevelBricks();
 
 

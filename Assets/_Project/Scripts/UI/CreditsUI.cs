@@ -355,7 +355,7 @@ public class CreditsUI : MonoBehaviour
         Spacer(22f);
         Text("Claude", 64, ColWhite, 82f);
         Sub("(by Anthropic)", 30, 46f);
-        Sub("Responsible for ~82% of keystrokes.", 26, 40f);
+        Sub("Responsible for ~70% of keystrokes.", 26, 40f);
         MutedItalic("0% of creative vision. 100% of semicolons.");
         Spacer(90f);
 

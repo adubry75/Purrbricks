@@ -88,7 +88,7 @@ public class MainMenuUI : MonoBehaviour
         CreateTitle();
 
         // BUTTONS!
-        float startY = 30f;           // was 65f, now moved up by 60
+        float startY = 60f;           // was 65f, now moved up by 60
         float buttonSpacing = 75f;   // vertical spacing between standard buttons
         Vector2 buttonSize = new Vector2(300f, 69f);
 
