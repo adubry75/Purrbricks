@@ -4,7 +4,7 @@ header('Access-Control-Allow-Methods: GET, POST, OPTIONS');
 header('Access-Control-Allow-Headers: Content-Type');
 if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') { http_response_code(204); exit; }
 
-// ── Edit these to match your community/db.php credentials ─────────────────────
+// ── Edit these to match your scores/db.php credentials ───────────────────────
 define('DB_HOST', 'localhost');
 define('DB_NAME', 'your_db_name');
 define('DB_USER', 'your_db_user');
