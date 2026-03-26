@@ -447,6 +447,13 @@ public static class PurrbricksSetup
             Debug.Log("Added CommunityLevelService.");
         }
 
+        var lssGO = EnsureGO("LevelScoreService");
+        if (lssGO.GetComponent<LevelScoreService>() == null)
+        {
+            lssGO.AddComponent<LevelScoreService>();
+            Debug.Log("Added LevelScoreService.");
+        }
+
         // ── Community Browser UI ──────────────────────────────────────────────
         var cbGO = EnsureGO("CommunityBrowserUI");
         if (cbGO.GetComponent<CommunityBrowserUI>() == null)

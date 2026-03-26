@@ -9,6 +9,12 @@ public static class PurrbricksLeaderboards
     /// <summary>All-time board for a community level. Max 30 chars: "Purrbricks_cl_99999_at" = 22 chars.</summary>
     public static string CommunityAllTime(int communityId) => $"Purrbricks_cl_{communityId}_at";
 
+    /// <summary>
+    /// Returns a date-scoped board name for Daily or Weekly scope.
+    /// NOTE: Only call this for the OVERALL board (OverallAllTime) and community boards.
+    /// Per-level Daily/Weekly boards now use MySQL via LevelScoreService — do NOT call
+    /// Scoped() with LevelAllTime() board names.
+    /// </summary>
     public static string Scoped(string allTimeBoardName, LeaderboardTimeScope scope)
     {
         if (string.IsNullOrEmpty(allTimeBoardName)) return allTimeBoardName;
