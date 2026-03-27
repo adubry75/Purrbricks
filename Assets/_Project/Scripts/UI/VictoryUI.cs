@@ -471,7 +471,6 @@ public class VictoryUI : MonoBehaviour
         {
             string allTimeBoard = PurrbricksLeaderboards.LevelAllTime(levelIndex);
             SteamLeaderboardManager.Instance?.SubmitScore(allTimeBoard, levelScore);
-            LeaderboardTestData.RerollForBoard(allTimeBoard);
         }
 
         // Submit to MySQL daily/weekly leaderboard; use the returned ranks to award Purr Bucks.
@@ -488,7 +487,13 @@ public class VictoryUI : MonoBehaviour
                 string steamName = SteamworksBootstrap.Instance?.IsSteamAvailable == true
                                    ? SteamFriends.GetPersonaName() : "Player";
 
-                LevelScoreService.Instance.SubmitScore(levelId, steamId, steamName, levelScore, result =>
+                var currentLevel = LevelLoader.Instance?.CurrentLevel;
+                string scoreGuid = !string.IsNullOrEmpty(currentLevel?.levelGuid)
+                                   ? currentLevel.levelGuid : levelId;
+                string levelName = !string.IsNullOrEmpty(currentLevel?.displayName)
+                                   ? currentLevel.displayName : levelId;
+
+                LevelScoreService.Instance.SubmitScore(scoreGuid, levelName, steamId, steamName, levelScore, result =>
                 {
                     PurrBucksManager.Instance?.AwardLevelComplete(
                         levelId, levelIndex, perfectClear, livesLost,
@@ -582,10 +587,6 @@ public class VictoryUI : MonoBehaviour
             SteamLeaderboardManager.Instance?.SubmitScore(allTimeBoard, levelScore);
             SteamLeaderboardManager.Instance?.SubmitScore(weeklyBoard, levelScore);
             SteamLeaderboardManager.Instance?.SubmitScore(dailyBoard, levelScore);
-
-            LeaderboardTestData.RerollForBoard(allTimeBoard);
-            LeaderboardTestData.RerollForBoard(weeklyBoard);
-            LeaderboardTestData.RerollForBoard(dailyBoard);
         }
 
         // Award Purr Bucks

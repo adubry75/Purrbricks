@@ -161,7 +161,7 @@ public class LevelCodeEntryUI : MonoBehaviour
     {
         string code = _input?.text?.Trim().ToUpperInvariant() ?? "";
 
-        // Dev cheat: GO## warps directly to a level by number (1-based, 1–80)
+        // Dev cheat: GO## warps directly to a level by number (1-based)
         if (code.StartsWith("GO") && code.Length >= 3)
         {
             if (int.TryParse(code.Substring(2), out int levelNum))

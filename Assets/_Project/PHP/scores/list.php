@@ -6,8 +6,8 @@ $scope   = isset($_GET['scope'])   ? (string)$_GET['scope']                  : '
 $limit   = min(max((int)($_GET['limit'] ?? 10), 1), 50);
 $steamId = isset($_GET['steamId']) ? (string)$_GET['steamId']                : '';
 
-if (!$levelId || !in_array($scope, ['daily', 'weekly'], true)) {
-    errorResponse('levelId and scope (daily|weekly) required');
+if (!$levelId || !in_array($scope, ['daily', 'weekly', 'alltime'], true)) {
+    errorResponse('levelId and scope (daily|weekly|alltime) required');
 }
 
 $db = getDb();
@@ -21,13 +21,23 @@ if ($scope === 'daily') {
         ORDER BY score DESC
         LIMIT :limit
     ");
-} else {
+} elseif ($scope === 'weekly') {
     // Weekly: best score per player within the current UTC week (Sunday start).
     $stmt = $db->prepare("
         SELECT steam_id, ANY_VALUE(steam_name) AS steam_name, MAX(score) AS score
         FROM level_scores
         WHERE level_id = :levelId
           AND YEARWEEK(score_date, 0) = YEARWEEK(UTC_DATE(), 0)
+        GROUP BY steam_id
+        ORDER BY score DESC
+        LIMIT :limit
+    ");
+} else {
+    // All time: best score ever per player.
+    $stmt = $db->prepare("
+        SELECT steam_id, ANY_VALUE(steam_name) AS steam_name, MAX(score) AS score
+        FROM level_scores
+        WHERE level_id = :levelId
         GROUP BY steam_id
         ORDER BY score DESC
         LIMIT :limit
@@ -71,12 +81,21 @@ if ($steamId) {
                 $s2->execute([':l' => $levelId, ':sc' => $myScore]);
                 $playerRank = (int)$s2->fetchColumn();
             }
-        } else {
+        } elseif ($scope === 'weekly') {
             $s = $db->prepare("SELECT MAX(score) FROM level_scores WHERE level_id=:l AND steam_id=:s AND YEARWEEK(score_date,0)=YEARWEEK(UTC_DATE(),0)");
             $s->execute([':l' => $levelId, ':s' => $steamId]);
             $myBest = $s->fetchColumn();
             if ($myBest !== false && $myBest !== null) {
                 $s2 = $db->prepare("SELECT COUNT(*)+1 FROM (SELECT steam_id,MAX(score) AS best FROM level_scores WHERE level_id=:l AND YEARWEEK(score_date,0)=YEARWEEK(UTC_DATE(),0) GROUP BY steam_id) w WHERE w.best>:sc");
+                $s2->execute([':l' => $levelId, ':sc' => $myBest]);
+                $playerRank = (int)$s2->fetchColumn();
+            }
+        } else {
+            $s = $db->prepare("SELECT MAX(score) FROM level_scores WHERE level_id=:l AND steam_id=:s");
+            $s->execute([':l' => $levelId, ':s' => $steamId]);
+            $myBest = $s->fetchColumn();
+            if ($myBest !== false && $myBest !== null) {
+                $s2 = $db->prepare("SELECT COUNT(*)+1 FROM (SELECT steam_id,MAX(score) AS best FROM level_scores WHERE level_id=:l GROUP BY steam_id) w WHERE w.best>:sc");
                 $s2->execute([':l' => $levelId, ':sc' => $myBest]);
                 $playerRank = (int)$s2->fetchColumn();
             }

@@ -116,10 +116,6 @@ public class GameOverUI : MonoBehaviour
             SteamLeaderboardManager.Instance?.SubmitScore(allTimeBoard, finalScore);
             SteamLeaderboardManager.Instance?.SubmitScore(weeklyBoard,  finalScore);
             SteamLeaderboardManager.Instance?.SubmitScore(dailyBoard,   finalScore);
-
-            LeaderboardTestData.RerollForBoard(allTimeBoard);
-            LeaderboardTestData.RerollForBoard(weeklyBoard);
-            LeaderboardTestData.RerollForBoard(dailyBoard);
         }
     }
 
@@ -143,10 +139,6 @@ public class GameOverUI : MonoBehaviour
             SteamLeaderboardManager.Instance?.SubmitScore(allTimeBoard, finalScore);
             SteamLeaderboardManager.Instance?.SubmitScore(weeklyBoard,  finalScore);
             SteamLeaderboardManager.Instance?.SubmitScore(dailyBoard,   finalScore);
-
-            LeaderboardTestData.RerollForBoard(allTimeBoard);
-            LeaderboardTestData.RerollForBoard(weeklyBoard);
-            LeaderboardTestData.RerollForBoard(dailyBoard);
         }
     }
 

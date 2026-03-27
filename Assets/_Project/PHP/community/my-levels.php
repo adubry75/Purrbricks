@@ -1,6 +1,6 @@
 <?php
 // GET /community/my-levels.php?steamId=<steamId>
-// Returns all published levels belonging to this Steam user, newest first.
+// Returns ALL levels belonging to this Steam user (published and private), newest first.
 // Response: {levels: [...], total: N}
 
 ini_set('display_errors', '0');
@@ -17,11 +17,11 @@ try {
     $db   = getDb();
     $stmt = $db->prepare("
         SELECT id, level_guid, steam_name, title, description, brick_count,
-               play_count, average_rating, rating_count, published_at, updated_at,
+               play_count, average_rating, rating_count, published_at, is_published,
                json_data
         FROM community_levels
-        WHERE steam_id = ? AND is_published = 1
-        ORDER BY updated_at DESC
+        WHERE steam_id = ?
+        ORDER BY id DESC
     ");
     $stmt->execute([substr($steamId, 0, 32)]);
     $rows = $stmt->fetchAll();

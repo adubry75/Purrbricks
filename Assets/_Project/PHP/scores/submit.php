@@ -7,6 +7,7 @@ $body      = json_decode(file_get_contents('php://input'), true) ?? [];
 $steamId   = isset($body['steamId'])   ? (string)$body['steamId']                   : '';
 $steamName = isset($body['steamName']) ? substr((string)$body['steamName'], 0, 128) : '';
 $levelId   = isset($body['levelId'])   ? substr((string)$body['levelId'], 0, 64)    : '';
+$levelName = isset($body['levelName']) ? substr((string)$body['levelName'], 0, 128) : '';
 $score     = isset($body['score'])     ? (int)$body['score']                        : 0;
 
 if (!$steamId || !$levelId || $score <= 0) {
@@ -17,14 +18,16 @@ $db = getDb();
 
 // Upsert: one row per (player, level, UTC day) — keep best score for the day.
 $db->prepare("
-    INSERT INTO level_scores (level_id, steam_id, steam_name, score, score_date)
-    VALUES (:levelId, :steamId, :steamName, :score, UTC_DATE())
+    INSERT INTO level_scores (level_id, level_name, steam_id, steam_name, score, score_date)
+    VALUES (:levelId, :levelName, :steamId, :steamName, :score, UTC_DATE())
     ON DUPLICATE KEY UPDATE
         score        = GREATEST(score, VALUES(score)),
+        level_name   = VALUES(level_name),
         steam_name   = VALUES(steam_name),
         submitted_at = UTC_TIMESTAMP()
 ")->execute([
     ':levelId'   => $levelId,
+    ':levelName' => $levelName,
     ':steamId'   => $steamId,
     ':steamName' => $steamName,
     ':score'     => $score,

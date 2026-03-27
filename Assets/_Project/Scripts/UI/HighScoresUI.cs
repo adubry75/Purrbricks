@@ -47,9 +47,6 @@ public class HighScoresUI : MonoBehaviour
 
     // Cached player data – filled from a successful AllTime fetch so Weekly/Daily
     // can generate test data using the same score baseline.
-    private int      _cachedMyScore;
-    private CSteamID _cachedMySteamId;
-    private string   _cachedMyName = "You";
 
     // 0 = overall + one board per native level (dynamic)
     private int TotalBoards => 1 + (GameManager.Instance?.LevelCount ?? 80);
@@ -78,8 +75,7 @@ public class HighScoresUI : MonoBehaviour
         // Pre-warm the overall AllTime/Weekly/Daily boards at game startup so
         // FindOrCreateLeaderboard completes before the user opens HighScores.
         // _boardIndex is 0 (OVERALL) at this point, which is always the first thing shown.
-        if (!LeaderboardTestData.Enabled)
-            StartCoroutine(PrewarmAfterDelay());
+        StartCoroutine(PrewarmAfterDelay());
     }
 
     private System.Collections.IEnumerator PrewarmAfterDelay()
@@ -315,7 +311,7 @@ public class HighScoresUI : MonoBehaviour
         SetStatus("Loading...");
         ClearRows();
 
-        // Per-level Daily/Weekly → MySQL path (Steam no longer has these boards).
+        // Per-level Weekly/Daily → MySQL. Per-level AllTime → Steam (fixed 112 boards).
         // LevelScoreService manages its own 8s timeout; no FetchTimeout coroutine needed here.
         if (_boardIndex > 0 && _scope != LeaderboardTimeScope.AllTime)
         {
@@ -326,16 +322,6 @@ public class HighScoresUI : MonoBehaviour
         string board = BoardName();
         if (Debug.isDebugBuild)
             Debug.Log($"HighScoresUI: Fetch board='{board}' scope={_scope}");
-
-        // In debug builds, Weekly/Daily boards are generated locally so we never block on a
-        // slow FindOrCreateLeaderboard round-trip for date-encoded board names.
-        // (Only fires for OVERALL board now — per-level Daily/Weekly went through FetchFromMySQL above.)
-        if (LeaderboardTestData.Enabled && _scope != LeaderboardTimeScope.AllTime)
-        {
-            _fetching = false;
-            GenerateTestData(board);
-            return;
-        }
 
         if (SteamLeaderboardManager.Instance == null)
         {
@@ -375,9 +361,7 @@ public class HighScoresUI : MonoBehaviour
         }
 
         int    levelIndex = _boardIndex - 1;
-        var    ids        = GameManager.Instance?.GetAllLevelIds();
-        string levelId    = (ids != null && levelIndex >= 0 && levelIndex < ids.Length)
-                            ? ids[levelIndex] : "";
+        string levelId    = GameManager.Instance?.GetLevelGuid(levelIndex) ?? "";
 
         if (string.IsNullOrEmpty(levelId))
         {
@@ -427,14 +411,7 @@ public class HighScoresUI : MonoBehaviour
 
         if (entries.Count == 0)
         {
-            // User has no score on this board yet.
-            // In debug builds generate synthetic data rather than showing "No scores yet".
-            if (LeaderboardTestData.Enabled)
-            {
-                GenerateTestData(boardName);
-                return;
-            }
-            // Production: fall back to the top of the board so at least something is visible.
+            // Fall back to the top of the board so at least something is visible.
             _fetching = true;
             SteamLeaderboardManager.Instance?.FetchRange(boardName, 1, 50,
                 top => OnFetchedTop(token, boardName, top));
@@ -448,21 +425,6 @@ public class HighScoresUI : MonoBehaviour
         var me = mySteamId != CSteamID.Nil
             ? entries.Find(e => e.SteamId == mySteamId) ?? entries[0]
             : entries[0];
-
-        // Cache the player's score from the AllTime board so Weekly/Daily simulation can
-        // use the same baseline score even before those boards have a real Steam entry.
-        if (_scope == LeaderboardTimeScope.AllTime)
-        {
-            _cachedMyScore    = me.Score;
-            _cachedMySteamId  = me.SteamId;
-            _cachedMyName     = me.DisplayName;
-        }
-
-        if (LeaderboardTestData.Enabled && SteamworksBootstrap.Instance?.IsSteamAvailable == true)
-        {
-            var simulated = LeaderboardTestData.BuildSimulatedBoard(boardName, me);
-            if (simulated != null) entries = simulated;
-        }
 
         SetStatus("");
         PopulateRows(entries, highlightMe: true);
@@ -576,64 +538,6 @@ public class HighScoresUI : MonoBehaviour
     }
 
     // ── Test-data generator (debug builds only) ───────────────────────────────
-
-    /// <summary>
-    /// Builds a simulated leaderboard populated with fake competitors.
-    /// Used in debug builds when the Steam board is empty or for Weekly/Daily scopes
-    /// where the real Steam entry may not exist yet (board newly created, upload race).
-    /// Falls back to the cached AllTime score so the board is never blank in testing.
-    /// </summary>
-    private void GenerateTestData(string boardName)
-    {
-        int score = 0;
-
-        if (_boardIndex > 0)
-        {
-            // Level board — use the score from the current play session.
-            // GameManager keeps (_score - _levelStartScore) valid through the Victory screen,
-            // so this is the actual score the player just earned, not their all-time best.
-            int sessionScore = GameManager.Instance?.GetLevelScore() ?? 0;
-            if (sessionScore > 0) score = sessionScore;
-
-            // If the game hasn't been played yet this session, fall back to the local personal best.
-            if (score <= 0 && HighScoreManager.Instance != null)
-            {
-                var ids    = GameManager.Instance?.GetAllLevelIds();
-                int idx    = _boardIndex - 1;
-                string levelId = (ids != null && idx >= 0 && idx < ids.Length) ? ids[idx] : "";
-                int pb = HighScoreManager.Instance.GetPersonalBest(levelId);
-                if (pb > 0) score = pb;
-            }
-        }
-
-        // Overall board (or level board with no session/PB data): use the Steam-cached score.
-        if (score <= 0) score = _cachedMyScore;
-
-        // Absolute last resort.
-        if (score <= 0) score = 80_000;
-
-        CSteamID steamId = _cachedMySteamId;
-        string   name    = _cachedMyName;
-
-        if (SteamworksBootstrap.Instance?.IsSteamAvailable == true)
-        {
-            steamId = SteamUser.GetSteamID();
-            string steamName = SteamFriends.GetPersonaName();
-            if (!string.IsNullOrEmpty(steamName)) name = steamName;
-        }
-
-        var fakeMe    = new LeaderboardEntryModel(0, score, steamId, name);
-        var simulated = LeaderboardTestData.BuildSimulatedBoard(boardName, fakeMe);
-        if (simulated != null)
-        {
-            SetStatus("");
-            PopulateRows(simulated, highlightMe: true);
-        }
-        else
-        {
-            SetStatus("No scores yet — be the first!");
-        }
-    }
 
     // ── UI helpers ────────────────────────────────────────────────────────────
 

@@ -377,7 +377,8 @@ public class AchievementManager : MonoBehaviour
         SteamUserStats.StoreStats();
 
         // Wipe per-level death counts used by the Curiosity achievement
-        for (int i = 0; i < 80; i++)
+        int levelCount = GameManager.Instance?.LevelCount ?? 200;
+        for (int i = 0; i < levelCount; i++)
             PlayerPrefs.DeleteKey(PrefixLevelDeaths + i);
         PlayerPrefs.Save();
 

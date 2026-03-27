@@ -49,8 +49,8 @@ public class CommunityLevelService : MonoBehaviour
     public void FetchLevel(int id, Action<LevelData, CommunityLevelMeta> cb)
         => StartCoroutine(FetchLevelRoutine(id, cb));
 
-    public void PublishLevel(LevelData data, string title, string desc, Action<PublishResult> cb)
-        => StartCoroutine(PublishLevelRoutine(data, title, desc, cb));
+    public void PublishLevel(LevelData data, string title, string desc, Action<PublishResult> cb, bool isPublished = true)
+        => StartCoroutine(PublishLevelRoutine(data, title, desc, cb, isPublished));
 
     public void RateLevel(int id, int rating, Action<string> cb)
         => StartCoroutine(RateLevelRoutine(id, rating, cb));
@@ -197,7 +197,7 @@ public class CommunityLevelService : MonoBehaviour
         }
     }
 
-    private IEnumerator PublishLevelRoutine(LevelData data, string title, string desc, Action<PublishResult> cb)
+    private IEnumerator PublishLevelRoutine(LevelData data, string title, string desc, Action<PublishResult> cb, bool isPublished = true)
     {
         string steamId   = "";
         string steamName = "";
@@ -228,7 +228,8 @@ public class CommunityLevelService : MonoBehaviour
             $"\"title\":\"{EscapeJson(title)}\"," +
             $"\"description\":\"{EscapeJson(desc)}\"," +
             $"\"jsonData\":{jsonData}," +
-            $"\"brickCount\":{brickCount}" +
+            $"\"brickCount\":{brickCount}," +
+            $"\"isPublished\":{(isPublished ? 1 : 0)}" +
             "}";
 
         byte[] raw = Encoding.UTF8.GetBytes(body);

@@ -12,7 +12,13 @@
       "Bash(node --version && npx --version 2>/dev/null)",
       "Bash(python3 -c \"\nimport json\nwith open\\('/c/Users/adubr/.claude.json', 'r'\\) as f:\n    d = json.load\\(f\\)\nd['mcpServers']['sequential-thinking'] = {\n    'type': 'stdio',\n    'command': 'npx',\n    'args': ['-y', '@modelcontextprotocol/server-sequential-thinking']\n}\nwith open\\('/c/Users/adubr/.claude.json', 'w'\\) as f:\n    json.dump\\(d, f, indent=2\\)\nprint\\('Done'\\)\n\")",
       "Bash(python3 -c \"\nimport json\npath = 'C:/Users/adubr/.claude.json'\nwith open\\(path, 'r'\\) as f:\n    d = json.load\\(f\\)\nd['mcpServers']['sequential-thinking'] = {\n    'type': 'stdio',\n    'command': 'npx',\n    'args': ['-y', '@modelcontextprotocol/server-sequential-thinking']\n}\nwith open\\(path, 'w'\\) as f:\n    json.dump\\(d, f, indent=2\\)\nprint\\('Done'\\)\n\")",
-      "Bash(python3 -c \"\nimport json\nwith open\\('C:/Users/adubr/.claude.json', 'r'\\) as f:\n    d = json.load\\(f\\)\nprint\\(json.dumps\\(d['mcpServers'], indent=2\\)\\)\n\")"
+      "Bash(python3 -c \"\nimport json\nwith open\\('C:/Users/adubr/.claude.json', 'r'\\) as f:\n    d = json.load\\(f\\)\nprint\\(json.dumps\\(d['mcpServers'], indent=2\\)\\)\n\")",
+      "Bash(ls -1 /c/Users/adubr/source/repos/Purrbricks/Assets/_Project/Resources/Levels/*.json | head -20 | xargs -I {} basename {} .json)",
+      "Bash(ls -la \"C:\\\\Users\\\\adubr\\\\source\\\\repos\\\\Purrbricks\\\\Assets\\\\_Project\\\\PHP\\\\\" 2>/dev/null || echo \"Directory check\")",
+      "Bash(git add:*)",
+      "Bash(curl -s -X POST https://api.purrbricks.dubry.com/scores/submit.php \\\\\n  -H \"Content-Type: application/json\" \\\\\n  -d '{\"steamId\":\"76561198000000001\",\"steamName\":\"TestPlayer\",\"levelId\":\"level_00\",\"score\":12345}')",
+      "Bash(curl -s -X POST https://api.purrbricks.dubry.com/scores/submit.php \\\\\n  -H \"Content-Type: application/json\" \\\\\n  -d '{\"steamId\":\"76561198000000001\",\"steamName\":\"TestPlayer\",\"levelId\":\"b953c6b3a27a4f30b02c6a2f603b273f\",\"levelName\":\"Diamond Rain\",\"score\":99999}')",
+      "Bash(curl -s \"https://api.purrbricks.dubry.com/scores/list.php?levelId=b953c6b3a27a4f30b02c6a2f603b273f&scope=alltime&limit=10&steamId=76561198000000001\")"
     ]
   },
   "hooks": {

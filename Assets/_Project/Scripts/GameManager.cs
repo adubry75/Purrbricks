@@ -97,6 +97,24 @@ public class GameManager : MonoBehaviour
     /// <summary>Total number of levels discovered at runtime from Resources/Levels/.</summary>
     public int LevelCount => _levelIds?.Length ?? 0;
 
+    /// <summary>
+    /// Returns the stable levelGuid for the given level index, falling back to the
+    /// filename slug if the JSON has no guid (old levels). Used by leaderboard UI.
+    /// </summary>
+    public string GetLevelGuid(int levelIndex)
+    {
+        if (_levelIds == null || levelIndex < 0 || levelIndex >= _levelIds.Length) return "";
+        string slug = _levelIds[levelIndex];
+        var asset = Resources.Load<TextAsset>("Levels/" + slug);
+        if (asset == null) return slug;
+        try
+        {
+            var data = Newtonsoft.Json.JsonConvert.DeserializeObject<LevelData>(asset.text);
+            return !string.IsNullOrEmpty(data?.levelGuid) ? data.levelGuid : slug;
+        }
+        catch { return slug; }
+    }
+
     /// <summary>Lives the player had at the start of the current level (for perfect-clear detection).</summary>
     public int LivesAtLevelStart { get; private set; }
 

@@ -1,0 +1,28 @@
+{
+  "id": "asdf3",
+  "displayName": "asdf4",
+  "ballSpeed": 8.5,
+  "grid": {
+    "cols": 12,
+    "rows": 6,
+    "brickWidth": 1.35,
+    "brickHeight": 0.45,
+    "gapX": 0.08,
+    "gapY": 0.16
+  },
+  "bricks": [
+    {
+      "col": 2,
+      "row": 4,
+      "templateId": "gold"
+    },
+    {
+      "col": 9,
+      "row": 2,
+      "templateId": "gold"
+    }
+  ],
+  "prismGates": [],
+  "levelOrder": -1,
+  "levelGuid": "e89e3ea61a0e4704b52fad47909bdd09"
+}

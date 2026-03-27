@@ -49,10 +49,10 @@ public class LevelScoreService : MonoBehaviour
     /// Submit a score. Callback receives daily and weekly rank (0 = not top-3 or error).
     /// Times out after 8 seconds and returns rank 0 on failure — game continues normally.
     /// </summary>
-    public void SubmitScore(string levelId, ulong steamId, string steamName, int score,
+    public void SubmitScore(string levelId, string levelName, ulong steamId, string steamName, int score,
                             Action<SubmitResult> callback)
     {
-        StartCoroutine(SubmitScoreRoutine(levelId, steamId, steamName, score, callback));
+        StartCoroutine(SubmitScoreRoutine(levelId, levelName, steamId, steamName, score, callback));
     }
 
     /// <summary>
@@ -62,18 +62,12 @@ public class LevelScoreService : MonoBehaviour
     public void FetchScores(string levelId, LeaderboardTimeScope scope, int limit,
                             ulong steamId, Action<ScoreEntry[], int> callback)
     {
-        if (scope == LeaderboardTimeScope.AllTime)
-        {
-            Debug.LogError("[LevelScoreService] FetchScores called with AllTime scope — use Steam.");
-            callback?.Invoke(Array.Empty<ScoreEntry>(), 0);
-            return;
-        }
         StartCoroutine(FetchScoresRoutine(levelId, scope, limit, steamId, callback));
     }
 
     // ── Coroutines ─────────────────────────────────────────────────────────────
 
-    private IEnumerator SubmitScoreRoutine(string levelId, ulong steamId, string steamName,
+    private IEnumerator SubmitScoreRoutine(string levelId, string levelName, ulong steamId, string steamName,
                                            int score, Action<SubmitResult> callback)
     {
         var bodyObj = new SubmitRequestBody
@@ -81,6 +75,7 @@ public class LevelScoreService : MonoBehaviour
             steamId   = steamId.ToString(),
             steamName = steamName,
             levelId   = levelId,
+            levelName = levelName,
             score     = score
         };
         byte[] bytes = Encoding.UTF8.GetBytes(JsonUtility.ToJson(bodyObj));
@@ -114,7 +109,9 @@ public class LevelScoreService : MonoBehaviour
                                            int limit, ulong steamId,
                                            Action<ScoreEntry[], int> callback)
     {
-        string scopeStr = scope == LeaderboardTimeScope.Daily ? "daily" : "weekly";
+        string scopeStr = scope == LeaderboardTimeScope.Daily   ? "daily"
+                        : scope == LeaderboardTimeScope.Weekly  ? "weekly"
+                        : "alltime";
         string url = $"{_apiBaseUrl}/list.php" +
                      $"?levelId={UnityWebRequest.EscapeURL(levelId)}" +
                      $"&scope={scopeStr}&limit={limit}&steamId={steamId}";
@@ -162,6 +159,7 @@ public class LevelScoreService : MonoBehaviour
         public string steamId;
         public string steamName;
         public string levelId;
+        public string levelName;
         public int    score;
     }
 

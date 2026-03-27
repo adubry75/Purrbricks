@@ -23,7 +23,8 @@ $levelGuid  = trim($body['levelGuid']   ?? '');
 $title      = trim($body['title']       ?? '');
 $desc       = trim($body['description'] ?? '');
 $jsonData   = $body['jsonData']         ?? '';
-$brickCount = intval($body['brickCount'] ?? 0);
+$brickCount  = intval($body['brickCount']  ?? 0);
+$isPublished = isset($body['isPublished']) ? (int)(bool)$body['isPublished'] : 1;
 
 if (!$steamId)   errorResponse('steamId required');
 if (!$levelGuid) errorResponse('levelGuid required');
@@ -57,11 +58,12 @@ try {
 
         $stmt = $db->prepare("
             UPDATE community_levels SET
-                steam_name  = :sname,
-                title       = :title,
-                description = :desc,
-                json_data   = :json,
-                brick_count = :bricks
+                steam_name   = :sname,
+                title        = :title,
+                description  = :desc,
+                json_data    = :json,
+                brick_count  = :bricks,
+                is_published = :ispub
             WHERE id = :id
         ");
         $stmt->execute([
@@ -70,6 +72,7 @@ try {
             ':desc'   => substr($desc,      0, 256),
             ':json'   => $jsonData,
             ':bricks' => $brickCount,
+            ':ispub'  => $isPublished,
             ':id'     => $existing['id'],
         ]);
 
@@ -77,9 +80,9 @@ try {
     } else {
         $stmt = $db->prepare("
             INSERT INTO community_levels
-                (steam_id, steam_name, level_guid, title, description, json_data, brick_count)
+                (steam_id, steam_name, level_guid, title, description, json_data, brick_count, is_published)
             VALUES
-                (:sid, :sname, :guid, :title, :desc, :json, :bricks)
+                (:sid, :sname, :guid, :title, :desc, :json, :bricks, :ispub)
         ");
         $stmt->execute([
             ':sid'    => substr($steamId,   0, 32),
@@ -89,6 +92,7 @@ try {
             ':desc'   => substr($desc,      0, 256),
             ':json'   => $jsonData,
             ':bricks' => $brickCount,
+            ':ispub'  => $isPublished,
         ]);
 
         $newId = (int)$db->lastInsertId();

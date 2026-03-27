@@ -191,18 +191,6 @@ public class PurrBucksManager : MonoBehaviour
         int dailyBonus  = Mathf.RoundToInt(GetRankBonus(dailyRank)  * 0.40f);
 
         // ── AllTime rank bonus (from Steam, async) ────────────────────────────
-        if (LeaderboardTestData.Enabled)
-        {
-            string allTimeBoard = PurrbricksLeaderboards.LevelAllTime(levelIndex);
-            int    allTimeRank  = LeaderboardTestData.GetOrRollDesiredRank(allTimeBoard);
-            int    allTimeBonus = GetRankBonus(allTimeRank);
-
-            int rankBonus = allTimeBonus + weeklyBonus + dailyBonus;
-            if (rankBonus > 0) { _pendingAward += rankBonus; AddCurrency(rankBonus); }
-            OnRankAwardResolved?.Invoke(_pendingAward);
-            return;
-        }
-
         StartCoroutine(FetchRankAndAward(levelIndex, weeklyBonus, dailyBonus));
     }
 
@@ -260,26 +248,6 @@ public class PurrBucksManager : MonoBehaviour
         _pendingAward = immediate;
         AddCurrency(immediate);
         OnRankAwardResolved?.Invoke(_pendingAward);
-
-        if (LeaderboardTestData.Enabled)
-        {
-            string allTimeBoard = PurrbricksLeaderboards.CommunityAllTime(communityId);
-            string weeklyBoard  = PurrbricksLeaderboards.Scoped(allTimeBoard, LeaderboardTimeScope.Weekly);
-            string dailyBoard   = PurrbricksLeaderboards.Scoped(allTimeBoard, LeaderboardTimeScope.Daily);
-
-            int allTimeBonus = GetRankBonus(LeaderboardTestData.GetOrRollDesiredRank(allTimeBoard));
-            int weeklyBonus  = Mathf.RoundToInt(GetRankBonus(LeaderboardTestData.GetOrRollDesiredRank(weeklyBoard))  * 0.60f);
-            int dailyBonus   = Mathf.RoundToInt(GetRankBonus(LeaderboardTestData.GetOrRollDesiredRank(dailyBoard))   * 0.40f);
-
-            int rankBonus = allTimeBonus + weeklyBonus + dailyBonus;
-            if (rankBonus > 0)
-            {
-                _pendingAward += rankBonus;
-                AddCurrency(rankBonus);
-            }
-            OnRankAwardResolved?.Invoke(_pendingAward);
-            return;
-        }
 
         StartCoroutine(FetchCommunityRankAndAward(communityId));
     }

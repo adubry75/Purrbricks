@@ -294,7 +294,7 @@ public static class PurrbricksSetup
         musicSo.FindProperty("_levelFinishTrack").objectReferenceValue = finishClip;
 
         var gpArr = musicSo.FindProperty("_gameplayTracks");
-        gpArr.arraySize = 23;
+        gpArr.arraySize = 27;
         gpArr.GetArrayElementAtIndex(0).objectReferenceValue = gp1;
         gpArr.GetArrayElementAtIndex(1).objectReferenceValue = gp2;
         gpArr.GetArrayElementAtIndex(2).objectReferenceValue = gp3;
@@ -731,6 +731,38 @@ public static class PurrbricksSetup
         t.defaultTint   = tint;
         AssetDatabase.CreateAsset(t, path);
         return t;
+    }
+
+    // ── Backfill level GUIDs ─────────────────────────────────────────────────
+
+    [MenuItem("Purrbricks/Backfill Missing Level GUIDs")]
+    public static void BackfillLevelGuids()
+    {
+        string dir = Path.Combine(Application.dataPath, "_Project", "Resources", "Levels");
+        var settings = new Newtonsoft.Json.JsonSerializerSettings
+        {
+            NullValueHandling    = Newtonsoft.Json.NullValueHandling.Ignore,
+            DefaultValueHandling = Newtonsoft.Json.DefaultValueHandling.Ignore,
+            Formatting           = Newtonsoft.Json.Formatting.Indented
+        };
+
+        int patched = 0;
+        foreach (string file in Directory.GetFiles(dir, "*.json"))
+        {
+            string json = File.ReadAllText(file);
+            LevelData data;
+            try { data = Newtonsoft.Json.JsonConvert.DeserializeObject<LevelData>(json); }
+            catch { continue; }
+            if (data == null || !string.IsNullOrEmpty(data.levelGuid)) continue;
+
+            data.levelGuid = System.Guid.NewGuid().ToString("N");
+            File.WriteAllText(file, Newtonsoft.Json.JsonConvert.SerializeObject(data, settings));
+            patched++;
+        }
+
+        AssetDatabase.Refresh();
+        Debug.Log($"[Purrbricks] Backfilled GUIDs into {patched} level files.");
+        EditorUtility.DisplayDialog("Done", $"Backfilled GUIDs into {patched} level files.", "OK");
     }
 }
 #endif

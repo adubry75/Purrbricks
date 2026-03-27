@@ -1354,7 +1354,6 @@ public class LevelEditorUI : MonoBehaviour
         string json = JsonConvert.SerializeObject(_data, settings);
 
         bool submitToCommunity = _communityToggle != null && _communityToggle.isOn;
-        bool wasPublished = CommunityLevelService.Instance?.IsPublished(_data?.levelGuid ?? "") ?? false;
 
 #if UNITY_EDITOR
         string dir = Path.Combine(Application.dataPath, "_Project", "Resources", "Levels");
@@ -1365,14 +1364,6 @@ public class LevelEditorUI : MonoBehaviour
         Debug.Log($"[LevelEditor] Saved '{_levelId}' → {path}");
 #endif
 
-        // Uncheck while published → unpublish from community
-        if (wasPublished && !submitToCommunity && CommunityLevelService.Instance != null)
-        {
-            int serverId = CommunityLevelService.Instance.GetPublishedServerId(_data.levelGuid);
-            if (serverId > 0)
-                CommunityLevelService.Instance.DeleteLevel(serverId, _ => { });
-        }
-
         if (submitToCommunity)
         {
             // Open the publish dialog before returning to browser
@@ -1382,6 +1373,18 @@ public class LevelEditorUI : MonoBehaviour
                 publishUI.Show(_data, _levelId);
                 return; // stay on editor screen until publish dialog closes
             }
+        }
+        else if (!IsNativeLevel() && CommunityLevelService.Instance != null)
+        {
+            // Always save user-created levels to the server (private when not sharing).
+            // publish.php will INSERT if new or UPDATE if already exists — in both cases
+            // is_published is set to 0 so the level is not visible in the community browser,
+            // but it WILL appear in the creator's own "My Levels" list.
+            // ReturnToBrowser is called in the callback so the browser refreshes after the
+            // server confirms the save (avoids a race where the new level isn't in the DB yet).
+            string levelTitle = !string.IsNullOrEmpty(_data.displayName) ? _data.displayName : _levelId;
+            CommunityLevelService.Instance.PublishLevel(_data, levelTitle, "", _ => ReturnToBrowser(), isPublished: false);
+            return;
         }
 
         ReturnToBrowser();

@@ -1,0 +1,58 @@
+{
+  "id": "test1",
+  "displayName": "testmer",
+  "ballSpeed": 8.5,
+  "grid": {
+    "cols": 12,
+    "rows": 6,
+    "brickWidth": 1.35,
+    "brickHeight": 0.45,
+    "gapX": 0.08,
+    "gapY": 0.16
+  },
+  "bricks": [
+    {
+      "col": 5,
+      "row": 3,
+      "templateId": "gem"
+    },
+    {
+      "col": 4,
+      "row": 3,
+      "templateId": "gem"
+    },
+    {
+      "col": 3,
+      "row": 4,
+      "templateId": "gem"
+    },
+    {
+      "col": 4,
+      "row": 4,
+      "templateId": "gem"
+    },
+    {
+      "col": 5,
+      "row": 4,
+      "templateId": "gem"
+    },
+    {
+      "col": 6,
+      "row": 4,
+      "templateId": "gem"
+    },
+    {
+      "col": 5,
+      "row": 5,
+      "templateId": "gem"
+    },
+    {
+      "col": 4,
+      "row": 5,
+      "templateId": "gem"
+    }
+  ],
+  "prismGates": [],
+  "levelOrder": -1,
+  "levelGuid": "241f9621cfba4ae9a8ff73bfa34dc7e3"
+}
