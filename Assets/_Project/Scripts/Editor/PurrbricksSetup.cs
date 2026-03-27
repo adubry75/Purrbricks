@@ -739,24 +739,28 @@ public static class PurrbricksSetup
     public static void BackfillLevelGuids()
     {
         string dir = Path.Combine(Application.dataPath, "_Project", "Resources", "Levels");
-        var settings = new Newtonsoft.Json.JsonSerializerSettings
-        {
-            NullValueHandling    = Newtonsoft.Json.NullValueHandling.Ignore,
-            DefaultValueHandling = Newtonsoft.Json.DefaultValueHandling.Ignore,
-            Formatting           = Newtonsoft.Json.Formatting.Indented
-        };
 
         int patched = 0;
         foreach (string file in Directory.GetFiles(dir, "*.json"))
         {
             string json = File.ReadAllText(file);
-            LevelData data;
-            try { data = Newtonsoft.Json.JsonConvert.DeserializeObject<LevelData>(json); }
-            catch { continue; }
-            if (data == null || !string.IsNullOrEmpty(data.levelGuid)) continue;
 
-            data.levelGuid = System.Guid.NewGuid().ToString("N");
-            File.WriteAllText(file, Newtonsoft.Json.JsonConvert.SerializeObject(data, settings));
+            // Skip files that already have a levelGuid value.
+            if (json.Contains("\"levelGuid\"")) continue;
+
+            // Inject "levelGuid": "xxx" as the first field after the opening brace.
+            // Uses a regex so the rest of the JSON is untouched byte-for-byte.
+            string guid    = System.Guid.NewGuid().ToString("N");
+            string patched_json = new System.Text.RegularExpressions.Regex(@"(\{[ \t]*[\r\n]+)")
+                .Replace(json, $"$1  \"levelGuid\": \"{guid}\",\n", 1);
+
+            if (patched_json == json)
+            {
+                Debug.LogWarning($"[Purrbricks] Could not inject GUID into {Path.GetFileName(file)} — unexpected format, skipped.");
+                continue;
+            }
+
+            File.WriteAllText(file, patched_json);
             patched++;
         }
 
