@@ -220,10 +220,24 @@ public class SettingsUI : MonoBehaviour
             GameManager.Instance?.ShowMainMenu();
     }
 
-    private void Update()
+    private void Update() { } // Input handled via action subscription
+
+    private void OnEnable()
+    {
+        if (InputManager.Actions != null)
+            InputManager.Actions.UI.CancelUI.performed += OnCancelUIPerformed;
+    }
+
+    private void OnDisable()
+    {
+        if (InputManager.Actions != null)
+            InputManager.Actions.UI.CancelUI.performed -= OnCancelUIPerformed;
+    }
+
+    private void OnCancelUIPerformed(UnityEngine.InputSystem.InputAction.CallbackContext ctx)
     {
         if (!gameObject.activeSelf) return;
-        if (Input.GetKeyDown(KeyCode.Escape)) OnBack();
+        OnBack();
     }
 
     // ── Selector refresh ──────────────────────────────────────────────────────
