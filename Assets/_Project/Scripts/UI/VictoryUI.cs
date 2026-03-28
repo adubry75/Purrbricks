@@ -465,6 +465,7 @@ public class VictoryUI : MonoBehaviour
         // Activate first so OnEnable subscribes to OnRankAwardResolved before
         // AwardLevelComplete fires it (synchronously in debug builds).
         gameObject.SetActive(true);
+        UINavController.SetDefault(_nextLevelBtnGO);
 
         // Submit to Steam per-level all-time leaderboard (KeepBest) — daily/weekly now use MySQL.
         if (levelScore > 0)

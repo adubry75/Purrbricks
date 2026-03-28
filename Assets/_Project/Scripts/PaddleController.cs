@@ -92,7 +92,10 @@ public class PaddleController : MonoBehaviour
         {
             float stickX = InputManager.Actions?.Gameplay.MovePaddle.ReadValue<float>() ?? 0f;
             if (_isFlipped) stickX = -stickX;
-            targetX = transform.position.x + stickX * _gamepadPaddleSpeed * Time.deltaTime;
+            // Piecewise: 0–50% tilt → 0–1× speed (fine control), 50–100% → 1–3× speed (fast zone)
+            float absStick = Mathf.Abs(stickX);
+            float factor = absStick <= 0.5f ? absStick * 2f : 1f + (absStick - 0.5f) * 4f;
+            targetX = transform.position.x + Mathf.Sign(stickX) * factor * _gamepadPaddleSpeed * Time.deltaTime;
         }
         else
         {

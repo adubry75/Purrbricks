@@ -15,6 +15,7 @@ public class MainMenuUI : MonoBehaviour
     private Canvas _canvas;
     private GameObject _panel;
     private GameObject _creditsButton;
+    private Button _playBtn;
 
     private LevelEditorBrowserUI _levelEditorBrowser;
 
@@ -95,7 +96,7 @@ public class MainMenuUI : MonoBehaviour
         bool creditsUnlocked = PlayerPrefs.GetInt(PREF_GAME_COMPLETED, 0) == 1;
 
         // Main buttons
-        UIStyle.CreateButton(_panel.transform, "Play",
+        _playBtn = UIStyle.CreateButton(_panel.transform, "Play",
             new Vector2(0f, startY),
             buttonSize,
             () => GameManager.Instance?.StartGame(),
@@ -282,6 +283,7 @@ public class MainMenuUI : MonoBehaviour
         // Refresh Credits button visibility in case it was just unlocked
         if (_creditsButton != null)
             _creditsButton.SetActive(PlayerPrefs.GetInt(PREF_GAME_COMPLETED, 0) == 1);
+        UINavController.SetDefault(_playBtn?.gameObject);
     }
 
     public void Hide() { gameObject.SetActive(false); }

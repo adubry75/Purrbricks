@@ -66,6 +66,7 @@ public class TutorialManager : MonoBehaviour
     private RectTransform _dividerRt;
     private RectTransform _bodyRt;
     private RectTransform _okBtnRt;
+    private Button        _okBtn;
 
     // ── Lifecycle ─────────────────────────────────────────────────────────────
 
@@ -137,6 +138,7 @@ public class TutorialManager : MonoBehaviour
         if (_bodyText  != null) _bodyText.text  = card.Body;
 
         _panelRoot.SetActive(true);
+        UINavController.SetDefault(_okBtn?.gameObject);
         ResizeCard();
     }
 
@@ -373,6 +375,7 @@ public class TutorialManager : MonoBehaviour
         var okBtn = UIStyle.CreateButton(_card.transform, "GOT IT!",
             new Vector2(0f, -182f), new Vector2(240f, 60f),
             OnOkClicked, UIStyle.AccentGreen);
+        _okBtn   = okBtn;
         _okBtnRt = okBtn.GetComponent<RectTransform>();  // overridden by ResizeCard
 
         // Start hidden

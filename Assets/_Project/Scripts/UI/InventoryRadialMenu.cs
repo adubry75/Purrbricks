@@ -222,6 +222,7 @@ public class InventoryRadialMenu : MonoBehaviour
         _isOpen = true;
         Time.timeScale = 0f;
         Cursor.visible = true;
+        UINavController.RadialMenuOpen = true;
 
         BuildSlots(outerList.Count, innerList.Count);
 
@@ -460,76 +461,35 @@ public class InventoryRadialMenu : MonoBehaviour
         rt2.anchoredPosition = new Vector2(0f, -18f);
     }
 
-    // ── Hover (mouse must physically be over a tile) ───────────────────────────
+    // ── Hover — unified cursor-based for both mouse and gamepad ──────────────
 
     private void UpdateHover()
     {
         if (_slotRTs.Count == 0) return;
 
-        if (InputManager.CurrentScheme == InputScheme.Gamepad)
-            UpdateHoverGamepad();
-        else
-            UpdateHoverMouse();
-    }
+        // Use virtual cursor position for gamepad, real mouse position for mouse+keyboard.
+        // This removes the angle-based stick logic entirely — the cursor IS the pointer.
+        Vector2 screenPos = (InputManager.CurrentScheme == InputScheme.Gamepad)
+            ? UINavController.CursorPosition
+            : (Mouse.current?.position.ReadValue() ?? Vector2.zero);
 
-    private void UpdateHoverMouse()
-    {
-        if (Mouse.current == null) return;
-
+        // Convert screen position → radial canvas local space
         Vector2 screenCenter = new Vector2(Screen.width * 0.5f, Screen.height * 0.5f);
         var rootRt = _radialRoot.GetComponent<RectTransform>();
-
-        Vector2 mousePos = Mouse.current.position.ReadValue();
-        Vector2 mouseCanvas = (mousePos - screenCenter) / _canvas.scaleFactor - rootRt.anchoredPosition;
+        Vector2 canvasPos = (screenPos - screenCenter) / _canvas.scaleFactor - rootRt.anchoredPosition;
 
         int newHovered = -1;
         for (int i = 0; i < _slotRTs.Count; i++)
         {
             float radius = (_allSlots[i].isInner ? INNER_SLOT_SIZE : OUTER_SLOT_SIZE) * 0.5f;
-            Vector2 delta = mouseCanvas - _slotRTs[i].anchoredPosition;
-            if (delta.sqrMagnitude <= radius * radius)
+            if ((canvasPos - _slotRTs[i].anchoredPosition).sqrMagnitude <= radius * radius)
             {
                 newHovered = i;
                 break;
             }
         }
 
-        if (newHovered != _hoveredIndex)
-        {
-            _hoveredIndex = newHovered;
-            RefreshHighlights();
-        }
-    }
-
-    private void UpdateHoverGamepad()
-    {
-        Vector2 stickDir = InputManager.Actions?.Gameplay.RadialSelect.ReadValue<Vector2>() ?? Vector2.zero;
-
-        // Require minimum stick deflection (deadzone)
-        if (stickDir.magnitude < 0.3f)
-        {
-            if (_hoveredIndex != -1) { _hoveredIndex = -1; RefreshHighlights(); }
-            return;
-        }
-
-        // Find slot whose angular position is closest to stick direction
-        float stickAngleDeg = Mathf.Atan2(stickDir.y, stickDir.x) * Mathf.Rad2Deg;
-        int newHovered = -1;
-        float bestDiff = float.MaxValue;
-
-        for (int i = 0; i < _slotRTs.Count; i++)
-        {
-            Vector2 slotPos = _slotRTs[i].anchoredPosition;
-            float slotAngleDeg = Mathf.Atan2(slotPos.y, slotPos.x) * Mathf.Rad2Deg;
-            float diff = Mathf.Abs(Mathf.DeltaAngle(stickAngleDeg, slotAngleDeg));
-            if (diff < bestDiff) { bestDiff = diff; newHovered = i; }
-        }
-
-        if (newHovered != _hoveredIndex)
-        {
-            _hoveredIndex = newHovered;
-            RefreshHighlights();
-        }
+        if (newHovered != _hoveredIndex) { _hoveredIndex = newHovered; RefreshHighlights(); }
     }
 
     private void RefreshHighlights()
@@ -604,6 +564,7 @@ public class InventoryRadialMenu : MonoBehaviour
 
         Time.timeScale = 1f;
         Cursor.visible = false;
+        UINavController.RadialMenuOpen = false;
 
         if (_radialRoot != null) { Destroy(_radialRoot); _radialRoot = null; _radialGroup = null; }
         _slotGOs.Clear();

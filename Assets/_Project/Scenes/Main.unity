@@ -1335,6 +1335,7 @@ MonoBehaviour:
   _playfieldBounds: {fileID: 13817132}
   _yLocked: -7
   _smoothTime: 0.01
+  _gamepadPaddleSpeed: 12
   _demoSmoothTime: 0.15
   _widthMultiplier: 1.5
   _laserPrefab: {fileID: 0}
@@ -3723,7 +3724,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9dd5c0e3953c82943b2f61f9b5baad60, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::GameManager
-  _adminMode: 0
+  _adminMode: 1
   _startingLives: 3
   _score: 0
   _combo: 0

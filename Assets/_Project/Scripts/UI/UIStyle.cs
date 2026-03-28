@@ -15,7 +15,7 @@ public static class UIStyle
     public static readonly Color AccentMagenta = new Color(1.00f, 0.30f, 0.80f);
 
     private static readonly Color BgNormal     = new Color(0.04f, 0.08f, 0.16f, 0.95f);
-    private static readonly Color BgHighlight  = new Color(0.10f, 0.20f, 0.36f, 0.98f);
+    private static readonly Color BgHighlight  = new Color(0.18f, 0.38f, 0.70f, 1.00f); // bright blue — clearly visible on hover
     private static readonly Color BgPressed    = new Color(0.02f, 0.04f, 0.09f, 1.00f);
 
     private static Sprite s_cachedTemplate;

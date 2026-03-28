@@ -131,8 +131,11 @@ public class PauseMenuUI : MonoBehaviour
         }
     }
 
+    private float _enabledTime;
+
     private void OnEnable()
     {
+        _enabledTime = Time.unscaledTime;
         if (InputManager.Actions != null)
             InputManager.Actions.UI.CancelUI.performed += OnCancelUIPerformed;
     }
@@ -145,8 +148,9 @@ public class PauseMenuUI : MonoBehaviour
 
     private void OnCancelUIPerformed(UnityEngine.InputSystem.InputAction.CallbackContext ctx)
     {
-        // OnDisable unsubscribes when the panel is hidden, so this callback only fires
-        // while the pause menu is active. Guard only needed for editor test mode.
+        // Guard against the same-frame race where Pause.performed opens this menu and
+        // CancelUI.performed (same Escape key) fires immediately in the same input cycle.
+        if (Time.unscaledTime <= _enabledTime) return;
         if (GameManager.Instance != null && GameManager.Instance.IsEditorTestMode) return;
         GameManager.Instance?.ResumeGame();
     }
@@ -192,6 +196,7 @@ public class PauseMenuUI : MonoBehaviour
     {
         ApplyMode();
         gameObject.SetActive(true);
+        UINavController.SetDefault(_resumeBtn?.gameObject);
     }
     public void Hide() { gameObject.SetActive(false); }
 }

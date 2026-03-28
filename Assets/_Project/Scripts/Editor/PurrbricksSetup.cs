@@ -239,13 +239,9 @@ public static class PurrbricksSetup
             Debug.Log("Added PowerupNotification.");
         }
 
-        // ── InputManager ──────────────────────────────────────────────────────
-        var inputMgrGO = EnsureGO("InputManager");
-        if (inputMgrGO.GetComponent<InputManager>() == null)
-        {
-            inputMgrGO.AddComponent<InputManager>();
-            Debug.Log("Added InputManager.");
-        }
+        // InputManager and UINavController are NOT created here.
+        // They self-bootstrap via [RuntimeInitializeOnLoadMethod(BeforeSceneLoad)]
+        // and must never exist as scene objects.
 
         // ── 11e. HavocBar (Fury Strike charge bar) ───────────────────────────
         var havocGO = EnsureGO("HavocBar");

@@ -10,6 +10,7 @@ public class GameOverUI : MonoBehaviour
     private Canvas _canvas;
     private Text   _titleText;
     private Text   _scoreText;
+    private Button _mainMenuBtn;
 
     [Header("Button Sprites")]
     [SerializeField] private Sprite _leaderboardSprite;
@@ -88,7 +89,7 @@ public class GameOverUI : MonoBehaviour
             new Vector2(-200f, -60f), new Vector2(280f, 70f),
             OnLeaderboard, UIStyle.AccentBlue);
 
-        UIStyle.CreateButton(panel.transform, "Main Menu",
+        _mainMenuBtn = UIStyle.CreateButton(panel.transform, "Main Menu",
             new Vector2(200f, -60f), new Vector2(280f, 70f),
             OnMainMenu, UIStyle.AccentGold);
     }
@@ -98,6 +99,7 @@ public class GameOverUI : MonoBehaviour
     public void ShowGameOver(int finalScore)
     {
         gameObject.SetActive(true);
+        UINavController.SetDefault(_mainMenuBtn?.gameObject);
 
         if (_titleText != null)
         {

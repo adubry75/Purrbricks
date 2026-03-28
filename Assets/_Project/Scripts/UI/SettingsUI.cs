@@ -14,6 +14,7 @@ public class SettingsUI : MonoBehaviour
 
     private Canvas _canvas;
     private bool   _fromPause;
+    private Button _applyBtn;
 
     // Pending values (not applied until Apply is pressed)
     private int   _pendingResIdx;
@@ -142,7 +143,7 @@ public class SettingsUI : MonoBehaviour
         y -= 190f;
 
         // ── Buttons ───────────────────────────────────────────────────────────
-        UIStyle.CreateButton(panel.transform, "Apply",
+        _applyBtn = UIStyle.CreateButton(panel.transform, "Apply",
             new Vector2(-145f, y), new Vector2(260f, 68f),
             OnApply, UIStyle.AccentGreen);
 
@@ -158,6 +159,7 @@ public class SettingsUI : MonoBehaviour
     {
         _fromPause = fromPause;
         gameObject.SetActive(true);
+        UINavController.SetDefault(_applyBtn?.gameObject);
 
         var mgr = SettingsManager.Instance;
         if (mgr == null) return;

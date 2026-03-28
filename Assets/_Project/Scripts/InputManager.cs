@@ -9,10 +9,18 @@ public enum InputScheme { MouseKeyboard, Gamepad }
 /// Singleton that owns PurrbricksInputActions, detects active device,
 /// and exposes Fury Strike composite logic.
 ///
-/// Auto-created by PurrbricksSetup. DO NOT add manually to the scene.
+/// Auto-created at runtime — no scene setup required.
 /// </summary>
 public class InputManager : MonoBehaviour
 {
+    [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
+    private static void Bootstrap()
+    {
+        if (Instance != null) return;
+        var go = new GameObject("InputManager");
+        go.AddComponent<InputManager>(); // Awake() fires here, setting Instance + DontDestroyOnLoad
+    }
+
     public static InputManager Instance { get; private set; }
 
     /// <summary>The currently active input scheme (updated by device auto-detection).</summary>
@@ -39,6 +47,7 @@ public class InputManager : MonoBehaviour
 
     private void OnDestroy()
     {
+        if (Instance != this) return; // Duplicate being destroyed — don't touch shared static state
         InputSystem.onEvent -= OnRawInputEvent;
         Actions?.Dispose();
         Actions = null;
