@@ -749,7 +749,7 @@ Replace with:
 ```csharp
 private static bool WasLaunchPerformedThisFrame()
 {
-    return InputManager.Actions?.Gameplay.LaunchBall.WasPressedThisFrame() ?? false;
+    return InputManager.Actions?.Gameplay.LaunchBall.WasPerformedThisFrame() ?? false;
 }
 ```
 
