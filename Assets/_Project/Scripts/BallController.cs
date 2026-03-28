@@ -210,7 +210,7 @@ public class BallController : MonoBehaviour
             if (_paddle != null)
                 transform.position = (Vector2)_paddle.position + _stickyHoldOffset;
 
-            if (WasLeftMousePressedThisFrame())
+            if (WasLaunchPerformedThisFrame())
                 ReleaseStickyHold();
         }
 
@@ -352,19 +352,12 @@ public class BallController : MonoBehaviour
 
     private void HandleAimInput()
     {
-        var mouse = Mouse.current;
-        if (mouse == null)
-        {
-            if (_aimLineGO != null && _aimLineGO.activeSelf)
-                _aimLineGO.SetActive(false);
-            return;
-        }
+        bool isGamepad = InputManager.CurrentScheme == InputScheme.Gamepad;
 
-        var leftButton = mouse.leftButton;
-        if (leftButton == null)
+        var launchAction = InputManager.Actions?.Gameplay.LaunchBall;
+        if (launchAction == null)
         {
-            if (_aimLineGO != null && _aimLineGO.activeSelf)
-                _aimLineGO.SetActive(false);
+            if (_aimLineGO != null && _aimLineGO.activeSelf) _aimLineGO.SetActive(false);
             return;
         }
 
@@ -373,14 +366,12 @@ public class BallController : MonoBehaviour
         // transition from "carrying" into aiming/launching.
         if (!_isAiming)
         {
-            if (!leftButton.wasPressedThisFrame)
+            if (!launchAction.WasPerformedThisFrame())
             {
-                if (_aimLineGO != null && _aimLineGO.activeSelf)
-                    _aimLineGO.SetActive(false);
+                if (_aimLineGO != null && _aimLineGO.activeSelf) _aimLineGO.SetActive(false);
                 return;
             }
 
-            // Freeze paddle so mouse can aim freely
             if (_paddleCtrl == null && _paddle != null)
                 _paddleCtrl = _paddle.GetComponent<PaddleController>();
             _paddleCtrl?.SetFrozen(true);
@@ -390,11 +381,26 @@ public class BallController : MonoBehaviour
             _isAiming = true;
         }
 
-        if (leftButton.isPressed)
+        if (launchAction.IsPressed())
         {
-            float deltaX = mouse.delta.ReadValue().x;
-            float deltaDegrees = deltaX / Screen.width * 180f;
-            _aimAngleDegrees = Mathf.Clamp(_aimAngleDegrees + deltaDegrees, -60f, 60f);
+            if (isGamepad)
+            {
+                // Gamepad: stick X maps directly to aim angle (-1..1 → -60°..60°)
+                float stickX = InputManager.Actions?.Gameplay.MovePaddle.ReadValue<float>() ?? 0f;
+                _aimAngleDegrees = stickX * 60f;
+            }
+            else
+            {
+                // Mouse: accumulate delta (existing behaviour)
+                var mouse = Mouse.current;
+                if (mouse != null)
+                {
+                    float deltaX = mouse.delta.ReadValue().x;
+                    float deltaDegrees = deltaX / Screen.width * 180f;
+                    _aimAngleDegrees = Mathf.Clamp(_aimAngleDegrees + deltaDegrees, -60f, 60f);
+                }
+            }
+
             float rad = _aimAngleDegrees * Mathf.Deg2Rad;
             _aimDir = new Vector2(Mathf.Sin(rad), Mathf.Cos(rad));
 
@@ -406,25 +412,27 @@ public class BallController : MonoBehaviour
                 _aimLine.SetPosition(1, origin + _aimDir * 2.8f);
             }
         }
-        else if (leftButton.wasReleasedThisFrame)
+        else if (launchAction.WasReleasedThisFrame())
         {
             if (_aimLineGO != null) _aimLineGO.SetActive(false);
             _launchDirection = _aimDir;
             _isAiming = false;
             Launch();
-            WarpMouseToPaddleX();
+
+            // Only warp cursor on mouse — not needed on gamepad
+            if (!isGamepad) WarpMouseToPaddleX();
+
             _paddleCtrl?.SetFrozen(false);
         }
         else
         {
-            if (_aimLineGO != null && _aimLineGO.activeSelf)
-                _aimLineGO.SetActive(false);
+            if (_aimLineGO != null && _aimLineGO.activeSelf) _aimLineGO.SetActive(false);
         }
     }
 
-    private static bool WasLeftMousePressedThisFrame()
+    private static bool WasLaunchPerformedThisFrame()
     {
-        return Mouse.current?.leftButton?.wasPressedThisFrame ?? false;
+        return InputManager.Actions?.Gameplay.LaunchBall.WasPerformedThisFrame() ?? false;
     }
 
     private void WarpMouseToPaddleX()
