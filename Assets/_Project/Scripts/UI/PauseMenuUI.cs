@@ -4,7 +4,7 @@ using UnityEngine.UI;
 /// <summary>
 /// Pause menu overlay shown when the player presses Escape during gameplay.
 /// Provides Resume, Settings, Main Menu, and Quit Game options.
-/// ESC key also resumes.
+/// CancelUI action (Escape / gamepad B) also resumes.
 /// </summary>
 public class PauseMenuUI : MonoBehaviour
 {
@@ -145,7 +145,8 @@ public class PauseMenuUI : MonoBehaviour
 
     private void OnCancelUIPerformed(UnityEngine.InputSystem.InputAction.CallbackContext ctx)
     {
-        if (!gameObject.activeSelf) return;
+        // OnDisable unsubscribes when the panel is hidden, so this callback only fires
+        // while the pause menu is active. Guard only needed for editor test mode.
         if (GameManager.Instance != null && GameManager.Instance.IsEditorTestMode) return;
         GameManager.Instance?.ResumeGame();
     }
