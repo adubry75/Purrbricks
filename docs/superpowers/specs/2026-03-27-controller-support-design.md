@@ -34,7 +34,7 @@ Three layers:
 
 A single Unity Input Actions asset declaring all gameplay actions. Unity generates a typed C# wrapper class (`PurrbricksInputActions`) from this asset. Two action maps:
 
-- **`Gameplay`** — enabled during Ready, Playing, and Paused states
+- **`Gameplay`** — enabled during Ready, Playing, and Paused states; disabled during MainMenu, Cleared, Victory, and GameOver states
 - **`UI`** — always enabled (Pause, CancelUI, ConfirmUI)
 
 ### 2. `InputManager` Singleton
@@ -43,7 +43,7 @@ A single Unity Input Actions asset declaring all gameplay actions. Unity generat
 
 Responsibilities:
 - Instantiates and owns `PurrbricksInputActions`
-- Enables/disables action maps based on game state
+- Enables/disables action maps based on game state (subscribes to `GameManager` state change events)
 - Implements passive auto-detection via `InputSystem.onEvent` — inspects source device on every raw input event
 - Fires `static event Action<InputScheme> OnSchemeChanged` when active scheme changes
 - Exposes `static InputScheme CurrentScheme` (`MouseKeyboard` or `Gamepad`)
@@ -73,8 +73,8 @@ Lookup table mapping `HintKey` enum values to scheme-specific strings. All hardc
 
 - **`MovePaddle` on gamepad**: stick X is read as a *delta velocity* (holding stick moves paddle continuously at configurable speed), not as an absolute world coordinate. This is standard breakout feel.
 - **`FuryStrike`**: NIS has no native "both buttons held" composite. `InputManager` tracks LT and RT (or LMB and RMB) individually and fires the strike when both are pressed simultaneously, matching existing behavior.
-- **`RadialSelect` on gamepad**: stick direction (Vector2) is converted to a synthetic screen-space offset from the paddle center position, feeding into `InventoryRadialMenu`'s existing angle calculation unchanged.
-- **`OpenRadialMenu`**: either LB or RB triggers open; releasing either closes and activates the selection.
+- **`RadialSelect` on gamepad**: stick direction (Vector2) is converted to a synthetic screen-space offset from the paddle center position, feeding into `InventoryRadialMenu`'s existing angle calculation unchanged. While the radial is open, `Time.timeScale = 0f` so `MovePaddle` also reads the stick but has no effect — no suppression needed.
+- **`OpenRadialMenu`**: either LB or RB triggers open; releasing either closes and activates the selection. `CancelUI` (B button or RMB) cancels without activating.
 - **Level code dialog (G key)**: not triggered on gamepad. Text entry on controller is impractical; this is a dev/cheat feature.
 
 ---
@@ -84,11 +84,13 @@ Lookup table mapping `HintKey` enum values to scheme-specific strings. All hardc
 ### `PaddleController.cs`
 - Remove: `Input.mousePosition` (paddle tracking), `Input.GetMouseButtonDown(0)` (laser fire)
 - Add: Subscribe to `FireLaser` action performed callback
-- Add: In `Update()`, read `MovePaddle` value — if `Gamepad`, accumulate stick X as velocity; if `MouseKeyboard`, use existing screen-to-world conversion
+- Add: In `Update()`, read `MovePaddle` value — if `Gamepad`, accumulate stick X as velocity (`_gamepadPaddleSpeed * stickX * Time.deltaTime`); if `MouseKeyboard`, use existing screen-to-world conversion
 
 ### `BallController.cs`
-- Remove: All `Mouse.current.*` calls (leftButton, delta, WarpCursorPosition)
+- Remove: All `Mouse.current.*` calls (`leftButton`, `delta`, `WarpCursorPosition`)
 - Add: Subscribe to `LaunchBall` started (begin aim) and canceled (release to launch)
+- **Aim angle on mouse**: existing per-frame delta accumulation (`mouse.delta.ReadValue().x`) is preserved, guarded by `if (InputManager.CurrentScheme == MouseKeyboard)`
+- **Aim angle on gamepad**: per-frame stick X value from `MovePaddle` action is read directly as the aim deflection — positive right, negative left. The existing `_aimAngleDegrees` field is driven by stick X multiplied by a max-angle constant instead of accumulated delta. No separate aim action needed; the paddle stick doubles as the aim direction while the ball is on the paddle.
 - Keep: `Mouse.WarpCursorPosition()` guarded by `if (InputManager.CurrentScheme == MouseKeyboard)`
 
 ### `GameManager.cs`
@@ -97,10 +99,15 @@ Lookup table mapping `HintKey` enum values to scheme-specific strings. All hardc
 - Replace: `KeyCode.Escape` pause check → subscribe to `Pause` action
 - Keep: Numpad debug hotkeys unchanged (old Input Manager, dev-only)
 
+### `PauseMenuUI.cs`
+- Remove: `Input.GetKeyDown(KeyCode.Escape)` resume-game check in `Update()` — replace with `CancelUI` action subscription to call `GameManager.Instance.ResumeGame()`
+- Keep: The second `KeyCode.Escape` check in `Update()` that handles editor test-mode exit — this is dev-only and intentionally left on old Input Manager
+
 ### `InventoryRadialMenu.cs`
-- Remove: `Input.GetMouseButtonDown(2)`, `GetMouseButtonUp(2)`, `GetMouseButtonDown(1)`
-- Add: Subscribe to `OpenRadialMenu` started/canceled for open/close
-- Replace: Mouse position hover angle → read `RadialSelect` Vector2; if gamepad, convert stick direction to synthetic position; if mouse, use existing screen position logic
+- Remove: `Input.GetMouseButtonDown(2)`, `GetMouseButtonUp(2)`, `Input.GetMouseButtonDown(1)`, `Input.GetKeyDown(KeyCode.Escape)`
+- Add: Subscribe to `OpenRadialMenu` started → open; `OpenRadialMenu` canceled → close+activate
+- Add: Subscribe to `CancelUI` → close without activating (covers both RMB and B button/Escape)
+- Replace hover angle in `UpdateHover()`: migrate `Input.mousePosition` → `Mouse.current.position.ReadValue()` for the mouse path; for gamepad, convert `RadialSelect` stick Vector2 to synthetic screen-space position offset from paddle center and feed into the existing angle calculation
 
 ### `LevelCodeEntryUI.cs`
 - Remove: `KeyCode.Escape`, `KeyCode.Return`, `KeyCode.KeypadEnter` checks
@@ -123,12 +130,25 @@ Lookup table mapping `HintKey` enum values to scheme-specific strings. All hardc
 | `FuryStrikeBar` | `"FURY STRIKE [🖱 LMB + RMB]"` | `"FURY STRIKE [LT + RT]"` |
 | `Radial` | `"HOLD MMB  →  HOVER A POWER-UP  →  RELEASE TO USE"` | `"HOLD LB/RB  →  STICK  →  RELEASE TO USE"` |
 | `LevelCode` | `"ENTER to warp  ·  ESC to cancel"` | `"ENTER to warp  ·  ESC to cancel"` |
+| `PauseInstruction` | `"Press ESCAPE to pause at any time."` | `"Press START to pause at any time."` |
+
+`HintKey.LaunchBall` and `HintKey.PauseInstruction` are concatenated in `GameManager` when building the LaunchBall tutorial body:
+```
+body = InputHintService.Get(HintKey.LaunchBall) + "\n\n" + InputHintService.Get(HintKey.PauseInstruction)
+```
+
+`HintKey.FuryStrikeTutorial` covers only the device-specific instruction line. `GameManager` builds the full FuryStrike tutorial body as:
+```
+body = "Your Fury Charge is at maximum!\n\n"
+     + InputHintService.Get(HintKey.FuryStrikeTutorial)
+     + "\n— a devastating\nbomb blast from every ball on screen!"
+```
 
 ### Components That Refresh on Scheme Change
 
-- `HavocBar` — subscribes `OnSchemeChanged`, calls `RefreshHints()` to update Fury Strike bar label
-- `InventoryRadialMenu` — refreshes first-use hint text
-- `GameManager` — uses `InputHintService.Get()` when calling `TutorialManager.TriggerIfNew()` for LaunchBall and FuryStrike tutorials
+- `HavocBar` — subscribes `OnSchemeChanged`, calls `RefreshHints()` which sets `_readyLabel.text = InputHintService.Get(HintKey.FuryStrikeBar)`
+- `InventoryRadialMenu` — refreshes first-use hint text on scheme change
+- `GameManager` — uses `InputHintService.Get()` when calling `TutorialManager.TriggerIfNew()` for LaunchBall and FuryStrike tutorials. Note: tutorials fire once per installation (PlayerPrefs guard), so they will only reflect the scheme active at first play. This is acceptable — re-showing tutorials on scheme switch is out of scope.
 
 ---
 
@@ -150,6 +170,7 @@ A `[SerializeField] float _gamepadPaddleSpeed = 12f` field on `PaddleController`
 - Gamepad vibration / haptics
 - Multiple simultaneous gamepad support (single player only)
 - Input remapping
+- Re-triggering tutorials when input scheme changes
 
 ---
 
@@ -163,6 +184,7 @@ A `[SerializeField] float _gamepadPaddleSpeed = 12f` field on `PaddleController`
 | `Assets/_Project/Scripts/PaddleController.cs` | Modified |
 | `Assets/_Project/Scripts/BallController.cs` | Modified |
 | `Assets/_Project/Scripts/GameManager.cs` | Modified |
+| `Assets/_Project/Scripts/UI/PauseMenuUI.cs` | Modified |
 | `Assets/_Project/Scripts/UI/InventoryRadialMenu.cs` | Modified |
 | `Assets/_Project/Scripts/UI/LevelCodeEntryUI.cs` | Modified |
 | `Assets/_Project/Scripts/UI/SettingsUI.cs` | Modified |
