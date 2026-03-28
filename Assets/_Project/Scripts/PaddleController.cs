@@ -88,7 +88,7 @@ public class PaddleController : MonoBehaviour
             var ball = FindFirstObjectByType<BallController>();
             targetX = ball != null ? ball.transform.position.x : 0f;
         }
-            else if (InputManager.CurrentScheme == InputScheme.Gamepad)
+        else if (InputManager.CurrentScheme == InputScheme.Gamepad)
         {
             float stickX = InputManager.Actions?.Gameplay.MovePaddle.ReadValue<float>() ?? 0f;
             if (_isFlipped) stickX = -stickX;
@@ -227,8 +227,7 @@ public class PaddleController : MonoBehaviour
 
     private float GetHalfWidthWorld()
     {
-        var col = GetComponent<BoxCollider2D>();
-        if (col != null) return col.bounds.extents.x;
+        if (_col != null) return _col.bounds.extents.x;
         var r = GetComponent<Renderer>();
         if (r != null) return r.bounds.extents.x;
         return 0.5f;
