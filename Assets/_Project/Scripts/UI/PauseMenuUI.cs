@@ -4,7 +4,7 @@ using UnityEngine.UI;
 /// <summary>
 /// Pause menu overlay shown when the player presses Escape during gameplay.
 /// Provides Resume, Settings, Main Menu, and Quit Game options.
-/// ESC key also resumes.
+/// CancelUI action (Escape / gamepad B) also resumes.
 /// </summary>
 public class PauseMenuUI : MonoBehaviour
 {
@@ -122,14 +122,33 @@ public class PauseMenuUI : MonoBehaviour
 
     private void Update()
     {
+        // Editor test-mode only: keep on old Input Manager (dev path, not gameplay)
         if (!gameObject.activeSelf) return;
-        if (Input.GetKeyDown(KeyCode.Escape))
+        if (GameManager.Instance != null && GameManager.Instance.IsEditorTestMode
+            && Input.GetKeyDown(KeyCode.Escape))
         {
-            if (GameManager.Instance != null && GameManager.Instance.IsEditorTestMode)
-                GameManager.Instance.ReturnToEditorFromTest();
-            else
-                GameManager.Instance?.ResumeGame();
+            GameManager.Instance.ReturnToEditorFromTest();
         }
+    }
+
+    private void OnEnable()
+    {
+        if (InputManager.Actions != null)
+            InputManager.Actions.UI.CancelUI.performed += OnCancelUIPerformed;
+    }
+
+    private void OnDisable()
+    {
+        if (InputManager.Actions != null)
+            InputManager.Actions.UI.CancelUI.performed -= OnCancelUIPerformed;
+    }
+
+    private void OnCancelUIPerformed(UnityEngine.InputSystem.InputAction.CallbackContext ctx)
+    {
+        // OnDisable unsubscribes when the panel is hidden, so this callback only fires
+        // while the pause menu is active. Guard only needed for editor test mode.
+        if (GameManager.Instance != null && GameManager.Instance.IsEditorTestMode) return;
+        GameManager.Instance?.ResumeGame();
     }
 
     private void ApplyMode()

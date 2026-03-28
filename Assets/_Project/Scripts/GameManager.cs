@@ -221,6 +221,27 @@ public class GameManager : MonoBehaviour
         ShowMainMenu();
     }
 
+    private void OnEnable()
+    {
+        // All Awake() calls complete before any OnEnable() in the same scene load,
+        // so InputManager.Actions is guaranteed set when this fires.
+        if (InputManager.Actions != null)
+            InputManager.Actions.UI.Pause.performed += OnPausePerformed;
+    }
+
+    private void OnDisable()
+    {
+        if (InputManager.Actions != null)
+            InputManager.Actions.UI.Pause.performed -= OnPausePerformed;
+    }
+
+    private void OnPausePerformed(UnityEngine.InputSystem.InputAction.CallbackContext ctx)
+    {
+        if ((_state == GameState.Playing || _state == GameState.Ready)
+            && (TutorialManager.Instance == null || !TutorialManager.Instance.IsShowing))
+            SetState(GameState.Paused);
+    }
+
     private void Update()
     {
         // Numpad cheats: activate powerups (admin = unlimited; non-admin = consumes inventory)
@@ -260,11 +281,13 @@ public class GameManager : MonoBehaviour
                 TutorialManager.ID.FuryStrike,
                 "★ ★ ★",
                 "FURY STRIKE READY!",
-                "Your Fury Charge is at maximum!\n\nPress LEFT + RIGHT mouse buttons together\nto unleash FURY STRIKE — a devastating\nbomb blast from every ball on screen!");
+                "Your Fury Charge is at maximum!\n\n"
+                + InputHintService.Get(HintKey.FuryStrikeTutorial)
+                + "\n— a devastating\nbomb blast from every ball on screen!");
 
         // Fury Strike: both mouse buttons pressed together when charge is full
         if (_state == GameState.Playing && _ball != null && _ball.RampFraction >= 1f &&
-            IsFuryStrikeMouseComboPressed())
+            InputManager.IsFuryStrikePressed())
         {
             TriggerFuryStrike();
         }
@@ -298,11 +321,9 @@ public class GameManager : MonoBehaviour
             DebugClearLevelBricks();
 
 
-        if ((_state == GameState.Playing || _state == GameState.Ready) && Input.GetKeyDown(KeyCode.Escape)
-            && (TutorialManager.Instance == null || !TutorialManager.Instance.IsShowing))
-            SetState(GameState.Paused);
-
         // G key: open level code warp dialog (Ready, Playing, or Paused)
+        // Intentionally kept on legacy Input Manager — text entry on gamepad is impractical,
+        // so this feature is keyboard-only by design (spec: non-goal for gamepad).
         // Guard: skip if the dialog is already open so the player can type 'G' freely.
         // We pause time without entering the Paused state so the pause menu stays hidden.
         if ((_state == GameState.Ready || _state == GameState.Playing || _state == GameState.Paused)
@@ -339,21 +360,6 @@ public class GameManager : MonoBehaviour
             _hud?.SetStatus("");
             SetState(GameState.Playing);
         }
-    }
-
-    private static bool IsFuryStrikeMouseComboPressed()
-    {
-        var mouse = Mouse.current;
-        if (mouse == null) return false;
-
-        var left = mouse.leftButton;
-        var right = mouse.rightButton;
-        if (left == null || right == null) return false;
-
-        if (left.isPressed && right.isPressed)
-            return left.wasPressedThisFrame || right.wasPressedThisFrame;
-
-        return false;
     }
 
     // ── Public API (called by UI buttons) ───────────────────────────────────
@@ -481,7 +487,7 @@ public class GameManager : MonoBehaviour
             TutorialManager.ID.LaunchBall,
             "● ● ●",
             "HOW TO PLAY",
-            "Hold LEFT CLICK to aim the ball.\nRelease to launch!\n\nPress ESCAPE to pause at any time.");
+            InputHintService.Get(HintKey.LaunchBall) + "\n\n" + InputHintService.Get(HintKey.PauseInstruction));
     }
 
     /// <summary>
@@ -1280,6 +1286,11 @@ public class GameManager : MonoBehaviour
                  break;
              }
         }
+
+        bool gameplayActive = _state == GameState.Ready
+                           || _state == GameState.Playing
+                           || _state == GameState.Paused;
+        InputManager.EnableGameplay(gameplayActive);
     }
 
     // ── Performance star support ──────────────────────────────────────────────

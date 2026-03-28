@@ -100,7 +100,7 @@ public class LevelCodeEntryUI : MonoBehaviour
         errorRt.anchoredPosition = new Vector2(0f, -64f);
 
         // Cancel hint
-        CreateLabel(box, "ENTER to warp  ·  ESC to cancel", new Vector2(0f, -96f), 18,
+        CreateLabel(box, InputHintService.Get(HintKey.LevelCode), new Vector2(0f, -96f), 18,
             new Color(0.45f, 0.52f, 0.60f, 0.75f));
     }
 
@@ -142,19 +142,37 @@ public class LevelCodeEntryUI : MonoBehaviour
 
     // ── Input handling ─────────────────────────────────────────────────────────
 
-    private void Update()
+    private void Update() { } // Input handled via action subscriptions
+
+    private void OnEnable()
+    {
+        if (InputManager.Actions != null)
+        {
+            InputManager.Actions.UI.CancelUI.performed  += OnCancelUIPerformed;
+            InputManager.Actions.UI.ConfirmUI.performed += OnConfirmUIPerformed;
+        }
+    }
+
+    private void OnDisable()
+    {
+        if (InputManager.Actions != null)
+        {
+            InputManager.Actions.UI.CancelUI.performed  -= OnCancelUIPerformed;
+            InputManager.Actions.UI.ConfirmUI.performed -= OnConfirmUIPerformed;
+        }
+    }
+
+    private void OnCancelUIPerformed(UnityEngine.InputSystem.InputAction.CallbackContext ctx)
     {
         if (!_visible) return;
+        Hide();
+        GameManager.Instance?.ResumeAfterCodeEntry();
+    }
 
-        if (Input.GetKeyDown(KeyCode.Escape))
-        {
-            Hide();
-            GameManager.Instance?.ResumeAfterCodeEntry();
-            return;
-        }
-
-        if (Input.GetKeyDown(KeyCode.Return) || Input.GetKeyDown(KeyCode.KeypadEnter))
-            TrySubmit();
+    private void OnConfirmUIPerformed(UnityEngine.InputSystem.InputAction.CallbackContext ctx)
+    {
+        if (!_visible) return;
+        TrySubmit();
     }
 
     private void TrySubmit()

@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.InputSystem;
 
 public class PaddleController : MonoBehaviour
 {
@@ -9,6 +10,7 @@ public class PaddleController : MonoBehaviour
     [Header("Movement")]
     [SerializeField] private float _yLocked = -7f;
     [SerializeField] private float _smoothTime = 0.01f;
+    [SerializeField] private float _gamepadPaddleSpeed = 12f;
 
     [Header("Demo Mode AI")]
     [SerializeField] private float _demoSmoothTime = 0.15f;
@@ -25,6 +27,7 @@ public class PaddleController : MonoBehaviour
     [SerializeField] private float _wallPadding = 0.02f;
 
     private float _velocityX;
+    private bool _laserFiredThisFrame;
     private bool _isDemoMode;
     private bool _isFrozen;
     private float _frozenX;
@@ -42,6 +45,23 @@ public class PaddleController : MonoBehaviour
     private BoxCollider2D _col;
 
     private void Reset() { _camera = Camera.main; }
+
+    private void OnEnable()
+    {
+        if (InputManager.Actions != null)
+            InputManager.Actions.Gameplay.FireLaser.performed += OnFireLaserPerformed;
+    }
+
+    private void OnDisable()
+    {
+        if (InputManager.Actions != null)
+            InputManager.Actions.Gameplay.FireLaser.performed -= OnFireLaserPerformed;
+    }
+
+    private void OnFireLaserPerformed(InputAction.CallbackContext ctx)
+    {
+        _laserFiredThisFrame = true;
+    }
 
     private void Awake()
     {
@@ -68,9 +88,18 @@ public class PaddleController : MonoBehaviour
             var ball = FindFirstObjectByType<BallController>();
             targetX = ball != null ? ball.transform.position.x : 0f;
         }
-            else
-            {
-            float mouseX = _camera.ScreenToWorldPoint(Input.mousePosition).x;
+        else if (InputManager.CurrentScheme == InputScheme.Gamepad)
+        {
+            float stickX = InputManager.Actions?.Gameplay.MovePaddle.ReadValue<float>() ?? 0f;
+            if (_isFlipped) stickX = -stickX;
+            targetX = transform.position.x + stickX * _gamepadPaddleSpeed * Time.deltaTime;
+        }
+        else
+        {
+            // MouseKeyboard: read screen X from Mouse.current, convert to world space
+            var mousePos = Mouse.current?.position.ReadValue()
+                           ?? (Vector2)UnityEngine.Input.mousePosition;
+            float mouseX = _camera.ScreenToWorldPoint(new Vector3(mousePos.x, mousePos.y, _camera.nearClipPlane)).x;
             targetX = _isFlipped ? -mouseX : mouseX;
         }
 
@@ -98,12 +127,13 @@ public class PaddleController : MonoBehaviour
         if (_isLaser && !_isDemoMode && canShoot)
         {
             _laserCooldown -= Time.deltaTime;
-            if (_laserCooldown <= 0f && Input.GetMouseButtonDown(0))
+            if (_laserCooldown <= 0f && _laserFiredThisFrame)
             {
                 FireLasers();
                 _laserCooldown = _laserFireRate;
             }
         }
+        _laserFiredThisFrame = false;
     }
 
     // ── Powerup API ───────────────────────────────────────────────────────────
@@ -197,8 +227,7 @@ public class PaddleController : MonoBehaviour
 
     private float GetHalfWidthWorld()
     {
-        var col = GetComponent<BoxCollider2D>();
-        if (col != null) return col.bounds.extents.x;
+        if (_col != null) return _col.bounds.extents.x;
         var r = GetComponent<Renderer>();
         if (r != null) return r.bounds.extents.x;
         return 0.5f;

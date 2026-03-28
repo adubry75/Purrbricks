@@ -239,6 +239,14 @@ public static class PurrbricksSetup
             Debug.Log("Added PowerupNotification.");
         }
 
+        // ── InputManager ──────────────────────────────────────────────────────
+        var inputMgrGO = EnsureGO("InputManager");
+        if (inputMgrGO.GetComponent<InputManager>() == null)
+        {
+            inputMgrGO.AddComponent<InputManager>();
+            Debug.Log("Added InputManager.");
+        }
+
         // ── 11e. HavocBar (Fury Strike charge bar) ───────────────────────────
         var havocGO = EnsureGO("HavocBar");
         if (havocGO.GetComponent<HavocBar>() == null)
