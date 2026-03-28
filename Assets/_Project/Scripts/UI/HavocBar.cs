@@ -94,7 +94,7 @@ public class HavocBar : MonoBehaviour
         var lblGO    = new GameObject("ReadyLabel");
         lblGO.transform.SetParent(container.transform, false);
         _readyLabel          = lblGO.AddComponent<Text>();
-        _readyLabel.text     = "FURY STRIKE [🖱 LMB + RMB]";
+        _readyLabel.text     = InputHintService.Get(HintKey.FuryStrikeBar);
         _readyLabel.font     = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
         _readyLabel.fontSize = 21;
         _readyLabel.fontStyle = FontStyle.Bold;
@@ -110,6 +110,22 @@ public class HavocBar : MonoBehaviour
         var lblOut = lblGO.AddComponent<Outline>();
         lblOut.effectColor    = Color.black;
         lblOut.effectDistance = new Vector2(2f, -2f);
+    }
+
+    private void OnEnable()
+    {
+        InputManager.OnSchemeChanged += RefreshHints;
+    }
+
+    private void OnDisable()
+    {
+        InputManager.OnSchemeChanged -= RefreshHints;
+    }
+
+    private void RefreshHints(InputScheme _)
+    {
+        if (_readyLabel != null)
+            _readyLabel.text = InputHintService.Get(HintKey.FuryStrikeBar);
     }
 
     private void Update()
