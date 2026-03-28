@@ -170,7 +170,10 @@ public class InventoryRadialMenu : MonoBehaviour
 
     private void OnOpenCanceled(InputAction.CallbackContext ctx)
     {
-        if (_isOpen) CloseRadial(activate: true);
+        if (!_isOpen) return;
+        var gm = GameManager.Instance;
+        if (gm != null && gm.State != GameState.Playing && gm.State != GameState.Ready) return;
+        CloseRadial(activate: true);
     }
 
     private void OnCancelUI(InputAction.CallbackContext ctx)
@@ -471,11 +474,12 @@ public class InventoryRadialMenu : MonoBehaviour
 
     private void UpdateHoverMouse()
     {
+        if (Mouse.current == null) return;
+
         Vector2 screenCenter = new Vector2(Screen.width * 0.5f, Screen.height * 0.5f);
         var rootRt = _radialRoot.GetComponent<RectTransform>();
 
-        // Migrated from Input.mousePosition → Mouse.current.position
-        Vector2 mousePos = Mouse.current?.position.ReadValue() ?? (Vector2)UnityEngine.Input.mousePosition;
+        Vector2 mousePos = Mouse.current.position.ReadValue();
         Vector2 mouseCanvas = (mousePos - screenCenter) / _canvas.scaleFactor - rootRt.anchoredPosition;
 
         int newHovered = -1;
@@ -616,7 +620,7 @@ public class InventoryRadialMenu : MonoBehaviour
             !PurrBucksManager.Instance.HasSeenTutorial("tut_radial_opened"))
         {
             PurrBucksManager.Instance.MarkTutorialSeen("tut_radial_opened");
-            if (_hintRoutine != null) StopCoroutine(_hintRoutine);
+            if (_hintRoutine != null) { StopCoroutine(_hintRoutine); _hintLabel = null; _hintRoutine = null; }
             _hintRoutine = StartCoroutine(ShowHint(InputHintService.Get(HintKey.Radial)));
         }
 
