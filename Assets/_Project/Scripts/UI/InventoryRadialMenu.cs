@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
+using UnityEngine.InputSystem;
 
 /// <summary>
 /// Middle-mouse radial selector for the powerup inventory.
@@ -35,6 +36,7 @@ public class InventoryRadialMenu : MonoBehaviour
     // Animation
     private Coroutine   _animRoutine;
     private Coroutine   _hintRoutine;
+    private Text        _hintLabel;
     private GameObject  _radialRoot;
     private CanvasGroup _radialGroup;
 
@@ -136,20 +138,50 @@ public class InventoryRadialMenu : MonoBehaviour
         if (gm == null) return;
         if (gm.State != GameState.Playing && gm.State != GameState.Ready) return;
 
-        if (!_isOpen)
-        {
-            if (Input.GetMouseButtonDown(2))
-                OpenRadial();
-        }
-        else
-        {
-            if (Input.GetKeyDown(KeyCode.Escape) || Input.GetMouseButtonDown(1))
-                CloseRadial(activate: false);
-            else if (Input.GetMouseButtonUp(2))
-                CloseRadial(activate: true);
-            else
-                UpdateHover();
-        }
+        if (_isOpen)
+            UpdateHover();
+    }
+
+    private void OnEnable()
+    {
+        if (InputManager.Actions == null) return;
+        InputManager.Actions.Gameplay.OpenRadialMenu.started   += OnOpenStarted;
+        InputManager.Actions.Gameplay.OpenRadialMenu.canceled  += OnOpenCanceled;
+        InputManager.Actions.UI.CancelUI.performed             += OnCancelUI;
+        InputManager.OnSchemeChanged += RefreshHints;
+    }
+
+    private void OnDisable()
+    {
+        if (InputManager.Actions == null) return;
+        InputManager.Actions.Gameplay.OpenRadialMenu.started   -= OnOpenStarted;
+        InputManager.Actions.Gameplay.OpenRadialMenu.canceled  -= OnOpenCanceled;
+        InputManager.Actions.UI.CancelUI.performed             -= OnCancelUI;
+        InputManager.OnSchemeChanged -= RefreshHints;
+    }
+
+    private void OnOpenStarted(InputAction.CallbackContext ctx)
+    {
+        var gm = GameManager.Instance;
+        if (gm == null) return;
+        if (gm.State != GameState.Playing && gm.State != GameState.Ready) return;
+        if (!_isOpen) OpenRadial();
+    }
+
+    private void OnOpenCanceled(InputAction.CallbackContext ctx)
+    {
+        if (_isOpen) CloseRadial(activate: true);
+    }
+
+    private void OnCancelUI(InputAction.CallbackContext ctx)
+    {
+        if (_isOpen) CloseRadial(activate: false);
+    }
+
+    private void RefreshHints(InputScheme _)
+    {
+        if (_hintLabel != null)
+            _hintLabel.text = InputHintService.Get(HintKey.Radial);
     }
 
     // ── Open ──────────────────────────────────────────────────────────────────
@@ -431,10 +463,20 @@ public class InventoryRadialMenu : MonoBehaviour
     {
         if (_slotRTs.Count == 0) return;
 
+        if (InputManager.CurrentScheme == InputScheme.Gamepad)
+            UpdateHoverGamepad();
+        else
+            UpdateHoverMouse();
+    }
+
+    private void UpdateHoverMouse()
+    {
         Vector2 screenCenter = new Vector2(Screen.width * 0.5f, Screen.height * 0.5f);
-        // Convert mouse to canvas units relative to the radialRoot's local space
         var rootRt = _radialRoot.GetComponent<RectTransform>();
-        Vector2 mouseCanvas = ((Vector2)Input.mousePosition - screenCenter) / _canvas.scaleFactor - rootRt.anchoredPosition;
+
+        // Migrated from Input.mousePosition → Mouse.current.position
+        Vector2 mousePos = Mouse.current?.position.ReadValue() ?? (Vector2)UnityEngine.Input.mousePosition;
+        Vector2 mouseCanvas = (mousePos - screenCenter) / _canvas.scaleFactor - rootRt.anchoredPosition;
 
         int newHovered = -1;
         for (int i = 0; i < _slotRTs.Count; i++)
@@ -446,6 +488,37 @@ public class InventoryRadialMenu : MonoBehaviour
                 newHovered = i;
                 break;
             }
+        }
+
+        if (newHovered != _hoveredIndex)
+        {
+            _hoveredIndex = newHovered;
+            RefreshHighlights();
+        }
+    }
+
+    private void UpdateHoverGamepad()
+    {
+        Vector2 stickDir = InputManager.Actions?.Gameplay.RadialSelect.ReadValue<Vector2>() ?? Vector2.zero;
+
+        // Require minimum stick deflection (deadzone)
+        if (stickDir.magnitude < 0.3f)
+        {
+            if (_hoveredIndex != -1) { _hoveredIndex = -1; RefreshHighlights(); }
+            return;
+        }
+
+        // Find slot whose angular position is closest to stick direction
+        float stickAngleDeg = Mathf.Atan2(stickDir.y, stickDir.x) * Mathf.Rad2Deg;
+        int newHovered = -1;
+        float bestDiff = float.MaxValue;
+
+        for (int i = 0; i < _slotRTs.Count; i++)
+        {
+            Vector2 slotPos = _slotRTs[i].anchoredPosition;
+            float slotAngleDeg = Mathf.Atan2(slotPos.y, slotPos.x) * Mathf.Rad2Deg;
+            float diff = Mathf.Abs(Mathf.DeltaAngle(stickAngleDeg, slotAngleDeg));
+            if (diff < bestDiff) { bestDiff = diff; newHovered = i; }
         }
 
         if (newHovered != _hoveredIndex)
@@ -544,7 +617,7 @@ public class InventoryRadialMenu : MonoBehaviour
         {
             PurrBucksManager.Instance.MarkTutorialSeen("tut_radial_opened");
             if (_hintRoutine != null) StopCoroutine(_hintRoutine);
-            _hintRoutine = StartCoroutine(ShowHint("HOLD MMB  →  HOVER A POWER-UP  →  RELEASE TO USE"));
+            _hintRoutine = StartCoroutine(ShowHint(InputHintService.Get(HintKey.Radial)));
         }
 
         _animRoutine = null;
@@ -573,6 +646,7 @@ public class InventoryRadialMenu : MonoBehaviour
         txtGO.transform.SetParent(go.transform, false);
         var txt = txtGO.AddComponent<Text>();
         txt.text           = message;
+        _hintLabel = txt;
         txt.font           = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
         txt.fontSize       = 15;
         txt.fontStyle      = FontStyle.Bold;
@@ -594,6 +668,7 @@ public class InventoryRadialMenu : MonoBehaviour
         t = 0f;
         while (t < 0.4f) { t += Time.unscaledDeltaTime; cg.alpha = 1f - t / 0.4f; yield return null; }
 
+        _hintLabel = null;
         Destroy(go);
         _hintRoutine = null;
     }
