@@ -102,6 +102,7 @@ public partial class @PurrbricksInputActions : IInputActionCollection2, IDisposa
     public IEnumerable<InputBinding> bindings => asset.bindings;
     public InputAction FindAction(string actionNameOrId, bool throwIfNotFound = false) => asset.FindAction(actionNameOrId, throwIfNotFound);
     public int FindBinding(InputBinding bindingMask, out InputAction action) => asset.FindBinding(bindingMask, out action);
+    public void MakePrivateCopyOfActions() { asset.MakePrivateCopyOfActions(); }
 
     // ── Gameplay map ──────────────────────────────────────────────────────────
 
