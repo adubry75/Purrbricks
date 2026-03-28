@@ -426,7 +426,14 @@ public class BallController : MonoBehaviour
         }
         else
         {
+            // Action is neither pressed nor released this frame (e.g. controller disconnected mid-aim).
+            // Reset aim state so the paddle doesn't remain frozen indefinitely.
             if (_aimLineGO != null && _aimLineGO.activeSelf) _aimLineGO.SetActive(false);
+            if (_isAiming)
+            {
+                _isAiming = false;
+                _paddleCtrl?.SetFrozen(false);
+            }
         }
     }
 
