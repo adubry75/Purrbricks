@@ -219,7 +219,12 @@ public class GameManager : MonoBehaviour
     {
         _lives = _startingLives;
         ShowMainMenu();
-        // Subscribe here (not OnEnable) — InputManager.Awake must run first
+    }
+
+    private void OnEnable()
+    {
+        // All Awake() calls complete before any OnEnable() in the same scene load,
+        // so InputManager.Actions is guaranteed set when this fires.
         if (InputManager.Actions != null)
             InputManager.Actions.UI.Pause.performed += OnPausePerformed;
     }
@@ -317,6 +322,8 @@ public class GameManager : MonoBehaviour
 
 
         // G key: open level code warp dialog (Ready, Playing, or Paused)
+        // Intentionally kept on legacy Input Manager — text entry on gamepad is impractical,
+        // so this feature is keyboard-only by design (spec: non-goal for gamepad).
         // Guard: skip if the dialog is already open so the player can type 'G' freely.
         // We pause time without entering the Paused state so the pause menu stays hidden.
         if ((_state == GameState.Ready || _state == GameState.Playing || _state == GameState.Paused)

@@ -236,7 +236,6 @@ public class SettingsUI : MonoBehaviour
 
     private void OnCancelUIPerformed(UnityEngine.InputSystem.InputAction.CallbackContext ctx)
     {
-        if (!gameObject.activeSelf) return;
         OnBack();
     }
 

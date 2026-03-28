@@ -115,6 +115,8 @@ public class HavocBar : MonoBehaviour
     private void OnEnable()
     {
         InputManager.OnSchemeChanged += RefreshHints;
+        // Sync hint text in case scheme was already set before subscription (e.g. gamepad connected at startup)
+        RefreshHints(InputManager.CurrentScheme);
     }
 
     private void OnDisable()
