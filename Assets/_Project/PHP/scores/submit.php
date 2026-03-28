@@ -17,14 +17,16 @@ if (!$steamId || !$levelId || $score <= 0) {
 $db = getDb();
 
 // Upsert: one row per (player, level, UTC day) — keep best score for the day.
+// submitted_at is set explicitly on INSERT (never rely on DEFAULT) and only
+// updated on score improvement, so stale plays don't overwrite the timestamp.
 $db->prepare("
-    INSERT INTO level_scores (level_id, level_name, steam_id, steam_name, score, score_date)
-    VALUES (:levelId, :levelName, :steamId, :steamName, :score, UTC_DATE())
+    INSERT INTO level_scores (level_id, level_name, steam_id, steam_name, score, score_date, submitted_at)
+    VALUES (:levelId, :levelName, :steamId, :steamName, :score, UTC_DATE(), UTC_TIMESTAMP())
     ON DUPLICATE KEY UPDATE
-        score        = GREATEST(score, VALUES(score)),
-        level_name   = VALUES(level_name),
-        steam_name   = VALUES(steam_name),
-        submitted_at = UTC_TIMESTAMP()
+        submitted_at = IF(VALUES(score) > score, UTC_TIMESTAMP(), submitted_at),
+        level_name   = IF(VALUES(score) > score, VALUES(level_name), level_name),
+        steam_name   = IF(VALUES(score) > score, VALUES(steam_name), steam_name),
+        score        = GREATEST(score, VALUES(score))
 ")->execute([
     ':levelId'   => $levelId,
     ':levelName' => $levelName,
