@@ -13,6 +13,7 @@ public class Brick : MonoBehaviour
 
     private BrickVisualController _visual;
     private string _powerupId;
+    private string _templateId;
     private PrismColor _requiredBallColor;
     private bool _isDead; // guard against multiple hits in the same frame
 
@@ -78,6 +79,7 @@ public class Brick : MonoBehaviour
 
     public void SetTemplate(BrickTemplate template, BrickSkin skin, Color tint)
     {
+        _templateId = template?.id;
         _visual?.SetSkin(skin, tint);
 
         // Fallback tint on SpriteRenderer when no visual controller
@@ -136,13 +138,15 @@ public class Brick : MonoBehaviour
         // ── Brick destroyed ──────────────────────────────────────────────────
         _isDead = true; // prevent any further hits this frame
 
-        // Achievement tracking
-        AchievementManager.Instance?.OnBrickDestroyed();
-        if (_isFuryKill)
-            AchievementManager.Instance?.OnFuryStrikeBrickDestroyed();
-        // Gem brick detection (10,000-point bricks use templateId "gem")
-        if (_points >= 10000)
-            AchievementManager.Instance?.OnGemBrickDestroyed();
+        // Achievement tracking — suppressed during demo mode
+        if (GameManager.Instance?.IsDemoMode != true)
+        {
+            AchievementManager.Instance?.OnBrickDestroyed();
+            if (_isFuryKill)
+                AchievementManager.Instance?.OnFuryStrikeBrickDestroyed();
+            if (_templateId == "gem")
+                AchievementManager.Instance?.OnGemBrickDestroyed();
+        }
 
         // If this is the last destructible brick, trigger slow-mo + zoom NOW —
         // right as the fatal hit lands, so the destruction plays in slow motion.

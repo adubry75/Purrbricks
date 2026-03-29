@@ -355,8 +355,8 @@ public class AchievementManager : MonoBehaviour
         string[] allIds =
         {
             ID.FirstPaws, ID.Burglar, ID.ClawMarks, ID.Halfway, ID.Meow, ID.Purrfect,
-            ID.Score10K, ID.Score100K, ID.Score1M, ID.GemHunter,
-            ID.ComboTen, ID.ComboTwentyFive, ID.HavocFirst, ID.HavocTen, ID.MaximumHavoc,
+            ID.Score10K, ID.Score100K, ID.Score1M, ID.Score10M, ID.Score100M, ID.GemHunter,
+            ID.ComboTen, ID.ComboTwentyFive, ID.ComboFifty, ID.Combo1Hundred, ID.HavocFirst, ID.HavocTen, ID.MaximumHavoc,
             ID.BallPit, ID.DoubleTrouble, ID.NineLives, ID.Cursed,
             ID.LastLife, ID.Unbroken, ID.LongHaul, ID.Blindfolded, ID.TinyTerror, ID.DrunkDriver,
             ID.Catastrophic, ID.Level1GameOver, ID.Pacifist, ID.SpeedRunner, ID.Curiosity, ID.Catastrophe,

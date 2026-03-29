@@ -29,6 +29,9 @@ public class GameManager : MonoBehaviour
     /// <summary>Exposes admin mode to other systems (e.g. Level Editor read-only bypass).</summary>
     public bool AdminMode => _adminMode;
 
+    /// <summary>True while the main-menu demo is running — achievements must not fire.</summary>
+    public bool IsDemoMode => _isDemoMode;
+
     [Header("Round Settings")]
     [SerializeField] private int _startingLives = 3;
 
@@ -1487,7 +1490,7 @@ public class GameManager : MonoBehaviour
         _hud?.SetScore(_score);
         _comboTimer = _comboResetSeconds;
 
-        if (!_isEditorTestMode)
+        if (!_isEditorTestMode && !_isDemoMode)
             AchievementManager.Instance?.OnScoreChanged(_score);
 
         return points;
