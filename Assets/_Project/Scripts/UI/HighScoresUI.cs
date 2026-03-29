@@ -380,7 +380,13 @@ public class HighScoresUI : MonoBehaviour
 
             _fetching = false;
 
-            if (entries == null || entries.Length == 0)
+            if (entries == null)
+            {
+                SetStatus("Couldn't reach the leaderboard server.\nWe're working on it — please try again later.");
+                return;
+            }
+
+            if (entries.Length == 0)
             {
                 SetStatus("No scores yet — be the first!");
                 return;

@@ -124,7 +124,7 @@ public class LevelScoreService : MonoBehaviour
             if (req.result != UnityWebRequest.Result.Success)
             {
                 Debug.LogWarning($"[LevelScoreService] FetchScores failed: {req.error}");
-                callback?.Invoke(Array.Empty<ScoreEntry>(), 0);
+                callback?.Invoke(null, 0); // null = server error (distinct from empty = no scores)
                 yield break;
             }
 
