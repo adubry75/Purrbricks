@@ -328,6 +328,7 @@ public class GameManager : MonoBehaviour
         // We pause time without entering the Paused state so the pause menu stays hidden.
         if ((_state == GameState.Ready || _state == GameState.Playing || _state == GameState.Paused)
             && Input.GetKeyDown(KeyCode.G)
+            && _adminMode
             && (_levelCodeEntryUI == null || !_levelCodeEntryUI.IsVisible))
         {
             _stateBeforeCodeEntry = _state;

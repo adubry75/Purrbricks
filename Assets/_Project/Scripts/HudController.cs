@@ -369,9 +369,10 @@ public class HudController : MonoBehaviour
 
         if (_codeText != null)
         {
+            _codeText.text = "";
             bool hasCode = !string.IsNullOrEmpty(_levelCode);
-            _codeText.text = hasCode ? $"CODE: {_levelCode}" : "";
-            _codeText.gameObject.SetActive(hasCode);
+            //_codeText.text = hasCode ? $"CODE: {_levelCode}" : "";
+            //_codeText.gameObject.SetActive(hasCode);
         }
     }
 

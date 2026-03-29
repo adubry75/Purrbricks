@@ -18,7 +18,11 @@
       "Bash(git add:*)",
       "Bash(curl -s -X POST https://api.purrbricks.dubry.com/scores/submit.php \\\\\n  -H \"Content-Type: application/json\" \\\\\n  -d '{\"steamId\":\"76561198000000001\",\"steamName\":\"TestPlayer\",\"levelId\":\"level_00\",\"score\":12345}')",
       "Bash(curl -s -X POST https://api.purrbricks.dubry.com/scores/submit.php \\\\\n  -H \"Content-Type: application/json\" \\\\\n  -d '{\"steamId\":\"76561198000000001\",\"steamName\":\"TestPlayer\",\"levelId\":\"b953c6b3a27a4f30b02c6a2f603b273f\",\"levelName\":\"Diamond Rain\",\"score\":99999}')",
-      "Bash(curl -s \"https://api.purrbricks.dubry.com/scores/list.php?levelId=b953c6b3a27a4f30b02c6a2f603b273f&scope=alltime&limit=10&steamId=76561198000000001\")"
+      "Bash(curl -s \"https://api.purrbricks.dubry.com/scores/list.php?levelId=b953c6b3a27a4f30b02c6a2f603b273f&scope=alltime&limit=10&steamId=76561198000000001\")",
+      "Bash(find \"C:\\\\Users\\\\adubr\\\\source\\\\repos\\\\Purrbricks\\\\Assets\\\\_Project\\\\Scripts\" -type f -name \"*.cs\" 2>/dev/null | head -40)",
+      "Bash(echo \"$HOME/.config/superpowers/worktrees/Purrbricks/feature-controller-support\")",
+      "mcp__plugin_context7_context7__resolve-library-id",
+      "mcp__plugin_context7_context7__query-docs"
     ]
   },
   "hooks": {
