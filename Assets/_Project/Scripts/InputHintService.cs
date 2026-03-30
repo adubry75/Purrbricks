@@ -34,7 +34,7 @@ public static class InputHintService
         [HintKey.FuryStrikeBar]      = "FURY STRIKE [LT + RT]",
         [HintKey.Radial]             = "HOLD LB/RB  →  STICK  →  RELEASE TO USE",
         [HintKey.LevelCode]          = "ENTER to warp  ·  ESC to cancel",
-        [HintKey.PauseInstruction]   = "Press START to pause at any time.",
+        [HintKey.PauseInstruction]   = "Press [Y] to pause at any time.",
     };
 
     private static InputScheme _scheme = InputScheme.MouseKeyboard;

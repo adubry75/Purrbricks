@@ -101,6 +101,8 @@
             "bindings": [
                 { "name": "", "id": "bb000001-0000-0000-0000-000000000001", "path": "<Keyboard>/escape", "interactions": "", "processors": "", "groups": "", "action": "Pause", "isComposite": false, "isPartOfComposite": false },
                 { "name": "", "id": "bb000001-0000-0000-0000-000000000002", "path": "<Gamepad>/startButton", "interactions": "", "processors": "", "groups": "", "action": "Pause", "isComposite": false, "isPartOfComposite": false },
+                { "name": "", "id": "bb000001-0000-0000-0000-00000000000b", "path": "<Gamepad>/selectButton", "interactions": "", "processors": "", "groups": "", "action": "Pause", "isComposite": false, "isPartOfComposite": false },
+                { "name": "", "id": "bb000001-0000-0000-0000-00000000000c", "path": "<Gamepad>/buttonNorth", "interactions": "", "processors": "", "groups": "", "action": "Pause", "isComposite": false, "isPartOfComposite": false },
                 { "name": "", "id": "bb000001-0000-0000-0000-000000000003", "path": "<Keyboard>/escape", "interactions": "", "processors": "", "groups": "", "action": "CancelUI", "isComposite": false, "isPartOfComposite": false },
                 { "name": "", "id": "bb000001-0000-0000-0000-000000000004", "path": "<Mouse>/rightButton", "interactions": "", "processors": "", "groups": "", "action": "CancelUI", "isComposite": false, "isPartOfComposite": false },
                 { "name": "", "id": "bb000001-0000-0000-0000-000000000005", "path": "<Gamepad>/buttonEast", "interactions": "", "processors": "", "groups": "", "action": "CancelUI", "isComposite": false, "isPartOfComposite": false },

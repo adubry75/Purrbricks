@@ -118,8 +118,9 @@ public class UINavController : MonoBehaviour
 
         bool isGamepad  = InputManager.CurrentScheme == InputScheme.Gamepad;
         bool inGameplay = GameManager.Instance != null && GameManager.Instance.IsPlayingOrReady();
-        // Show during menus, OR during gameplay when the radial menu is open
-        bool showCursor = isGamepad && (!inGameplay || RadialMenuOpen);
+        bool tutorialUp = TutorialManager.Instance != null && TutorialManager.Instance.IsShowing;
+        // Show during menus, during tutorials, or during gameplay when the radial menu is open
+        bool showCursor = isGamepad && (!inGameplay || RadialMenuOpen || tutorialUp);
 
         if (_cursorGO.activeSelf != showCursor)
             _cursorGO.SetActive(showCursor);
