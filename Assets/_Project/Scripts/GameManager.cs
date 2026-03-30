@@ -324,6 +324,24 @@ public class GameManager : MonoBehaviour
             DebugClearLevelBricks();
 
 
+        // Ctrl+Shift+F10: reset stars for the current level (dev QA — test star-upgrade flow)
+        if (Input.GetKey(KeyCode.LeftControl) && Input.GetKey(KeyCode.LeftShift)
+            && Input.GetKeyDown(KeyCode.F10))
+        {
+            string levelId = (_levelIds != null && _currentLevelIndex >= 0 && _currentLevelIndex < _levelIds.Length)
+                ? _levelIds[_currentLevelIndex] : null;
+            if (!string.IsNullOrEmpty(levelId))
+            {
+                PlayerPrefs.DeleteKey("perf_stars_" + levelId);
+                PlayerPrefs.Save();
+                Debug.Log($"[Dev] Stars reset for level '{levelId}' (index {_currentLevelIndex}).");
+            }
+            else
+            {
+                Debug.LogWarning("[Dev] Ctrl+Shift+F10: no current level loaded — nothing reset.");
+            }
+        }
+
         // G key: open level code warp dialog (Ready, Playing, or Paused)
         // Intentionally kept on legacy Input Manager — text entry on gamepad is impractical,
         // so this feature is keyboard-only by design (spec: non-goal for gamepad).
@@ -1318,8 +1336,10 @@ public class GameManager : MonoBehaviour
             foreach (var b in data.bricks)
             {
                 var template = BrickTemplateRegistry.Instance?.Get(b.templateId);
-                if (template != null && !template.isIndestructible)
-                    total += template.defaultPoints;
+                if (template == null || template.isIndestructible) continue;
+                // Mirror LevelLoader's point resolution: JSON override first, template default as fallback.
+                int pts = b.points ?? template.defaultPoints;
+                total += pts;
             }
             return total;
         }

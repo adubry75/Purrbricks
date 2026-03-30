@@ -38,7 +38,7 @@ public class SettingsManager : MonoBehaviour
     // ── Current values ────────────────────────────────────────────────────────
 
     public int  ResolutionIndex  { get; private set; } = 2;   // default 1080p
-    public int  DisplayModeIndex { get; private set; } = 0;   // default Fullscreen
+    public int  DisplayModeIndex { get; private set; } = 1;   // default Borderless (avoids alt-tab GPU issues with ExclusiveFullScreen)
     public float MusicVolume     { get; private set; } = 0.5f;
     public float SfxVolume       { get; private set; } = 0.7f;
 
@@ -51,6 +51,11 @@ public class SettingsManager : MonoBehaviour
         DontDestroyOnLoad(gameObject);
 
         LoadSettings();
+    }
+
+    private void Start()
+    {
+        // Apply after all Awakes complete so MusicPlayer/SfxPlayer singletons are ready.
         ApplySettings();
     }
 

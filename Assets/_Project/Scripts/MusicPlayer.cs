@@ -144,9 +144,12 @@ public class MusicPlayer : MonoBehaviour
             var clip = _gameplayTracks[_trackIndex % _gameplayTracks.Length];
             yield return Crossfade(clip, loop: false);
 
-            // Wait for this track to finish playing naturally
+            // Wait for this track to finish playing naturally.
+            // Guard: require the clip to be near its end before advancing — prevents a false
+            // trigger when the audio device briefly resets on alt-tab (ExclusiveFullScreen).
             yield return new WaitUntil(() =>
-                !_inGameplay || _active == null || !_active.isPlaying);
+                !_inGameplay || _active == null || _active.clip == null ||
+                (!_active.isPlaying && _active.time >= _active.clip.length - 1f));
 
             if (!_inGameplay) yield break;
 

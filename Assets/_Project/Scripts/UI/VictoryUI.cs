@@ -33,6 +33,7 @@ public class VictoryUI : MonoBehaviour
     private readonly Text[] _perfStarGlyphs = new Text[3];
     private readonly GameObject[] _perfStarGOs = new GameObject[3];
     private GameObject _perfStarsSection;
+    private Text _starHintText;
     private Coroutine _starAnimRoutine;
 
     // Per-call state
@@ -101,9 +102,9 @@ public class VictoryUI : MonoBehaviour
         panelRt.offsetMax = new Vector2(0f, panelRt.offsetMax.y);
 
         // ── Master vertical layout values ─────────────────────────────────────
-        float startY = 265f;
+        float startY = 350f;
         float titleToStarsGap = 78f;
-        float starsToStatsGap = 76f;
+        float starsToStatsGap = 161f;
         float statRowGap = 46f;
         float purrBucksToBestGap = 58f;
         float bestToHighScoresGap = 62f;
@@ -118,7 +119,7 @@ public class VictoryUI : MonoBehaviour
 
         // ── Performance stars ─────────────────────────────────────────────────
         currentY -= titleToStarsGap;
-        BuildPerfStarsSectionAt(currentY);
+        BuildPerfStarsSection(currentY);
 
         // ── Score stats ───────────────────────────────────────────────────────
         currentY -= starsToStatsGap;
@@ -258,15 +259,6 @@ public class VictoryUI : MonoBehaviour
         _newBestBanner.transform.SetAsLastSibling();
     }
 
-    private void BuildPerfStarsSectionAt(float centerY)
-    {
-        float starSpacing = 74f;
-
-        CreateText(_panel, "★", new Vector2(-starSpacing, centerY), 56, ColorGold);
-        CreateText(_panel, "★", new Vector2(0f, centerY), 56, ColorGold);
-        CreateText(_panel, "★", new Vector2(starSpacing, centerY), 56, ColorGold);
-    }
-
     private void BuildRatingSectionAt(float centerY)
     {
         CreateText(_panel, "Rate This Level", new Vector2(0f, centerY + 26f), 28, Color.white);
@@ -282,18 +274,18 @@ public class VictoryUI : MonoBehaviour
     }
 
 
-    private void BuildPerfStarsSection()
+    private void BuildPerfStarsSection(float centerY)
     {
         _perfStarsSection = new GameObject("PerfStarsSection");
         _perfStarsSection.transform.SetParent(_panel.transform, false);
         var sRt = _perfStarsSection.AddComponent<RectTransform>();
         sRt.anchorMin = sRt.anchorMax = new Vector2(0.5f, 0.5f);
         sRt.sizeDelta = Vector2.zero;
-        sRt.anchoredPosition = Vector2.zero;
+        sRt.anchoredPosition = new Vector2(0f, centerY);
 
         const float spacing = 88f;
         const float startX = -spacing;   // 3 stars: -88, 0, +88
-        const float starY = 195f;
+        const float starY = 0f;
 
         for (int i = 0; i < 3; i++)
         {
@@ -317,6 +309,23 @@ public class VictoryUI : MonoBehaviour
             _perfStarGlyphs[i] = txt;
             _perfStarGOs[i] = go;
         }
+
+        // Hint shown when player earns fewer than 3 stars
+        var hintGO = new GameObject("StarHint");
+        hintGO.transform.SetParent(_perfStarsSection.transform, false);
+        _starHintText = hintGO.AddComponent<Text>();
+        _starHintText.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
+        _starHintText.fontSize = 24;
+        _starHintText.fontStyle = FontStyle.Normal;
+        _starHintText.alignment = TextAnchor.MiddleCenter;
+        _starHintText.color = new Color(0.75f, 0.75f, 0.80f, 0.90f);
+        _starHintText.raycastTarget = false;
+        var hintRt = hintGO.GetComponent<RectTransform>();
+        hintRt.anchorMin = new Vector2(0.5f, 0.5f);
+        hintRt.anchorMax = new Vector2(0.5f, 0.5f);
+        hintRt.sizeDelta = new Vector2(500f, 68f);
+        hintRt.anchoredPosition = new Vector2(0f, -52f);
+        hintGO.SetActive(false);
     }
 
     private void InitPerfStars()
@@ -545,6 +554,26 @@ public class VictoryUI : MonoBehaviour
         InitPerfStars();
         if (_starAnimRoutine != null) StopCoroutine(_starAnimRoutine);
         _starAnimRoutine = StartCoroutine(AnimatePerfStars(starsEarned));
+
+        if (_starHintText != null)
+        {
+            if (par > 0 && starsEarned == 1)
+            {
+                _starHintText.text =
+                    $"\u2605\u2605\u2606  needs  {(int)(par * 1.5f):N0} pts\n" +
+                    $"\u2605\u2605\u2605  needs  {(int)(par * 3f):N0} pts";
+                _starHintText.gameObject.SetActive(true);
+            }
+            else if (par > 0 && starsEarned == 2)
+            {
+                _starHintText.text = $"\u2605\u2605\u2605  needs  {(int)(par * 3f):N0} pts";
+                _starHintText.gameObject.SetActive(true);
+            }
+            else
+            {
+                _starHintText.gameObject.SetActive(false);
+            }
+        }
 
         TutorialManager.Instance?.TriggerIfNew(
             TutorialManager.ID.PerfStars,

@@ -14,7 +14,7 @@ public class SettingsUI : MonoBehaviour
 
     private Canvas _canvas;
     private bool   _fromPause;
-    private Button _applyBtn;
+    private Button _doneBtn;
 
     // Pending values (not applied until Apply is pressed)
     private int   _pendingResIdx;
@@ -143,13 +143,9 @@ public class SettingsUI : MonoBehaviour
         y -= 190f;
 
         // ── Buttons ───────────────────────────────────────────────────────────
-        _applyBtn = UIStyle.CreateButton(panel.transform, "Apply",
-            new Vector2(-145f, y), new Vector2(260f, 68f),
-            OnApply, UIStyle.AccentGreen);
-
-        UIStyle.CreateButton(panel.transform, "Back",
-            new Vector2(145f, y), new Vector2(260f, 68f),
-            OnBack, UIStyle.AccentBlue);
+        _doneBtn = UIStyle.CreateButton(panel.transform, "Done",
+            new Vector2(0f, y), new Vector2(260f, 68f),
+            OnDone, UIStyle.AccentGreen);
         
     }
 
@@ -159,7 +155,7 @@ public class SettingsUI : MonoBehaviour
     {
         _fromPause = fromPause;
         gameObject.SetActive(true);
-        UINavController.SetDefault(_applyBtn?.gameObject);
+        UINavController.SetDefault(_doneBtn?.gameObject);
 
         var mgr = SettingsManager.Instance;
         if (mgr == null) return;
@@ -193,26 +189,16 @@ public class SettingsUI : MonoBehaviour
         RefreshDispButtons();
     }
 
-    private void OnApply()
+    private void OnDone()
     {
-        var mgr = SettingsManager.Instance;
-        if (mgr == null) return;
-
-        mgr.SetResolutionIndex(_pendingResIdx);
-        mgr.SetDisplayModeIndex(_pendingDispIdx);
-        mgr.SetMusicVolume(_pendingMusic);
-        mgr.SetSfxVolume(_pendingSfx);
-        mgr.ApplySettings();
-    }
-
-    private void OnBack()
-    {
-        // Revert any live-previewed volume changes back to saved values
         var mgr = SettingsManager.Instance;
         if (mgr != null)
         {
-            MusicPlayer.Instance?.SetVolume(mgr.MusicVolume);
-            SfxPlayer.Instance?.SetVolume(mgr.SfxVolume);
+            mgr.SetResolutionIndex(_pendingResIdx);
+            mgr.SetDisplayModeIndex(_pendingDispIdx);
+            mgr.SetMusicVolume(_pendingMusic);
+            mgr.SetSfxVolume(_pendingSfx);
+            mgr.ApplySettings();
         }
 
         Hide();
@@ -238,7 +224,7 @@ public class SettingsUI : MonoBehaviour
 
     private void OnCancelUIPerformed(UnityEngine.InputSystem.InputAction.CallbackContext ctx)
     {
-        OnBack();
+        OnDone();
     }
 
     // ── Selector refresh ──────────────────────────────────────────────────────

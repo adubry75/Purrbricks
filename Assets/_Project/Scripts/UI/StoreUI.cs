@@ -115,7 +115,7 @@ public class StoreUI : MonoBehaviour
         cardRt.anchoredPosition = Vector2.zero;
 
         // ── Card header ───────────────────────────────────────────────────────
-        MakeLabel(card.transform, "🐾 PURR BUCKS STORE", new Vector2(0f, 422f),
+        MakeLabel(card.transform, "🐾 POWERUP SHOP", new Vector2(0f, 422f),
             new Vector2(700f, 50f), 36, FontStyle.Bold, UIStyle.AccentGold);
 
         // Live balance display (top right of card)

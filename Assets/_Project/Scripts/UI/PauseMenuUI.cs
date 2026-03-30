@@ -94,7 +94,7 @@ public class PauseMenuUI : MonoBehaviour
             new Vector2(0f, 188f), new Vector2(W, H),
             () => GameManager.Instance?.ResumeGame(), UIStyle.AccentGreen);
 
-        _storeBtn = UIStyle.CreateButton(card.transform, "Store",
+        _storeBtn = UIStyle.CreateButton(card.transform, "Powerup Shop",
             new Vector2(0f, 92f), new Vector2(W, H),
             () => GameManager.Instance?.ShowStore(), UIStyle.AccentGold);
 
