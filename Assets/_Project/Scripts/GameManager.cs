@@ -1495,15 +1495,7 @@ public class GameManager : MonoBehaviour
 
     public int AddScore(int basePoints)
     {
-        int multiplier = 1 + _combo;
-        int points     = basePoints * multiplier;
-        int comboBonus = basePoints * _combo; // extra above base
-
-        if (_scoreFrenzyActive)
-        {
-            points     *= 2;
-            comboBonus *= 2;
-        }
+        var (points, comboBonus) = ScoreMath.Calculate(basePoints, _combo, _scoreFrenzyActive);
 
         _score           += points;
         _levelComboBonus += comboBonus;

@@ -1,6 +1,8 @@
 ﻿<Solution>
   <Project Path="Assembly-CSharp.csproj" />
   <Project Path="com.rlabrecque.steamworks.net.csproj" />
+  <Project Path="Purrbricks.Core.csproj" />
   <Project Path="com.rlabrecque.steamworks.net.editor.csproj" />
+  <Project Path="Purrbricks.Tests.EditMode.csproj" />
   <Project Path="Assembly-CSharp-Editor.csproj" />
 </Solution>
