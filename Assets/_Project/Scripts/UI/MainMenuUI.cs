@@ -161,7 +161,6 @@ public class MainMenuUI : MonoBehaviour
                 UIStyle.AccentGold);
         }
 
-
     }
 
     private void CreateTitle()

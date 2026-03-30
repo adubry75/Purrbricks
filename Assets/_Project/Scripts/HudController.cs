@@ -95,6 +95,22 @@ public class HudController : MonoBehaviour
         _topBar = topBar;
         _topBar.SetActive(false); // hidden by default; GameManager calls SetVisible(true)
 
+        // Version label — anchored to bottom-right of the canvas, always visible
+        var verGo = new GameObject("VersionText");
+        verGo.transform.SetParent(transform, false);
+        var verTxt = verGo.AddComponent<TextMeshProUGUI>();
+        verTxt.text = $"Version {GameVersion.Current}";
+        verTxt.fontSize = 22;
+        verTxt.color = new Color(1f, 1f, 1f, 0.75f);
+        verTxt.alignment = TextAlignmentOptions.BottomRight;
+        verTxt.raycastTarget = false;
+        var verRt = verGo.GetComponent<RectTransform>();
+        verRt.anchorMin        = new Vector2(1f, 0f);
+        verRt.anchorMax        = new Vector2(1f, 0f);
+        verRt.pivot            = new Vector2(1f, 0f);
+        verRt.sizeDelta        = new Vector2(400f, 30f);
+        verRt.anchoredPosition = new Vector2(-10f, 10f);
+
         // ContentRow — HLG that fills TopBar (leave 3px at bottom for separator)
         var row = new GameObject("ContentRow");
         row.transform.SetParent(topBar.transform, false);
