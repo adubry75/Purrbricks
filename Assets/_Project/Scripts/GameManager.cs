@@ -53,15 +53,15 @@ public class GameManager : MonoBehaviour
     [SerializeField] private GameObject bottomWall;
 
     [Header("UI Screens")]
-    private MainMenuUI       _mainMenuUI;
-    private GameOverUI       _gameOverUI;
-    private VictoryUI        _victoryUI;
-    private CreditsUI        _creditsUI;
-    private HighScoresUI     _highScoresUI;
-    private PauseMenuUI      _pauseMenuUI;
-    private SettingsUI       _settingsUI;
+    private MainMenuUI _mainMenuUI;
+    private GameOverUI _gameOverUI;
+    private VictoryUI _victoryUI;
+    private CreditsUI _creditsUI;
+    private HighScoresUI _highScoresUI;
+    private PauseMenuUI _pauseMenuUI;
+    private SettingsUI _settingsUI;
     private LevelCodeEntryUI _levelCodeEntryUI;
-    private StoreUI          _storeUI;
+    private StoreUI _storeUI;
 
     private const string PREF_GAME_COMPLETED = "game_completed";
     private int _currentLevelIndex = 0;
@@ -72,10 +72,10 @@ public class GameManager : MonoBehaviour
     private bool _isDemoMode;
 
     // ── Community level mode ─────────────────────────────────────────────────
-    private bool               _isCommunityMode;
-    private bool               _rampBoosted;
+    private bool _isCommunityMode;
+    private bool _rampBoosted;
     private CommunityLevelMeta _currentCommunityMeta;
-    private LevelData          _cachedCommunityData; // for Retry after GameOver
+    private LevelData _cachedCommunityData; // for Retry after GameOver
     private bool _primaryBallOnHold; // true while primary fell but clones still active
     private int _activeClonesCount;  // explicit count — avoids deferred-Destroy false positives
     private bool _scoreFrenzyActive;
@@ -89,9 +89,9 @@ public class GameManager : MonoBehaviour
     private float _cachedTimeScaleBeforeHighScores;
 
     // ── Per-level score stats (reset each LoadLevel) ─────────────────────────
-    private int   _levelStartScore;
-    private int   _levelBestCombo;
-    private int   _levelComboBonus;   // accumulated bonus above base from combos
+    private int _levelStartScore;
+    private int _levelBestCombo;
+    private int _levelComboBonus;   // accumulated bonus above base from combos
     private float _levelStartTime;    // realtime seconds when the level was loaded
 
     /// <summary>Current game state — readable by other scripts (e.g. BallController).</summary>
@@ -185,19 +185,19 @@ public class GameManager : MonoBehaviour
     private void FindOrCreateUIScreens()
     {
         // Include inactive objects since UI screens hide themselves in Awake()
-        _mainMenuUI       = FindFirstObjectByType<MainMenuUI>(FindObjectsInactive.Include);
-        _gameOverUI       = FindFirstObjectByType<GameOverUI>(FindObjectsInactive.Include);
-        _victoryUI        = FindFirstObjectByType<VictoryUI>(FindObjectsInactive.Include);
-        _creditsUI        = FindFirstObjectByType<CreditsUI>(FindObjectsInactive.Include);
-        _highScoresUI     = FindFirstObjectByType<HighScoresUI>(FindObjectsInactive.Include);
-        _pauseMenuUI      = FindFirstObjectByType<PauseMenuUI>(FindObjectsInactive.Include);
-        _settingsUI       = FindFirstObjectByType<SettingsUI>(FindObjectsInactive.Include);
+        _mainMenuUI = FindFirstObjectByType<MainMenuUI>(FindObjectsInactive.Include);
+        _gameOverUI = FindFirstObjectByType<GameOverUI>(FindObjectsInactive.Include);
+        _victoryUI = FindFirstObjectByType<VictoryUI>(FindObjectsInactive.Include);
+        _creditsUI = FindFirstObjectByType<CreditsUI>(FindObjectsInactive.Include);
+        _highScoresUI = FindFirstObjectByType<HighScoresUI>(FindObjectsInactive.Include);
+        _pauseMenuUI = FindFirstObjectByType<PauseMenuUI>(FindObjectsInactive.Include);
+        _settingsUI = FindFirstObjectByType<SettingsUI>(FindObjectsInactive.Include);
         _levelCodeEntryUI = FindFirstObjectByType<LevelCodeEntryUI>(FindObjectsInactive.Include);
-        _storeUI          = FindFirstObjectByType<StoreUI>(FindObjectsInactive.Include);
+        _storeUI = FindFirstObjectByType<StoreUI>(FindObjectsInactive.Include);
 
-        if (_mainMenuUI == null)   Debug.LogError("MainMenuUI not found! Run Purrbricks > Setup Scene.");
-        if (_gameOverUI == null)   Debug.LogError("GameOverUI not found! Run Purrbricks > Setup Scene.");
-        if (_victoryUI == null)    Debug.LogError("VictoryUI not found! Run Purrbricks > Setup Scene.");
+        if (_mainMenuUI == null) Debug.LogError("MainMenuUI not found! Run Purrbricks > Setup Scene.");
+        if (_gameOverUI == null) Debug.LogError("GameOverUI not found! Run Purrbricks > Setup Scene.");
+        if (_victoryUI == null) Debug.LogError("VictoryUI not found! Run Purrbricks > Setup Scene.");
         if (_highScoresUI == null) Debug.LogError("HighScoresUI not found! Run Purrbricks > Setup Scene.");
         // CommunityBrowserUI and CommunityLevelService are optional — no error if missing
         // LevelCodeEntryUI and StoreUI are optional — no error if missing
@@ -250,18 +250,18 @@ public class GameManager : MonoBehaviour
         // Numpad cheats: activate powerups (admin = unlimited; non-admin = consumes inventory)
         if (_state == GameState.Playing && !(Input.GetKey(KeyCode.LeftControl) || Input.GetKey(KeyCode.RightControl)))
         {
-            if (Input.GetKeyDown(KeyCode.Keypad1))    CheatApply(PowerupType.WidePaddle);
-            if (Input.GetKeyDown(KeyCode.Keypad2))    CheatApply(PowerupType.MultiBall);
-            if (Input.GetKeyDown(KeyCode.Keypad3))    CheatApply(PowerupType.StickyBall);
-            if (Input.GetKeyDown(KeyCode.Keypad4))    CheatApply(PowerupType.SpeedBall);
-            if (Input.GetKeyDown(KeyCode.Keypad5))    CheatApply(PowerupType.ExtraLife);
-            if (Input.GetKeyDown(KeyCode.Keypad6))    CheatApply(PowerupType.Laser);
-            if (Input.GetKeyDown(KeyCode.Keypad7))    CheatApply(PowerupType.Fireball);
-            if (Input.GetKeyDown(KeyCode.Keypad8))    CheatApply(PowerupType.BombBrick);
-            if (Input.GetKeyDown(KeyCode.Keypad9))    CheatApply(PowerupType.ShieldWall);
+            if (Input.GetKeyDown(KeyCode.Keypad1)) CheatApply(PowerupType.WidePaddle);
+            if (Input.GetKeyDown(KeyCode.Keypad2)) CheatApply(PowerupType.MultiBall);
+            if (Input.GetKeyDown(KeyCode.Keypad3)) CheatApply(PowerupType.StickyBall);
+            if (Input.GetKeyDown(KeyCode.Keypad4)) CheatApply(PowerupType.SpeedBall);
+            if (Input.GetKeyDown(KeyCode.Keypad5)) CheatApply(PowerupType.ExtraLife);
+            if (Input.GetKeyDown(KeyCode.Keypad6)) CheatApply(PowerupType.Laser);
+            if (Input.GetKeyDown(KeyCode.Keypad7)) CheatApply(PowerupType.Fireball);
+            if (Input.GetKeyDown(KeyCode.Keypad8)) CheatApply(PowerupType.BombBrick);
+            if (Input.GetKeyDown(KeyCode.Keypad9)) CheatApply(PowerupType.ShieldWall);
             if (Input.GetKeyDown(KeyCode.KeypadPlus)) CheatApply(PowerupType.BigBall);
             if (Input.GetKeyDown(KeyCode.KeypadPeriod)) CheatApply(PowerupType.ScoreFrenzy);
-            
+
             //Debug.Log($"{_ball.RampFraction} ramp");
         }
 
@@ -279,7 +279,8 @@ public class GameManager : MonoBehaviour
         }
 
         // Fury tutorial: fire once the charge first reaches 100%
-        if (_state == GameState.Playing && _ball != null && _ball.RampFraction >= 1f)
+        if (_state == GameState.Playing && GetFuryChargeFraction() >= 1f)
+        {
             TutorialManager.Instance?.TriggerIfNew(
                 TutorialManager.ID.FuryStrike,
                 "★ ★ ★",
@@ -287,10 +288,11 @@ public class GameManager : MonoBehaviour
                 "Your Fury Charge is at maximum!\n\n"
                 + InputHintService.Get(HintKey.FuryStrikeTutorial)
                 + "\n— a devastating\nbomb blast from every ball on screen!");
+        }
 
         // Fury Strike: both mouse buttons pressed together when charge is full
-        if (_state == GameState.Playing && _ball != null && _ball.RampFraction >= 1f &&
-            InputManager.IsFuryStrikePressed())
+        //if (_state == GameState.Playing && _ball != null && _ball.RampFraction >= 1f &&
+        if (_state == GameState.Playing && GetFuryChargeFraction() >= 1f && InputManager.IsFuryStrikePressed())
         {
             TriggerFuryStrike();
         }
@@ -475,7 +477,7 @@ public class GameManager : MonoBehaviour
     public void StartGame()
     {
         _isEditorTestMode = false;
-        _isCommunityMode  = false;
+        _isCommunityMode = false;
         RestoreGameplayAfterHighScores();
         _isDemoMode = false;
         _paddle?.SetDemoMode(false);
@@ -542,8 +544,8 @@ public class GameManager : MonoBehaviour
         ClearAllParticles();
 
         // Hide the ball, paddle, and playfield frame
-        if (_ball != null)     _ball.gameObject.SetActive(false);
-        if (_paddle != null)   _paddle.gameObject.SetActive(false);
+        if (_ball != null) _ball.gameObject.SetActive(false);
+        if (_paddle != null) _paddle.gameObject.SetActive(false);
 
         var frame = Object.FindFirstObjectByType<PlayfieldFrame>();
         if (frame != null) frame.gameObject.SetActive(false);
@@ -558,13 +560,13 @@ public class GameManager : MonoBehaviour
         RestoreGameplayAfterHighScores();
 
         // Restore anything that HideAllForCredits() may have disabled
-        if (_ball   != null) _ball.gameObject.SetActive(true);
+        if (_ball != null) _ball.gameObject.SetActive(true);
         if (_paddle != null) _paddle.gameObject.SetActive(true);
         var frame = Object.FindFirstObjectByType<PlayfieldFrame>(FindObjectsInactive.Include);
         if (frame != null) frame.gameObject.SetActive(true);
         var deathZone = Object.FindFirstObjectByType<DeathZone>(FindObjectsInactive.Include);
         if (deathZone != null) deathZone.gameObject.SetActive(true);
-        if (HavocBar.Instance != null)       HavocBar.Instance.gameObject.SetActive(true);
+        if (HavocBar.Instance != null) HavocBar.Instance.gameObject.SetActive(true);
         if (TutorialManager.Instance != null) TutorialManager.Instance.gameObject.SetActive(true);
 
         _isDemoMode = true;
@@ -858,7 +860,7 @@ public class GameManager : MonoBehaviour
         _victoryUI?.Hide();
 
         // Reset per-level state but keep lives and cumulative score intact
-        _combo      = 0;
+        _combo = 0;
         _comboTimer = 0f;
         _scoreFrenzyActive = false;
         _hud?.SetCombo(_combo);
@@ -959,9 +961,9 @@ public class GameManager : MonoBehaviour
 
 
         // Reset per-level score stats
-        _levelStartScore  = _score;
-        _levelBestCombo   = 0;
-        _levelComboBonus  = 0;
+        _levelStartScore = _score;
+        _levelBestCombo = 0;
+        _levelComboBonus = 0;
         LivesAtLevelStart = _lives;
 
         _levelStartTime = Time.realtimeSinceStartup;
@@ -1074,10 +1076,10 @@ public class GameManager : MonoBehaviour
             return;
         }
 
-        _isCommunityMode      = true;
+        _isCommunityMode = true;
         _currentCommunityMeta = meta;
-        _cachedCommunityData  = data;
-        _isEditorTestMode     = false;
+        _cachedCommunityData = data;
+        _isEditorTestMode = false;
 
         // Stop any in-progress level-advance routine from a previous level
         // (StartCommunityLevel bypasses LoadLevel which normally resets this).
@@ -1100,16 +1102,16 @@ public class GameManager : MonoBehaviour
         PowerupManager.Instance?.ResetAll();
         ClearAllParticles();
 
-        _score             = 0;
-        _combo             = 0;
-        _comboTimer        = 0f;
-        _lives             = _startingLives;
+        _score = 0;
+        _combo = 0;
+        _comboTimer = 0f;
+        _lives = _startingLives;
         _scoreFrenzyActive = false;
-        _cachedFuryCharge  = 0f;
-        _levelStartScore   = 0;
-        _levelBestCombo    = 0;
-        _levelComboBonus   = 0;
-        LivesAtLevelStart  = _lives;
+        _cachedFuryCharge = 0f;
+        _levelStartScore = 0;
+        _levelBestCombo = 0;
+        _levelComboBonus = 0;
+        LivesAtLevelStart = _lives;
 
         _hud?.SetScore(_score);
         _hud?.SetLives(_lives);
@@ -1232,11 +1234,11 @@ public class GameManager : MonoBehaviour
                 if (_score > 0)
                 {
                     string allTimeBoard = PurrbricksLeaderboards.OverallAllTime;
-                    string weeklyBoard  = PurrbricksLeaderboards.Scoped(allTimeBoard, LeaderboardTimeScope.Weekly);
-                    string dailyBoard   = PurrbricksLeaderboards.Scoped(allTimeBoard, LeaderboardTimeScope.Daily);
+                    string weeklyBoard = PurrbricksLeaderboards.Scoped(allTimeBoard, LeaderboardTimeScope.Weekly);
+                    string dailyBoard = PurrbricksLeaderboards.Scoped(allTimeBoard, LeaderboardTimeScope.Daily);
                     SteamLeaderboardManager.Instance?.SubmitScore(allTimeBoard, _score);
-                    SteamLeaderboardManager.Instance?.SubmitScore(weeklyBoard,  _score);
-                    SteamLeaderboardManager.Instance?.SubmitScore(dailyBoard,   _score);
+                    SteamLeaderboardManager.Instance?.SubmitScore(weeklyBoard, _score);
+                    SteamLeaderboardManager.Instance?.SubmitScore(dailyBoard, _score);
                 }
                 _creditsUI?.ShowCredits(_score);
                 break;
@@ -1268,45 +1270,45 @@ public class GameManager : MonoBehaviour
                 break;
 
             case GameState.Victory:
-            {
-                if (_isEditorTestMode)
                 {
-                    ReturnToEditorFromTest();
+                    if (_isEditorTestMode)
+                    {
+                        ReturnToEditorFromTest();
+                        break;
+                    }
+                    SetCursorMenuMode();
+                    Time.timeScale = 0f;
+                    _pauseMenuUI?.Hide();
+                    ScreenEffects.Instance?.SetBadVignette(false);
+                    if (_isCommunityMode && _currentCommunityMeta != null)
+                    {
+                        _victoryUI?.ShowCommunityVictory(
+                            _score - _levelStartScore, _levelComboBonus, _levelBestCombo,
+                            _currentCommunityMeta);
+                    }
+                    else
+                    {
+                        string levelId = (_levelIds != null && _currentLevelIndex < _levelIds.Length)
+                            ? _levelIds[_currentLevelIndex] : "";
+                        CurrentLevelPar = ComputeLevelPar(levelId);
+                        _victoryUI?.ShowVictory(_score - _levelStartScore, _levelComboBonus, _levelBestCombo, levelId, _currentLevelIndex);
+                        if (_levelIds != null)
+                            AchievementManager.Instance?.CheckAllThreeStarred(_levelIds);
+                    }
+                    MusicPlayer.Instance?.PlayLevelFinish();
+
+                    float levelTime = Time.realtimeSinceStartup - _levelStartTime;
+                    bool invis = PowerupManager.Instance?.IsActive(PowerupType.InvisiBall) ?? false;
+                    bool tiny = PowerupManager.Instance?.IsActive(PowerupType.TinyBall) ?? false;
+                    bool drunk = PowerupManager.Instance?.IsActive(PowerupType.DrunkenPaddle) ?? false;
+                    if (!_isEditorTestMode)
+                    {
+                        AchievementManager.Instance?.OnLevelCompleted(
+                            _currentLevelIndex, levelTime, _lives,
+                            invisiBallActive: invis, tinyBallActive: tiny, drunkenPaddleActive: drunk);
+                    }
                     break;
                 }
-                SetCursorMenuMode();
-                Time.timeScale = 0f;
-                _pauseMenuUI?.Hide();
-                ScreenEffects.Instance?.SetBadVignette(false);
-                if (_isCommunityMode && _currentCommunityMeta != null)
-                {
-                    _victoryUI?.ShowCommunityVictory(
-                        _score - _levelStartScore, _levelComboBonus, _levelBestCombo,
-                        _currentCommunityMeta);
-                }
-                else
-                {
-                    string levelId = (_levelIds != null && _currentLevelIndex < _levelIds.Length)
-                        ? _levelIds[_currentLevelIndex] : "";
-                    CurrentLevelPar = ComputeLevelPar(levelId);
-                    _victoryUI?.ShowVictory(_score - _levelStartScore, _levelComboBonus, _levelBestCombo, levelId, _currentLevelIndex);
-                    if (_levelIds != null)
-                        AchievementManager.Instance?.CheckAllThreeStarred(_levelIds);
-                }
-                MusicPlayer.Instance?.PlayLevelFinish();
-
-                float levelTime = Time.realtimeSinceStartup - _levelStartTime;
-                bool invis   = PowerupManager.Instance?.IsActive(PowerupType.InvisiBall)    ?? false;
-                bool tiny    = PowerupManager.Instance?.IsActive(PowerupType.TinyBall)      ?? false;
-                bool drunk   = PowerupManager.Instance?.IsActive(PowerupType.DrunkenPaddle) ?? false;
-                 if (!_isEditorTestMode)
-                 {
-                     AchievementManager.Instance?.OnLevelCompleted(
-                         _currentLevelIndex, levelTime, _lives,
-                         invisiBallActive: invis, tinyBallActive: tiny, drunkenPaddleActive: drunk);
-                 }
-                 break;
-             }
         }
 
         bool gameplayActive = _state == GameState.Ready
@@ -1497,7 +1499,7 @@ public class GameManager : MonoBehaviour
     {
         var (points, comboBonus) = ScoreMath.Calculate(basePoints, _combo, _scoreFrenzyActive);
 
-        _score           += points;
+        _score += points;
         _levelComboBonus += comboBonus;
         _hud?.SetScore(_score);
         _comboTimer = _comboResetSeconds;
@@ -1547,7 +1549,7 @@ public class GameManager : MonoBehaviour
 
         // Collect destructible bricks and sort top-to-bottom, left-to-right
         var allBricks = Object.FindObjectsByType<Brick>(FindObjectsSortMode.None);
-        var targets   = new System.Collections.Generic.List<Brick>(allBricks.Length);
+        var targets = new System.Collections.Generic.List<Brick>(allBricks.Length);
         foreach (var b in allBricks)
             if (!b.IsIndestructible) targets.Add(b);
 
@@ -1581,7 +1583,7 @@ public class GameManager : MonoBehaviour
 
         // Create one sweeping laser beam per ball (additive gold beams)
         var beamGOs = new GameObject[allBalls.Length];
-        var beams   = new LineRenderer[allBalls.Length];
+        var beams = new LineRenderer[allBalls.Length];
         var beamMat = new Material(Shader.Find("Sprites/Default"));
         beamMat.SetInt("_SrcBlend", (int)UnityEngine.Rendering.BlendMode.SrcAlpha);
         beamMat.SetInt("_DstBlend", (int)UnityEngine.Rendering.BlendMode.One); // Additive
@@ -1591,10 +1593,10 @@ public class GameManager : MonoBehaviour
             beamGOs[i] = new GameObject("FuryBeam");
             var lr = beamGOs[i].AddComponent<LineRenderer>();
             lr.positionCount = 2;
-            lr.startWidth    = 0.10f;
-            lr.endWidth      = 0.03f;
-            lr.material      = beamMat;
-            lr.sortingOrder  = 20;
+            lr.startWidth = 0.10f;
+            lr.endWidth = 0.03f;
+            lr.material = beamMat;
+            lr.sortingOrder = 20;
 
             var grad = new Gradient();
             grad.SetKeys(
