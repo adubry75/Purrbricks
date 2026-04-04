@@ -24,3 +24,6 @@ Thumbs.db
 Server/config.php
 /.dotnet_home/.dotnet
 .dual-graph/
+
+steam_appid.txt
+/steam_appid.txt
