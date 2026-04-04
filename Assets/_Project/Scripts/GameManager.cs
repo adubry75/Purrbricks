@@ -291,7 +291,6 @@ public class GameManager : MonoBehaviour
         }
 
         // Fury Strike: both mouse buttons pressed together when charge is full
-        //if (_state == GameState.Playing && _ball != null && _ball.RampFraction >= 1f &&
         if (_state == GameState.Playing && GetFuryChargeFraction() >= 1f && InputManager.IsFuryStrikePressed())
         {
             TriggerFuryStrike();
