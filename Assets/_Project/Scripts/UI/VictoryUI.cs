@@ -3,6 +3,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using System.Collections.Generic;
 using Steamworks;
+using Unity.VisualScripting;
 
 /// <summary>
 /// Victory screen: shows level score stats, an optional "New Personal Best" banner,
@@ -459,7 +460,7 @@ public class VictoryUI : MonoBehaviour
             numRt.anchorMin = Vector2.zero;
             numRt.anchorMax = Vector2.one;
             numRt.sizeDelta = Vector2.zero;
-            numRt.anchoredPosition = new Vector2(0f, -50f);  // nudge into the lower body of the star
+            numRt.anchoredPosition = new Vector2(0f, -25f);  // nudge into the lower body of the star
         }
     }
 

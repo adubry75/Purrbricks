@@ -3590,7 +3590,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9dd5c0e3953c82943b2f61f9b5baad60, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::GameManager
-  _adminMode: 1
+  _adminMode: 0
   _startingLives: 3
   _score: 0
   _combo: 0

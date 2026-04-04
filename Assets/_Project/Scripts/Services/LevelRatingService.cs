@@ -93,6 +93,13 @@ public class LevelRatingService : MonoBehaviour
         }
         catch { /* Steam not available */ }
 
+        // after the try/catch block
+        if (string.IsNullOrEmpty(steamId))
+        {
+            Debug.Log("[LevelRatingService] No Steam ID — skipping remote rating POST.");
+            yield break;
+        }
+
         long createdAtTicks = long.TryParse(
             PlayerPrefs.GetString(KeyCreatedAt + levelId, "0"), out long t) ? t : 0L;
 

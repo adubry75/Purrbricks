@@ -34,6 +34,12 @@ public class SteamworksBootstrap : MonoBehaviour
             return;
         }
 
+#if UNITY_EDITOR
+        Debug.Log("SteamworksBootstrap: Skipping Steam init in editor.");
+        enabled = false;
+        return;
+#endif
+
         _initAttempted = true;
         try
         {

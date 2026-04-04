@@ -75,20 +75,25 @@ public class HavocBar : MonoBehaviour
         _fillRt.offsetMin = new Vector2(2f, 2f);
         _fillRt.offsetMax = new Vector2(0f, -2f);
 
-        // ── "FURY" watermark text inside bar ──────────────────────────────────
+        // ── "FURY STRIKE" watermark text inside bar ───────────────────────────
         var innerLbl    = new GameObject("InnerLabel");
         innerLbl.transform.SetParent(trackGO.transform, false);
         var innerTxt    = innerLbl.AddComponent<Text>();
-        innerTxt.text      = "FURY";
+        innerTxt.text      = "FURY STRIKE";
         innerTxt.font      = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
         innerTxt.fontSize  = 17;
         innerTxt.fontStyle = FontStyle.Bold;
-        innerTxt.color     = new Color(1f, 1f, 1f, 0.30f);
-        innerTxt.alignment = TextAnchor.MiddleLeft;
+        innerTxt.color     = new Color(1f, 1f, 1f, 0.55f);
+        innerTxt.alignment = TextAnchor.MiddleCenter;
         var innerRt     = innerTxt.GetComponent<RectTransform>();
         innerRt.anchorMin  = Vector2.zero;
         innerRt.anchorMax  = Vector2.one;
-        innerRt.offsetMin  = new Vector2(8f, 0f);
+        innerRt.offsetMin  = Vector2.zero;
+        innerRt.offsetMax  = Vector2.zero;
+
+        var innerOut = innerLbl.AddComponent<Outline>();
+        innerOut.effectColor    = new Color(0f, 0f, 0f, 0.85f);
+        innerOut.effectDistance = new Vector2(1f, -1f);
 
         // ── "FURY STRIKE [ENTER]" label above bar (gold, appears when full) ───
         var lblGO    = new GameObject("ReadyLabel");
