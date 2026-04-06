@@ -128,7 +128,7 @@ public class AchievementManager : MonoBehaviour
         int humanLevel = levelIndex + 1;
         if (humanLevel >= 10) Unlock(ID.Burglar);
         if (humanLevel >= 25) Unlock(ID.ClawMarks);
-        if (humanLevel >= 30) Unlock(ID.Halfway);
+        if (GameManager.Instance != null && humanLevel >= GameManager.Instance.LevelCount / 2) Unlock(ID.Halfway);
         if (humanLevel >= 60) Unlock(ID.Meow);
         if (GameManager.Instance != null && levelIndex == (GameManager.Instance.LevelCount - 1)) Unlock(ID.Purrfect); // final level
 
@@ -172,17 +172,20 @@ public class AchievementManager : MonoBehaviour
     /// <summary>Call after score changes. Pass current total score.</summary>
     public void OnScoreChanged(int totalScore)
     {
-        if (totalScore >= 10_000)    Unlock(ID.Score10K);
-        if (totalScore >= 100_000)   Unlock(ID.Score100K);
-        if (totalScore >= 1_000_000) Unlock(ID.Score1M);
+        if (totalScore >= 10_000)      Unlock(ID.Score10K);
+        if (totalScore >= 100_000)     Unlock(ID.Score100K);
+        if (totalScore >= 1_000_000)   Unlock(ID.Score1M);
+        if (totalScore >= 10_000_000)  Unlock(ID.Score10M);
+        if (totalScore >= 100_000_000) Unlock(ID.Score100M);
     }
 
     /// <summary>Call when combo increments. Pass new combo value and whether ScoreFrenzy is active.</summary>
     public void OnComboChanged(int combo, bool scoreFrenzyActive)
     {
-        if (combo >= 10) Unlock(ID.ComboTen);
-        if (combo >= 25) Unlock(ID.ComboTwentyFive);
-        if (combo >= 50) Unlock(ID.ComboFifty);
+        if (combo >= 10)  Unlock(ID.ComboTen);
+        if (combo >= 25)  Unlock(ID.ComboTwentyFive);
+        if (combo >= 50)  Unlock(ID.ComboFifty);
+        if (combo >= 100) Unlock(ID.Combo1Hundred);
 
         // Double Trouble: ScoreFrenzy active while at ×10+ combo
         if (scoreFrenzyActive && combo >= 10) Unlock(ID.DoubleTrouble);
