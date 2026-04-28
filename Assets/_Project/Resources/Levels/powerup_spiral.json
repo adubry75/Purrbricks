@@ -2,7 +2,7 @@
   "levelGuid": "bdcd080d289d486f916e79752ba3f4c6",
   "id": "powerup_spiral",
   "displayName": "Powerup Spiral",
-  "ballSpeed": 9.5,
+  "ballSpeed": 4.5,
   "grid": {
     "cols": 12,
     "rows": 6,

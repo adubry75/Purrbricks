@@ -6,28 +6,28 @@
   "prismGates": [
     {
       "x": -10.0,
-      "y": -4.5,
+      "y": -2.5,
       "width": 3.2,
       "height": 0.35,
       "color": "blue"
     },
     {
       "x": -5.0,
-      "y": -4.5,
+      "y": -2.5,
       "width": 3.2,
       "height": 0.35,
       "color": "red"
     },
     {
       "x": 1.0,
-      "y": -4.5,
+      "y": -2.5,
       "width": 3.2,
       "height": 0.35,
       "color": "green"
     },
     {
       "x": 6.0,
-      "y": -4.5,
+      "y": -2.5,
       "width": 3.2,
       "height": 0.35,
       "color": "pink"
