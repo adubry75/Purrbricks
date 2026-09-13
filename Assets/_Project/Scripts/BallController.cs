@@ -1,8 +1,36 @@
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
 public class BallController : MonoBehaviour
 {
+    private static readonly HashSet<BallController> s_activeBalls = new HashSet<BallController>();
+    public static IReadOnlyCollection<BallController> ActiveBalls => s_activeBalls;
+
+    private void OnEnable() => s_activeBalls.Add(this);
+    private void OnDisable()
+    {
+        s_activeBalls.Remove(this);
+        CancelAim();
+    }
+
+    private void OnDestroy()
+    {
+        s_activeBalls.Remove(this);
+        if (_aimMaterial != null)
+        {
+            if (Application.isPlaying) Destroy(_aimMaterial);
+            else DestroyImmediate(_aimMaterial);
+        }
+    }
+
+    private void CancelAim()
+    {
+        if (_aimLineGO != null) _aimLineGO.SetActive(false);
+        _isAiming = false;
+        _paddleCtrl?.SetFrozen(false);
+    }
+
     [Header("References")]
     [SerializeField] private Transform _paddle;
     [SerializeField] private Rigidbody2D _rb;
@@ -58,12 +86,12 @@ public class BallController : MonoBehaviour
     private const float ZIP_MULTIPLIER = 2.5f;
 
     // ── Pinball bumper speed burst ────────────────────────────────────────────
-    // Multiplies the ball's current speed, then smoothly decays back to pre-hit speed.
+    // Multiplies the ball's current speed, then smoothly decays back to its unboosted speed.
     private const float BUMPER_MAX_MULTIPLIER = 2.0f;   // cap relative to normal EffectiveSpeed
     private const float BUMPER_DEFAULT_DURATION = 5.0f; // seconds to decay back
     private float _bumperMultiplier = 1.0f;       // current multiplier (>= 1)
     private float _bumperStartMultiplier = 1.0f;  // multiplier right after the latest bumper hit
-    private float _bumperEndMultiplier = 1.0f;    // multiplier to decay back to (speed before the bumper hit)
+    private float _bumperEndMultiplier = 1.0f;    // multiplier to decay back to (unboosted effective speed)
     private float _bumperTimer = 0.0f;
     private float _bumperDuration = BUMPER_DEFAULT_DURATION;
     private bool _bumperActive;
@@ -74,9 +102,49 @@ public class BallController : MonoBehaviour
     private float _rampMultiplier = 1.0f;
 
     /// <summary>0 = no charge, 1 = Fury Strike ready.</summary>
-    public float RampFraction => Mathf.Clamp01((_rampMultiplier - 1f) / (RAMP_MAX - 1f));
+    private float _furyCharge;
+    public float RampFraction => Mathf.Clamp01(_furyCharge);
 
-    public void ResetRamp() => _rampMultiplier = 1.0f;
+    public void ResetRamp()
+    {
+        _rampMultiplier = 1f;
+        _furyCharge = 0f;
+    }
+
+    /// <summary>True when this ball is waiting on the paddle rather than flying.</summary>
+    public bool IsStickyHeld => !_launched || _isStickyHeld;
+    private float _rescueProtectionUntil;
+    public bool IsDeathZoneProtected => Time.time < _rescueProtectionUntil;
+
+    /// <summary>Return a saved ball above the floor without changing effects or charge.</summary>
+    public void RescueBounce()
+    {
+        if (_rb == null) _rb = GetComponent<Rigidbody2D>();
+        if (_rb == null) return;
+        float speed = _rb.linearVelocity.magnitude;
+        if (speed < 0.001f) speed = CurrentSpeed;
+        var direction = new Vector2(_rb.linearVelocity.x, Mathf.Abs(_rb.linearVelocity.y));
+        if (direction.sqrMagnitude < 0.001f) direction = Vector2.up;
+        direction = direction.normalized;
+        direction.y = Mathf.Max(direction.y, 0.5f);
+        direction.Normalize();
+
+        var zone = FindFirstObjectByType<DeathZone>();
+        var floor = zone != null ? zone.GetComponent<Collider2D>() : null;
+        var collider = GetComponent<Collider2D>();
+        float radius = collider != null ? collider.bounds.extents.y : 0.3f;
+        float safeY = floor != null ? floor.bounds.max.y + radius + 0.2f : -7f;
+        transform.position = new Vector3(transform.position.x, Mathf.Max(transform.position.y, safeY), transform.position.z);
+        _launched = true;
+        _isStickyHeld = false;
+        _wantFireballPierce = false;
+        CancelAim();
+        _rb.simulated = true;
+        _rb.linearVelocity = direction * speed;
+        _savedVelocity = _rb.linearVelocity;
+        _rescueProtectionUntil = Time.time + 0.2f;
+        _ignorePaddleBounceUntil = Time.time + _ignorePaddleBounceTime;
+    }
 
     // ── Ball visuals ──────────────────────────────────────────────────────────
     private SpriteRenderer _ballSr;
@@ -85,6 +153,7 @@ public class BallController : MonoBehaviour
     // ── Aim system ────────────────────────────────────────────────────────────
     private GameObject _aimLineGO;
     private LineRenderer _aimLine;
+    private Material _aimMaterial;
     private bool _isAiming;
     private Vector2 _aimDir;
     private float _aimAngleDegrees;
@@ -112,7 +181,7 @@ public class BallController : MonoBehaviour
 
     /// <summary>
     /// Pinball bumper effect: doubles current ball speed (clamped to 2x normal EffectiveSpeed),
-    /// then smoothly decays back to the speed it had immediately before this bumper hit.
+    /// then smoothly decays back to the unboosted effective speed, including after repeated hits.
     /// </summary>
     public void TriggerBumperBoost(float durationSeconds = BUMPER_DEFAULT_DURATION)
     {
@@ -123,7 +192,7 @@ public class BallController : MonoBehaviour
 
         _bumperDuration = Mathf.Max(0.05f, durationSeconds);
         _bumperStartMultiplier = boosted;
-        _bumperEndMultiplier = pre;
+        _bumperEndMultiplier = 1f;
         _bumperTimer = 0.0f;
         _bumperActive = true;
         _bumperMultiplier = boosted;
@@ -152,10 +221,13 @@ public class BallController : MonoBehaviour
 
     private void SetupAimLine()
     {
-        _aimLineGO = new GameObject("AimLine");
+        // Instantiated balls already contain the source ball's aim-line child.
+        var existing = transform.Find("AimLine");
+        _aimLineGO = existing != null ? existing.gameObject : new GameObject("AimLine");
         _aimLineGO.transform.SetParent(transform, false);
 
-        _aimLine = _aimLineGO.AddComponent<LineRenderer>();
+        _aimLine = _aimLineGO.GetComponent<LineRenderer>();
+        if (_aimLine == null) _aimLine = _aimLineGO.AddComponent<LineRenderer>();
         _aimLine.positionCount = 2;
         _aimLine.startWidth = 0.06f;
         _aimLine.endWidth = 0.01f;
@@ -166,6 +238,7 @@ public class BallController : MonoBehaviour
         if (shader != null)
         {
             var mat = new Material(shader);
+            _aimMaterial = mat;
             mat.SetInt("_SrcBlend", (int)UnityEngine.Rendering.BlendMode.SrcAlpha);
             mat.SetInt("_DstBlend", (int)UnityEngine.Rendering.BlendMode.One); // Additive
             _aimLine.material = mat;
@@ -189,6 +262,11 @@ public class BallController : MonoBehaviour
 
     private void Update()
     {
+        if (GameManager.Instance != null && GameManager.Instance.IsGameplaySuspended)
+        {
+            CancelAim();
+            return;
+        }
         if (!_launched)
         {
             if (_paddle != null)
@@ -284,8 +362,16 @@ public class BallController : MonoBehaviour
     private void FixedUpdate()
     {
         if (!_launched || _isStickyHeld) return;
+        var gm = GameManager.Instance;
+        if (gm != null && gm.IsGameplaySuspended) return;
+        // Keep charge independent from velocity and the original speed ramp.
+        if (gm != null && gm.State == GameState.Playing && !gm.IsFuryActive)
+        {
+            float multiplier = NineLivesService.Instance != null ? NineLivesService.Instance.FuryRateMultiplier : 1f;
+            _furyCharge = Mathf.Min(1f, _furyCharge + RAMP_RATE * Time.fixedDeltaTime * multiplier / (RAMP_MAX - 1f));
+        }
 
-        // Speed ramp — charges while ball is live
+        // Preserve the original physical speed ramp while the ball is live
         if (_rampMultiplier < RAMP_MAX)
             _rampMultiplier = Mathf.Min(RAMP_MAX, _rampMultiplier + RAMP_RATE * Time.fixedDeltaTime);
 
@@ -296,7 +382,7 @@ public class BallController : MonoBehaviour
             _rb.linearVelocity = _savedVelocity.normalized * CurrentSpeed;
         }
 
-        // Bumper boost: decay multiplier toward the pre-hit speed over time.
+        // Bumper boost: decay multiplier toward the unboosted speed over time.
         if (_bumperActive)
         {
             _bumperTimer += Time.fixedDeltaTime;
@@ -366,7 +452,7 @@ public class BallController : MonoBehaviour
         // transition from "carrying" into aiming/launching.
         if (!_isAiming)
         {
-            if (!launchAction.WasPerformedThisFrame())
+            if ((!isGamepad && InputManager.IsPointerOverUI()) || !launchAction.WasPerformedThisFrame())
             {
                 if (_aimLineGO != null && _aimLineGO.activeSelf) _aimLineGO.SetActive(false);
                 return;
@@ -439,7 +525,8 @@ public class BallController : MonoBehaviour
 
     private static bool WasLaunchPerformedThisFrame()
     {
-        return InputManager.Actions?.Gameplay.LaunchBall.WasPerformedThisFrame() ?? false;
+        return (InputManager.CurrentScheme == InputScheme.Gamepad || !InputManager.IsPointerOverUI())
+            && (InputManager.Actions?.Gameplay.LaunchBall.WasPerformedThisFrame() ?? false);
     }
 
     private void WarpMouseToPaddleX()
@@ -472,6 +559,7 @@ public class BallController : MonoBehaviour
         _isStickyHeld = false;
         _rb.simulated = true;
         _rb.linearVelocity = _launchDirection * CurrentSpeed;
+        NineLivesService.Instance?.NotifyBallLaunch();
     }
 
     public bool IsLaunched() => _launched;
@@ -556,7 +644,8 @@ public class BallController : MonoBehaviour
         var cloneBall = clone.GetComponent<BallController>();
         if (cloneBall == null) return;
 
-        Vector2 currentDir = _rb.linearVelocity.normalized;
+        Vector2 currentDir = _rb.linearVelocity.sqrMagnitude > 0.0001f
+            ? _rb.linearVelocity.normalized : Vector2.up;
         float rad = angleOffset * Mathf.Deg2Rad;
         Vector2 newDir = new Vector2(
             currentDir.x * Mathf.Cos(rad) - currentDir.y * Mathf.Sin(rad),
@@ -564,6 +653,9 @@ public class BallController : MonoBehaviour
         ).normalized;
 
         cloneBall._launched = true;
+        cloneBall._isStickyHeld = false;
+        cloneBall._isAiming = false;
+        cloneBall._ignorePaddleBounceUntil = Time.time + _ignorePaddleBounceTime;
         cloneBall._isSpeedBoost = _isSpeedBoost;
         cloneBall._isSticky = _isSticky;
         cloneBall._isFireball = _isFireball;
@@ -575,6 +667,8 @@ public class BallController : MonoBehaviour
         cloneBall._isInvisiBall = _isInvisiBall;
         cloneBall._isGremlinBounces = _isGremlinBounces;
         cloneBall._rampMultiplier = _rampMultiplier;
+        cloneBall._furyCharge = _furyCharge;
+        cloneBall._rescueProtectionUntil = 0f;
         cloneBall._bumperMultiplier = _bumperMultiplier;
         cloneBall._bumperStartMultiplier = _bumperStartMultiplier;
         cloneBall._bumperEndMultiplier = _bumperEndMultiplier;
@@ -591,6 +685,7 @@ public class BallController : MonoBehaviour
         }
 
         GameManager.Instance?.RegisterClone();
+        NineLivesService.Instance?.RegisterCloneSafety(cloneBall);
     }
 
     private void ReleaseStickyHold()
@@ -611,6 +706,8 @@ public class BallController : MonoBehaviour
             Vector2 dir = new Vector2(Mathf.Sin(rad), Mathf.Cos(rad)).normalized;
             _rb.linearVelocity = dir * CurrentSpeed;
         }
+        else _rb.linearVelocity = Vector2.up * CurrentSpeed;
+        NineLivesService.Instance?.NotifyBallLaunch();
     }
 
     private void OnCollisionEnter2D(Collision2D collision)
@@ -709,6 +806,7 @@ public class BallController : MonoBehaviour
         if (_isGremlinBounces)
             v = RotateDeg(v, Random.Range(-9.0f, 9.0f));
         _rb.linearVelocity = v;
+        NineLivesService.Instance?.NotifyPaddleReturn(this, Mathf.Abs(t) >= 0.5f);
     }
 
     private static Vector2 RotateDeg(Vector2 v, float degrees)
@@ -742,6 +840,8 @@ public class BallController : MonoBehaviour
         _curseTimer = 0f;
         _invisTimer = 0f;
         _rampMultiplier = 1.0f;
+        _furyCharge = 0f;
+        _rescueProtectionUntil = 0f;
         _prismColor = PrismColor.None;
         _bumperMultiplier = 1.0f;
         _bumperStartMultiplier = 1.0f;

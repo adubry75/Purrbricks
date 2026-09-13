@@ -99,6 +99,7 @@ public class Brick : MonoBehaviour
     public void FuryKill()
     {
         if (_isIndestructible || _isDead) return;
+        NineLivesService.Instance?.NotifyBrickDamage(this, Mathf.Max(0, _hitPoints - 1));
         _hitPoints = 1;
         _isFuryKill = true;
         Hit();
@@ -113,6 +114,7 @@ public class Brick : MonoBehaviour
         if (_isIndestructible) return;
         if (_isDead) return; // already destroyed this frame — ignore extra hits
 
+        NineLivesService.Instance?.NotifyBrickDamage(this, 1);
         _hitPoints--;
 
         int totalPoints = GameManager.Instance?.AddScore(_points) ?? 0;

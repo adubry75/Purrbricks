@@ -12,6 +12,10 @@ using Unity.VisualScripting;
 public class VictoryUI : MonoBehaviour
 {
     private Canvas _canvas;
+    private GameObject _nineLivesCard;
+    private Button _nineLivesBtn;
+    private Text _nineLivesProgress;
+    private RectTransform _nineLivesXpFill;
     private GameObject _panel;
     [SerializeField] private Sprite _nextLevelSprite;
     [SerializeField] private Sprite _replayLevelSprite;
@@ -86,6 +90,7 @@ public class VictoryUI : MonoBehaviour
         var scaler = gameObject.AddComponent<CanvasScaler>();
         scaler.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
         scaler.referenceResolution = new Vector2(1920, 1080);
+        scaler.screenMatchMode = CanvasScaler.ScreenMatchMode.Expand;
 
         gameObject.AddComponent<GraphicRaycaster>();
 
@@ -99,8 +104,8 @@ public class VictoryUI : MonoBehaviour
         panelRt.anchorMin = Vector2.zero;
         panelRt.anchorMax = Vector2.one;
         panelRt.sizeDelta = Vector2.zero;
-        panelRt.offsetMin = new Vector2(-320f, panelRt.offsetMin.y);
-        panelRt.offsetMax = new Vector2(0f, panelRt.offsetMax.y);
+        panelRt.offsetMin = Vector2.zero;
+        panelRt.offsetMax = Vector2.zero;
 
         // ── Master vertical layout values ─────────────────────────────────────
         float startY = 350f;
@@ -258,6 +263,17 @@ public class VictoryUI : MonoBehaviour
 
         // Ensure personal best banner is visible above other UI
         _newBestBanner.transform.SetAsLastSibling();
+        _nineLivesCard=new GameObject("NineLivesCard"); _nineLivesCard.transform.SetParent(_panel.transform,false);
+        var cardImage=_nineLivesCard.AddComponent<Image>(); cardImage.color=new Color(.04f,.07f,.13f,.97f);
+        var cardRt=cardImage.rectTransform;cardRt.anchorMin=cardRt.anchorMax=new Vector2(.5f,.5f);
+        cardRt.anchoredPosition=new Vector2(700,0);cardRt.sizeDelta=new Vector2(360,390);
+        var title=CreateTextGO(_nineLivesCard,"GROW STRONGER",new Vector2(0,142),30,ColorGold).GetComponent<Text>();
+        title.rectTransform.sizeDelta=new Vector2(330,45);
+        _nineLivesProgress=CreateTextGO(_nineLivesCard,"",new Vector2(0,35),23,new Color(.75f,.85f,.96f)).GetComponent<Text>();
+        _nineLivesProgress.rectTransform.sizeDelta=new Vector2(320,145);_nineLivesProgress.fontStyle=FontStyle.Normal;
+        _nineLivesXpFill=NineLivesTreeUI.CreateProgressBar(_nineLivesCard.transform,new Vector2(0,-48),new Vector2(310,12));
+        _nineLivesBtn=UIStyle.CreateButton(_nineLivesCard.transform,"Nine Lives",new Vector2(0,-104),new Vector2(310,66),
+            ()=>NineLivesService.Instance?.ShowTree(),UIStyle.AccentGold);
     }
 
     private void BuildRatingSectionAt(float centerY)
@@ -655,7 +671,28 @@ public class VictoryUI : MonoBehaviour
         SpawnVictoryFireworks();
     }
 
-    private void OnNextLevel() => GameManager.Instance?.LoadNextLevel();
+    private void Update()
+    {
+        if(_nineLivesCard==null) return;
+        _nineLivesCard.SetActive(!_isCommunityMode);
+        if(_isCommunityMode) return;
+        _nineLivesProgress.text=NineLivesTreeUI.ProgressSummary(true);
+        NineLivesTreeUI.RefreshProgressBar(_nineLivesXpFill);
+        _nineLivesBtn.GetComponentInChildren<Text>().text=NineLivesTreeUI.EntryLabel();
+        if(_nextLevelBtnGO!=null)
+        {
+            var label=_nextLevelBtnGO.GetComponentInChildren<Text>();
+            bool intro=NineLivesService.Instance!=null&&NineLivesService.Instance.PendingIntroduction;
+            label.text=intro?"CHOOSE YOUR FIRST UPGRADE":"NEXT LEVEL";
+            label.fontSize=intro?20:25;
+        }
+    }
+    private void OnNextLevel()
+    {
+        var service=NineLivesService.Instance;
+        if(service!=null&&service.PendingIntroduction) service.ShowTree(()=>GameManager.Instance?.LoadNextLevel());
+        else GameManager.Instance?.LoadNextLevel();
+    }
     private void OnReplayLevel() => GameManager.Instance?.ReplayCurrentLevel();
     private void OnLevelBoard()
     {

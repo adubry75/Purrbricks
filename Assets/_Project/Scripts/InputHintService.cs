@@ -22,7 +22,7 @@ public static class InputHintService
         [HintKey.LaunchBall]         = "Hold LEFT CLICK to aim · Release to launch",
         [HintKey.FuryStrikeTutorial] = "Press LEFT + RIGHT mouse buttons together\nto unleash FURY STRIKE",
         [HintKey.FuryStrikeBar]      = "FURY STRIKE [🖱 LMB + RMB]",
-        [HintKey.Radial]             = "HOLD MMB  →  HOVER A POWER-UP  →  RELEASE TO USE",
+        [HintKey.Radial]             = "Hold MMB to choose · or click INVENTORY · Favorites: 1 / 2 / 3",
         [HintKey.LevelCode]          = "ENTER to warp  ·  ESC to cancel",
         [HintKey.PauseInstruction]   = "Press ESCAPE to pause at any time.",
     };
@@ -32,7 +32,7 @@ public static class InputHintService
         [HintKey.LaunchBall]         = "Hold [A] to aim · Release to launch",
         [HintKey.FuryStrikeTutorial] = "Hold LT + RT together\nto unleash FURY STRIKE",
         [HintKey.FuryStrikeBar]      = "FURY STRIKE [LT + RT]",
-        [HintKey.Radial]             = "HOLD LB/RB  →  STICK  →  RELEASE TO USE",
+        [HintKey.Radial]             = "Hold LB/RB to choose · release to use · Favorites: D-pad left / up / right",
         [HintKey.LevelCode]          = "ENTER to warp  ·  ESC to cancel",
         [HintKey.PauseInstruction]   = "Press [Y] to pause at any time.",
     };

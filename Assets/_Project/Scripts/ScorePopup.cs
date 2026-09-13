@@ -8,7 +8,10 @@ using UnityEngine.UI;
 public class ScorePopup : MonoBehaviour
 {
     private static Font s_font;
+    private static readonly VfxObjectPool<ScorePopup> s_pool =
+        new VfxObjectPool<ScorePopup>("ScorePopupPool", 32, Create);
     private CanvasGroup _canvasGroup;
+    private Text _text;
     private Vector3 _startPos;
     private float _elapsed;
 
@@ -19,39 +22,48 @@ public class ScorePopup : MonoBehaviour
     /// <summary>Spawns a popup at the given world position.</summary>
     public static void Spawn(Vector3 worldPos, int points, Color color)
     {
-        var go = new GameObject("ScorePopup", typeof(Canvas), typeof(CanvasGroup));
-        go.transform.position = worldPos + new Vector3(0.25f, 0.3f, 0f);
-
-        var popup = go.AddComponent<ScorePopup>();
-        popup.BuildUI(points, color);
+        ScorePopup popup = s_pool.Get();
+        popup.Activate(worldPos, $"+{points}", color, 88);
     }
 
-    private void BuildUI(int points, Color color)
+    public static void SpawnMessage(Vector3 worldPos, string message, Color color)
     {
-        _startPos = transform.position;
+        s_pool.Get().Activate(worldPos, message, color, 40);
+    }
+
+    public static void ClearPool()
+    {
+        s_pool.Clear();
+    }
+
+    private static ScorePopup Create(Transform parent)
+    {
+        var go = new GameObject("ScorePopup", typeof(Canvas), typeof(CanvasGroup));
+        go.transform.SetParent(parent, false);
+        go.SetActive(false);
+        var popup = go.AddComponent<ScorePopup>();
 
         // Canvas: World Space, small scale for crisp text
-        var canvas = GetComponent<Canvas>();
+        var canvas = go.GetComponent<Canvas>();
         canvas.renderMode = RenderMode.WorldSpace;
 
         var rt = canvas.GetComponent<RectTransform>();
         rt.sizeDelta = new Vector2(300f, 120f);
         rt.localScale = Vector3.one * 0.0065f; // scale to fit world units
 
-        _canvasGroup = GetComponent<CanvasGroup>();
+        popup._canvasGroup = go.GetComponent<CanvasGroup>();
 
         // Text child
         var textGO = new GameObject("Text");
-        textGO.transform.SetParent(transform, false);
+        textGO.transform.SetParent(go.transform, false);
 
         var text = textGO.AddComponent<Text>();
-        text.text = $"+{points}";
         if (s_font == null) s_font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
         text.font = s_font;
         text.fontSize = 88;
         text.fontStyle = FontStyle.Bold;
         text.alignment = TextAnchor.MiddleCenter;
-        text.color = color;
+        popup._text = text;
 
         var textRt = text.GetComponent<RectTransform>();
         textRt.sizeDelta = new Vector2(300f, 120f);
@@ -65,6 +77,18 @@ public class ScorePopup : MonoBehaviour
         var shadow = textGO.AddComponent<Shadow>();
         shadow.effectColor = new Color(0f, 0f, 0f, 0.6f);
         shadow.effectDistance = new Vector2(2f, -2f);
+        return popup;
+    }
+
+    private void Activate(Vector3 worldPos, string message, Color color, int fontSize)
+    {
+        transform.position = worldPos + new Vector3(0.25f, 0.3f, 0f);
+        _startPos = transform.position;
+        _elapsed = 0f;
+        _canvasGroup.alpha = 1f;
+        _text.text = message;
+        _text.fontSize = fontSize;
+        _text.color = color;
     }
 
     private void Update()
@@ -74,7 +98,7 @@ public class ScorePopup : MonoBehaviour
 
         if (t >= 1f)
         {
-            Destroy(gameObject);
+            Release();
             return;
         }
 
@@ -91,5 +115,10 @@ public class ScorePopup : MonoBehaviour
 
         // Fade out (start fading faster after 60% of lifetime)
         _canvasGroup.alpha = t < 0.6f ? 1f : Mathf.Lerp(1f, 0f, (t - 0.6f) / 0.4f);
+    }
+
+    private void Release()
+    {
+        s_pool.Release(this);
     }
 }

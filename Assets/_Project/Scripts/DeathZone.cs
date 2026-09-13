@@ -9,6 +9,8 @@ public class DeathZone : MonoBehaviour
 
         var gm = GameManager.Instance;
         if (gm == null) return;
+        if (ball.IsDeathZoneProtected) return;
+        if (NineLivesService.Instance != null && NineLivesService.Instance.TryPreventBallLoss(ball)) return;
 
         if (gm.IsPrimaryBall(ball))
         {

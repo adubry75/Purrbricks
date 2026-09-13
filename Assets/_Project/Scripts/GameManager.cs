@@ -96,6 +96,74 @@ public class GameManager : MonoBehaviour
 
     /// <summary>Current game state — readable by other scripts (e.g. BallController).</summary>
     public GameState State => _state;
+    public int RunGeneration { get; private set; }
+    public bool IsFuryActive => _furyRoutine != null;
+    public void InvalidateFuryCharge() { _furyChargeFrame = -1; }
+    private float _gameplayTimeScale = 1f;
+    private bool _applicationHasFocus = true;
+    private int _furyChargeFrame = -1;
+    private readonly List<GameObject> _furyBeams = new List<GameObject>();
+    private Material _furyBeamMaterial;
+
+    public bool IsGameplaySuspended => IsInventoryUseBlocked
+        || (PowerupHUD.Instance != null && PowerupHUD.Instance.IsControlMode);
+
+    // Inventory remains usable in its explicit controls pause, but never through another modal or focus loss.
+    public bool IsInventoryUseBlocked => !_applicationHasFocus
+        || _state == GameState.Paused || _state == GameState.GameOver
+        || _state == GameState.Victory || _state == GameState.Cleared
+        || (TutorialManager.Instance != null && TutorialManager.Instance.IsShowing)
+        || UINavController.RadialMenuOpen
+        || (NineLivesService.Instance != null && NineLivesService.Instance.IsTreeOpen)
+        || (_levelCodeEntryUI != null && _levelCodeEntryUI.IsVisible)
+        || (_storeUI != null && _storeUI.gameObject.activeInHierarchy);
+
+    public void RestoreGameplayTimeScale()
+    {
+        Time.timeScale = IsGameplaySuspended ? 0f : _gameplayTimeScale;
+    }
+
+    private void OnApplicationFocus(bool hasFocus)
+    {
+        _applicationHasFocus = hasFocus;
+        if (!hasFocus && IsPlayingOrReady()) SetState(GameState.Paused);
+        RestoreGameplayTimeScale();
+    }
+
+    private IEnumerator WaitForGameplaySeconds(float seconds, int generation)
+    {
+        float elapsed = 0f;
+        while (generation == RunGeneration && elapsed < seconds)
+        {
+            yield return null;
+            if (!IsGameplaySuspended) elapsed += Time.unscaledDeltaTime;
+        }
+        while (generation == RunGeneration && IsGameplaySuspended) yield return null;
+    }
+
+    private void CancelGameplaySequences()
+    {
+        RunGeneration++;
+        if (_advanceRoutine != null) StopCoroutine(_advanceRoutine);
+        if (_furyRoutine != null) StopCoroutine(_furyRoutine);
+        _advanceRoutine = null;
+        _furyRoutine = null;
+        _isAdvancingLevel = false;
+        CleanupFuryBeams();
+        _gameplayTimeScale = 1f;
+        _cachedFuryCharge = 0f;
+        _furyChargeFrame = -1;
+        CameraShake.Instance?.ResetZoom();
+        InventoryRadialMenu.Instance?.CancelImmediately();
+    }
+
+    private void CleanupFuryBeams()
+    {
+        foreach (var beam in _furyBeams) if (beam != null) Destroy(beam);
+        _furyBeams.Clear();
+        if (_furyBeamMaterial != null) Destroy(_furyBeamMaterial);
+        _furyBeamMaterial = null;
+    }
 
     /// <summary>Total number of levels discovered at runtime from Resources/Levels/.</summary>
     public int LevelCount => _levelIds?.Length ?? 0;
@@ -221,7 +289,9 @@ public class GameManager : MonoBehaviour
     private void Start()
     {
         _lives = _startingLives;
+        NineLivesService.Instance?.InitializeCampaign(_levelIds);
         ShowMainMenu();
+        if (NineLivesService.Instance?.HasPendingWelcome == true) StartCoroutine(ShowNineLivesWelcome());
     }
 
     private void OnEnable()
@@ -234,12 +304,14 @@ public class GameManager : MonoBehaviour
 
     private void OnDisable()
     {
+        CancelGameplaySequences();
         if (InputManager.Actions != null)
             InputManager.Actions.UI.Pause.performed -= OnPausePerformed;
     }
 
     private void OnPausePerformed(UnityEngine.InputSystem.InputAction.CallbackContext ctx)
     {
+        if (PowerupHUD.Instance != null && PowerupHUD.Instance.IsControlMode) return;
         if ((_state == GameState.Playing || _state == GameState.Ready)
             && (TutorialManager.Instance == null || !TutorialManager.Instance.IsShowing))
             SetState(GameState.Paused);
@@ -248,7 +320,7 @@ public class GameManager : MonoBehaviour
     private void Update()
     {
         // Numpad cheats: activate powerups (admin = unlimited; non-admin = consumes inventory)
-        if (_state == GameState.Playing && !(Input.GetKey(KeyCode.LeftControl) || Input.GetKey(KeyCode.RightControl)))
+        if (_state == GameState.Playing && !IsGameplaySuspended && !(Input.GetKey(KeyCode.LeftControl) || Input.GetKey(KeyCode.RightControl)))
         {
             if (Input.GetKeyDown(KeyCode.Keypad1)) CheatApply(PowerupType.WidePaddle);
             if (Input.GetKeyDown(KeyCode.Keypad2)) CheatApply(PowerupType.MultiBall);
@@ -265,7 +337,7 @@ public class GameManager : MonoBehaviour
             //Debug.Log($"{_ball.RampFraction} ramp");
         }
 
-        if (_state == GameState.Playing && (Input.GetKey(KeyCode.LeftControl) || Input.GetKey(KeyCode.RightControl)))
+        if (_state == GameState.Playing && !IsGameplaySuspended && (Input.GetKey(KeyCode.LeftControl) || Input.GetKey(KeyCode.RightControl)))
         {
             if (Input.GetKeyDown(KeyCode.Keypad1)) CheatApply(PowerupType.ShrinkPaddle);
             if (Input.GetKeyDown(KeyCode.Keypad2)) CheatApply(PowerupType.ZipBall);
@@ -279,7 +351,7 @@ public class GameManager : MonoBehaviour
         }
 
         // Fury tutorial: fire once the charge first reaches 100%
-        if (_state == GameState.Playing && GetFuryChargeFraction() >= 1f)
+        if (_state == GameState.Playing && !IsGameplaySuspended && GetFuryChargeFraction() >= 1f)
         {
             TutorialManager.Instance?.TriggerIfNew(
                 TutorialManager.ID.FuryStrike,
@@ -291,7 +363,7 @@ public class GameManager : MonoBehaviour
         }
 
         // Fury Strike: both mouse buttons pressed together when charge is full
-        if (_state == GameState.Playing && GetFuryChargeFraction() >= 1f && InputManager.IsFuryStrikePressed())
+        if (_state == GameState.Playing && !IsGameplaySuspended && GetFuryChargeFraction() >= 1f && InputManager.IsFuryStrikePressed())
         {
             TriggerFuryStrike();
         }
@@ -360,7 +432,7 @@ public class GameManager : MonoBehaviour
         }
 
         // Combo timer (runs in Playing mode and demo mode)
-        if (_comboTimer > 0f && (_state == GameState.Playing || _isDemoMode))
+        if (_comboTimer > 0f && !IsGameplaySuspended && (_state == GameState.Playing || _isDemoMode))
         {
             _comboTimer -= Time.unscaledDeltaTime;
             if (_comboTimer <= 0f)
@@ -413,10 +485,7 @@ public class GameManager : MonoBehaviour
         _storeUI?.Hide();
         // Only restore time/audio if the game was NOT already paused before the store opened.
         // When coming from the Pause menu, the game stays paused and the pause menu re-appears.
-        if (_state != GameState.Paused)
-        {
-            Time.timeScale = 1f;
-        }
+        RestoreGameplayTimeScale();
         if (_state == GameState.Paused)
             _pauseMenuUI?.Show();
     }
@@ -429,7 +498,7 @@ public class GameManager : MonoBehaviour
     private void CheatApply(PowerupType type)
     {
         if (_adminMode)
-            PowerupManager.Instance?.Apply(type);
+            PowerupManager.Instance?.ApplyGenerated(type);
         else
             PurrBucksManager.Instance?.TryUseFromInventory(type);
     }
@@ -447,8 +516,10 @@ public class GameManager : MonoBehaviour
     /// <summary>Returns the highest Fury charge fraction among every launched ball (primary or clones).</summary>
     public float GetFuryChargeFraction()
     {
+        if (_furyChargeFrame == Time.frameCount) return Mathf.Clamp01(_cachedFuryCharge + (NineLivesService.Instance?.AddedFuryCharge ?? 0f));
+        _furyChargeFrame = Time.frameCount;
         float best = 0f;
-        var balls = Object.FindObjectsByType<BallController>(FindObjectsSortMode.None);
+        var balls = BallController.ActiveBalls;
         bool anyLaunched = false;
         foreach (var ball in balls)
         {
@@ -461,7 +532,7 @@ public class GameManager : MonoBehaviour
         if (anyLaunched)
         {
             _cachedFuryCharge = Mathf.Max(_cachedFuryCharge, best);
-            return _cachedFuryCharge;
+            return Mathf.Clamp01(_cachedFuryCharge + (NineLivesService.Instance?.AddedFuryCharge ?? 0f));
         }
 
         if (_cachedFuryCharge > 0f)
@@ -488,7 +559,7 @@ public class GameManager : MonoBehaviour
         _score = 0;
         _combo = 0;
         _comboTimer = 0f;
-        _lives = _startingLives;
+        _lives = _startingLives + (NineLivesService.Instance?.StartingLivesBonus ?? 0);
         _currentLevelIndex = 0;
         _scoreFrenzyActive = false;
 
@@ -555,6 +626,8 @@ public class GameManager : MonoBehaviour
 
     public void ShowMainMenu()
     {
+        NineLivesService.Instance?.EndAttempt();
+        _isCommunityMode = false;
         _isEditorTestMode = false;
         RestoreGameplayAfterHighScores();
 
@@ -687,13 +760,13 @@ public class GameManager : MonoBehaviour
     /// </summary>
     public void ResumeAfterCodeEntry()
     {
-        if (_stateBeforeCodeEntry != GameState.Paused)
-            Time.timeScale = 1f;
+        RestoreGameplayTimeScale();
     }
 
     /// <summary>Starts a temporary play session from the in-game level editor.</summary>
     public void StartEditorTestLevel(LevelData editorLevelData, string levelId, LevelEditorUI editorUI)
     {
+        CancelGameplaySequences();
         if (editorLevelData == null)
         {
             Debug.LogError("GameManager: StartEditorTestLevel called with null level data.");
@@ -706,6 +779,7 @@ public class GameManager : MonoBehaviour
             return;
         }
 
+        NineLivesService.Instance?.EndAttempt();
         // Cache and enter test mode
         _cachedStateBeforeEditorTest = _state;
         _cachedIsDemoModeBeforeEditorTest = _isDemoMode;
@@ -786,6 +860,7 @@ public class GameManager : MonoBehaviour
     /// <summary>Returns from editor test-play back to the LevelEditorUI (no victory/gameover screens).</summary>
     public void ReturnToEditorFromTest()
     {
+        CancelGameplaySequences();
         if (!_isEditorTestMode) return;
 
         _isEditorTestMode = false;
@@ -876,7 +951,7 @@ public class GameManager : MonoBehaviour
         _score = 0;
         _combo = 0;
         _comboTimer = 0f;
-        _lives = _startingLives;
+        _lives = _startingLives + (NineLivesService.Instance?.StartingLivesBonus ?? 0);
         _currentLevelIndex = 0;
         _scoreFrenzyActive = false;
 
@@ -903,6 +978,7 @@ public class GameManager : MonoBehaviour
             return;
         }
 
+        NineLivesService.Instance?.ContinueToNextLevel();
         LoadLevel(next);
         MusicPlayer.Instance?.PlayGameplay(_currentLevelIndex);
         SetState(GameState.Ready);
@@ -932,6 +1008,7 @@ public class GameManager : MonoBehaviour
 
     public void LoadLevel(int levelIndex)
     {
+        CancelGameplaySequences();
         _isCommunityMode = false;
         _isAdvancingLevel = false;
 
@@ -955,6 +1032,7 @@ public class GameManager : MonoBehaviour
         }
 
         _levelLoader.LoadLevel(_levelIds[_currentLevelIndex]);
+        NineLivesService.Instance?.BeginAttempt(_levelIds[_currentLevelIndex], !_isDemoMode && !_isEditorTestMode);
 
         RefreshUIRefsIfMissing();
 
@@ -994,6 +1072,8 @@ public class GameManager : MonoBehaviour
 
     private void LoadDemoLevel()
     {
+        NineLivesService.Instance?.EndAttempt();
+        CancelGameplaySequences();
         if (_levelIds == null || _levelIds.Length == 0) return;
 
         _levelLoader?.LoadLevel(_levelIds[0]); // always load first level for demo
@@ -1043,7 +1123,7 @@ public class GameManager : MonoBehaviour
         _score = 0;
         _combo = 0;
         _comboTimer = 0f;
-        _lives = _startingLives;
+        _lives = _startingLives + (NineLivesService.Instance?.StartingLivesBonus ?? 0);
         _scoreFrenzyActive = false;
 
         _hud?.SetScore(_score);
@@ -1069,12 +1149,14 @@ public class GameManager : MonoBehaviour
     /// <summary>Starts gameplay with a community-published level.</summary>
     public void StartCommunityLevel(CommunityLevelMeta meta, LevelData data)
     {
+        CancelGameplaySequences();
         if (meta == null || data == null)
         {
             Debug.LogError("[GameManager] StartCommunityLevel: meta or data is null.");
             return;
         }
 
+        NineLivesService.Instance?.EndAttempt();
         _isCommunityMode = true;
         _currentCommunityMeta = meta;
         _cachedCommunityData = data;
@@ -1162,12 +1244,26 @@ public class GameManager : MonoBehaviour
 
     public void SetState(GameState newState)
     {
-        if (newState == GameState.Paused)
+        if (newState == GameState.Paused && _state != GameState.Paused)
             _stateBeforePause = _state; // capture BEFORE _state is overwritten
+        if (newState != _state)
+        {
+            InventoryRadialMenu.Instance?.CancelImmediately();
+            if (newState == GameState.MainMenu || newState == GameState.HighScores
+                || newState == GameState.Credits || newState == GameState.GameOver
+                || newState == GameState.Victory || newState == GameState.Cleared
+                || (newState == GameState.Ready && _state != GameState.Paused))
+                CancelGameplaySequences();
+        }
+        if (newState == GameState.Ready || newState == GameState.Playing)
+        {
+            _victoryUI?.Hide();
+            _gameOverUI?.Hide();
+        }
         _state = newState;
-        Time.timeScale = 1f;
+        RestoreGameplayTimeScale();
 
-        _hud.SetState(_state.ToString());
+        _hud?.SetState(_state.ToString());
         Debug.Log($"Setting GameState to '{newState.ToString()}'");
 
 
@@ -1197,6 +1293,10 @@ public class GameManager : MonoBehaviour
                 PurrBucksManager.Instance?.SetVisible(!_isEditorTestMode);
                 _hud?.SetState("Ready");
                 SfxPlayer.Instance?.MuteAll(false);
+                if (!_isDemoMode && !_isCommunityMode && !_isEditorTestMode && _currentLevelIndex == 0
+                    && InputManager.CurrentScheme == InputScheme.MouseKeyboard)
+                    TutorialManager.Instance?.TriggerIfNew(TutorialManager.ID.BottomControls, "ENTER", "INVENTORY & FAVORITES",
+                        "Press ENTER to pause and use the controls below the board.\n\nPress ENTER or ESC to return to play.\n\nYour 1, 2 and 3 favorites still work during play.");
                 break;
 
             case GameState.Playing:
@@ -1290,9 +1390,11 @@ public class GameManager : MonoBehaviour
                         string levelId = (_levelIds != null && _currentLevelIndex < _levelIds.Length)
                             ? _levelIds[_currentLevelIndex] : "";
                         CurrentLevelPar = ComputeLevelPar(levelId);
+                        NineLivesService.Instance?.CompleteLevel(LevelStarsHelper.CalculateStars(_score - _levelStartScore, CurrentLevelPar));
                         _victoryUI?.ShowVictory(_score - _levelStartScore, _levelComboBonus, _levelBestCombo, levelId, _currentLevelIndex);
                         if (_levelIds != null)
                             AchievementManager.Instance?.CheckAllThreeStarred(_levelIds);
+                        if (NineLivesService.Instance?.PendingIntroduction == true) StartCoroutine(ShowNineLivesIntroduction());
                     }
                     MusicPlayer.Instance?.PlayLevelFinish();
 
@@ -1314,6 +1416,7 @@ public class GameManager : MonoBehaviour
                            || _state == GameState.Playing
                            || _state == GameState.Paused;
         InputManager.EnableGameplay(gameplayActive);
+        RestoreGameplayTimeScale();
     }
 
     // ── Performance star support ──────────────────────────────────────────────
@@ -1426,6 +1529,7 @@ public class GameManager : MonoBehaviour
             AchievementManager.Instance?.OnLifeLostOnLevel(_currentLevelIndex);
 
         _lives--;
+        NineLivesService.Instance?.NotifyLifeLost();
         _hud?.SetLives(_lives);
 
         PowerupManager.Instance?.ResetAll();
@@ -1465,6 +1569,7 @@ public class GameManager : MonoBehaviour
             return;
         }
 
+        if (IsFuryActive) NineLivesService.Instance?.NotifyFuryCompleted();
         _isAdvancingLevel = true;
         if (_advanceRoutine != null) StopCoroutine(_advanceRoutine);
         _advanceRoutine = StartCoroutine(AdvanceLevelRoutine());
@@ -1474,7 +1579,8 @@ public class GameManager : MonoBehaviour
     public void OnLastBrickRemaining(Vector3 brickPos)
     {
         if (_isDemoMode || _state != GameState.Playing) return;
-        Time.timeScale = 0.35f;
+        _gameplayTimeScale = 0.35f;
+        RestoreGameplayTimeScale();
         CameraShake.Instance?.ZoomIn(0.65f, 2.5f);
     }
 
@@ -1482,13 +1588,18 @@ public class GameManager : MonoBehaviour
     {
         // Hold slow-mo for a beat so the final-brick destruction plays dramatically,
         // then restore normal speed. All waits are realtime so they work during slow-mo.
-        yield return new WaitForSecondsRealtime(0.55f);
+        int generation = RunGeneration;
+        yield return WaitForGameplaySeconds(0.55f, generation);
+        if (generation != RunGeneration) yield break;
 
         _ball?.ResetToPaddle();
-        Time.timeScale = 1f;
+        _gameplayTimeScale = 1f;
+        RestoreGameplayTimeScale();
         CameraShake.Instance?.ResetZoom();
         SfxPlayer.Instance?.PlayWin();
-        yield return new WaitForSecondsRealtime(1.5f); // let particles/effects finish
+        yield return WaitForGameplaySeconds(1.5f, generation);
+        if (generation != RunGeneration) yield break;
+        _advanceRoutine = null;
         SetState(GameState.Victory);
     }
 
@@ -1537,13 +1648,14 @@ public class GameManager : MonoBehaviour
 
     private void TriggerFuryStrike()
     {
-        if (_furyRoutine != null) return; // already running
+        if (_furyRoutine != null || IsGameplaySuspended || _isAdvancingLevel) return; // already running
         _furyRoutine = StartCoroutine(FuryStrikeSequence());
     }
 
     private IEnumerator FuryStrikeSequence()
     {
-        var allBalls = Object.FindObjectsByType<BallController>(FindObjectsSortMode.None);
+        int generation = RunGeneration;
+        var allBalls = new List<BallController>(BallController.ActiveBalls).FindAll(b => b != null && b.IsLaunched()).ToArray();
         if (allBalls.Length == 0) { _furyRoutine = null; yield break; }
 
         // Collect destructible bricks and sort top-to-bottom, left-to-right
@@ -1563,11 +1675,15 @@ public class GameManager : MonoBehaviour
             return rowCmp != 0 ? rowCmp : a.transform.position.x.CompareTo(b2.transform.position.x);
         });
 
+        NineLivesService.Instance?.ResetFuryBonus();
         // Reset ramp on all balls before we begin
         foreach (var ball in allBalls) ball.ResetRamp();
+        _cachedFuryCharge = 0f;
+        _furyChargeFrame = -1;
 
         // ── Enter slow-motion ───────────────────────────────────────────────
-        Time.timeScale = 0.08f;
+        _gameplayTimeScale = 0.08f;
+        RestoreGameplayTimeScale();
 
         // Dramatic intro: flash, shake, notification, audio
         ScreenEffects.Instance?.FlashWhite(0.90f, 0.70f);
@@ -1584,12 +1700,14 @@ public class GameManager : MonoBehaviour
         var beamGOs = new GameObject[allBalls.Length];
         var beams = new LineRenderer[allBalls.Length];
         var beamMat = new Material(Shader.Find("Sprites/Default"));
+        _furyBeamMaterial = beamMat;
         beamMat.SetInt("_SrcBlend", (int)UnityEngine.Rendering.BlendMode.SrcAlpha);
         beamMat.SetInt("_DstBlend", (int)UnityEngine.Rendering.BlendMode.One); // Additive
 
         for (int i = 0; i < allBalls.Length; i++)
         {
             beamGOs[i] = new GameObject("FuryBeam");
+            _furyBeams.Add(beamGOs[i]);
             var lr = beamGOs[i].AddComponent<LineRenderer>();
             lr.positionCount = 2;
             lr.startWidth = 0.10f;
@@ -1613,7 +1731,8 @@ public class GameManager : MonoBehaviour
         }
 
         // Hold briefly for dramatic effect before carnage begins
-        yield return new WaitForSecondsRealtime(0.32f);
+        yield return WaitForGameplaySeconds(0.32f, generation);
+        if (generation != RunGeneration) yield break;
 
         // ── Stagger-destroy bricks, beams sweep to each target ─────────────
         float delayBetween = Mathf.Clamp(0.85f / Mathf.Max(1, targets.Count), 0.012f, 0.050f);
@@ -1633,25 +1752,23 @@ public class GameManager : MonoBehaviour
             }
 
             brick.FuryKill();
-            yield return new WaitForSecondsRealtime(delayBetween);
+            yield return WaitForGameplaySeconds(delayBetween, generation);
+            if (generation != RunGeneration) yield break;
         }
 
         // Final big shake as the dust settles
         CameraShake.Instance?.Shake(0.45f, 0.55f);
         if (!_isEditorTestMode)
             AchievementManager.Instance?.OnFuryStrikeFinished();
-        yield return new WaitForSecondsRealtime(0.22f);
+        yield return WaitForGameplaySeconds(0.22f, generation);
+        if (generation != RunGeneration) yield break;
 
+        NineLivesService.Instance?.NotifyFuryCompleted();
         // Clean up laser beams
-        foreach (var go in beamGOs)
-            if (go != null) Object.Destroy(go);
-        Object.Destroy(beamMat);
-
-        // Restore time scale only if still actively playing
-        if (_state == GameState.Playing)
-            Time.timeScale = 1f;
-
+        CleanupFuryBeams();
         _furyRoutine = null;
+        _gameplayTimeScale = _isAdvancingLevel ? _gameplayTimeScale : 1f;
+        RestoreGameplayTimeScale();
     }
 
     // ── Debug Helpers ───────────────────────────────────────────────────────
@@ -1720,6 +1837,8 @@ public class GameManager : MonoBehaviour
 
     private void ClearAllParticles()
     {
+        ScorePopup.ClearPool();
+        BrickParticleGenerator.ClearPool();
         var particles = Object.FindObjectsByType<ParticleSystem>(FindObjectsSortMode.None);
         foreach (var ps in particles)
         {
@@ -1730,4 +1849,15 @@ public class GameManager : MonoBehaviour
         }
     }
 
-}
+    private IEnumerator ShowNineLivesWelcome()
+    {
+        yield return null;
+        if (_state == GameState.MainMenu && NineLivesService.Instance != null)
+            NineLivesService.Instance.ShowTree();
+    }
+    private IEnumerator ShowNineLivesIntroduction()
+    {
+        yield return null;
+        if (_state == GameState.Victory && NineLivesService.Instance?.PendingIntroduction == true)
+            NineLivesService.Instance.ShowTree(LoadNextLevel);
+    }}

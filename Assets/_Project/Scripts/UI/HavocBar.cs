@@ -4,12 +4,13 @@ using UnityEngine.UI;
 /// <summary>
 /// Displays the Fury Strike charge bar at the bottom of the playfield.
 /// Reads RampFraction from the primary ball via GameManager.
-/// When full, label pulses "FURY STRIKE  [ENTER]" in gold.
+/// When full, label pulses "FURY STRIKE with the current input hint" in gold.
 /// </summary>
 public class HavocBar : MonoBehaviour
 {
     public static HavocBar Instance { get; private set; }
 
+    private GameObject _container;
     private Image _fill;
     private RectTransform _fillRt;
     private Text _readyLabel;
@@ -35,18 +36,20 @@ public class HavocBar : MonoBehaviour
         var scaler = gameObject.AddComponent<CanvasScaler>();
         scaler.uiScaleMode         = CanvasScaler.ScaleMode.ScaleWithScreenSize;
         scaler.referenceResolution = new Vector2(1920, 1080);
+        scaler.screenMatchMode = CanvasScaler.ScreenMatchMode.Expand;
 
-        gameObject.AddComponent<GraphicRaycaster>();
+        // Display only: the Fury meter must not intercept gameplay mouse input.
 
         // Container — bottom center, offset left to sit on playfield not powerup column
         var container = new GameObject("HavocContainer");
+        _container = container;
         container.transform.SetParent(transform, false);
         var cRt           = container.AddComponent<RectTransform>();
         cRt.anchorMin     = new Vector2(0.5f, 0f);
         cRt.anchorMax     = new Vector2(0.5f, 0f);
         cRt.pivot         = new Vector2(0.5f, 0f);
         cRt.sizeDelta     = new Vector2(580f, 30f);
-        cRt.anchoredPosition = new Vector2(-160f, 12f);
+        cRt.anchoredPosition = new Vector2(0f, 12f);
 
         // ── Track (dark background) ───────────────────────────────────────────
         var trackGO  = new GameObject("Track");
@@ -95,7 +98,7 @@ public class HavocBar : MonoBehaviour
         innerOut.effectColor    = new Color(0f, 0f, 0f, 0.85f);
         innerOut.effectDistance = new Vector2(1f, -1f);
 
-        // ── "FURY STRIKE [ENTER]" label above bar (gold, appears when full) ───
+        // ── "FURY STRIKE input hint" label above bar (gold, appears when full) ───
         var lblGO    = new GameObject("ReadyLabel");
         lblGO.transform.SetParent(container.transform, false);
         _readyLabel          = lblGO.AddComponent<Text>();
@@ -137,6 +140,10 @@ public class HavocBar : MonoBehaviour
 
     private void Update()
     {
+        var gm=GameManager.Instance;
+        bool visible=gm!=null && (gm.IsPlayingOrReady() || gm.State==GameState.Paused);
+        _container.SetActive(visible);
+        if(!visible) return;
         float target = GameManager.Instance?.GetFuryChargeFraction() ?? 0f;
 
         _displayFraction = Mathf.Lerp(_displayFraction, target, Time.unscaledDeltaTime * 5f);
@@ -153,20 +160,20 @@ public class HavocBar : MonoBehaviour
                 fc = Color.Lerp(ColorMid, ColorFull, (_displayFraction - 0.5f) * 2f);
 
             // Pulse brightness when full
-            if (target >= 1f)
+            if (target >= 1f && !(SettingsManager.Instance?.ReducedEffects ?? false))
                 fc *= 0.72f + 0.28f * Mathf.Sin(Time.unscaledTime * 9f);
 
             _fill.color = fc;
         }
 
-        // "FURY STRIKE [ENTER]" label
+        // "FURY STRIKE input hint" label
         if (_readyLabel != null)
         {
             float wantAlpha = target >= 1f ? 1f : 0f;
             float curAlpha  = _readyLabel.color.a;
             float newAlpha  = Mathf.Lerp(curAlpha, wantAlpha, Time.unscaledDeltaTime * 7f);
 
-            if (target >= 1f)
+            if (target >= 1f && !(SettingsManager.Instance?.ReducedEffects ?? false))
                 newAlpha *= 0.72f + 0.28f * Mathf.Sin(Time.unscaledTime * 4.5f);
 
             _readyLabel.color = new Color(1f, 0.80f, 0.05f, newAlpha);

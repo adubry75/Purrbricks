@@ -50,7 +50,7 @@ public class GhostBrick : MonoBehaviour
         yield return new WaitForSeconds(_reviveDelaySeconds);
 
         // If the level is already cleared, don't bring bricks back.
-        if (LevelManager.Instance != null && LevelManager.Instance.BricksRemaining <= 0)
+        if (!CanRevive())
         {
             _routine = null;
             yield break;
@@ -63,6 +63,7 @@ public class GhostBrick : MonoBehaviour
         float t = 0f;
         while (t < _fadeInSeconds)
         {
+            if (!CanRevive()) { _routine = null; yield break; }
             t += Time.deltaTime;
             float a = Mathf.Clamp01(t / Mathf.Max(0.01f, _fadeInSeconds));
 
@@ -70,6 +71,9 @@ public class GhostBrick : MonoBehaviour
             SetAlpha(a * 0.85f);
             yield return null;
         }
+
+        // A different brick may have cleared the level during the fade.
+        if (!CanRevive()) { _routine = null; yield break; }
 
         // Become solid again. Only then does it count toward clearing the level.
         if (LevelManager.Instance != null)
@@ -83,6 +87,13 @@ public class GhostBrick : MonoBehaviour
         SetCollidable(true);
 
         _routine = null;
+    }
+
+    private bool CanRevive()
+    {
+        // A lost life changes the activation generation but keeps these level objects.
+        // Level loads destroy the old ghosts; only a cleared board prevents revival here.
+        return LevelManager.Instance == null || LevelManager.Instance.BricksRemaining > 0;
     }
 
     private void SetMoverEnabled(bool on)

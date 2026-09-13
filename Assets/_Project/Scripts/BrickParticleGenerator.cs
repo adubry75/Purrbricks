@@ -6,15 +6,17 @@ using UnityEngine;
 /// </summary>
 public static class BrickParticleGenerator
 {
+    private static readonly VfxObjectPool<PooledBrickParticles> s_pool =
+        new VfxObjectPool<PooledBrickParticles>("BrickParticlePool", 24, Create);
+
     /// <summary>
     /// Creates a one-shot particle explosion at the given position.
     /// </summary>
     public static void SpawnBurst(Vector3 position, Color color, int particleCount = 20, bool isSpecial = false)
     {
-        var go = new GameObject("BrickParticles");
-        go.transform.position = position;
-
-        var ps = go.AddComponent<ParticleSystem>();
+        PooledBrickParticles pooled = s_pool.Get();
+        pooled.transform.position = position;
+        ParticleSystem ps = pooled.Particles;
 
         // Main module
         var main = ps.main;
@@ -26,6 +28,7 @@ public static class BrickParticleGenerator
         main.gravityModifier = 1.8f;
         main.simulationSpace = ParticleSystemSimulationSpace.World;
         main.loop = false;
+        main.stopAction = ParticleSystemStopAction.Callback;
 
         // Emission: single burst
         var emission = ps.emission;
@@ -79,14 +82,52 @@ public static class BrickParticleGenerator
         trails.inheritParticleColor = true;
         trails.widthOverTrail       = new ParticleSystem.MinMaxCurve(1f, AnimationCurve.Linear(0f, 0.8f, 1f, 0f));
 
-        // Renderer
-        var renderer = ps.GetComponent<ParticleSystemRenderer>();
-        renderer.material = VfxMaterials.Additive;
-        renderer.sortingLayerName = "Default";
-        renderer.sortingOrder = 10; // Above bricks
-        renderer.trailMaterial = VfxMaterials.Additive;
+        ps.Clear(true);
+        ps.Play(true);
+    }
 
-        // Auto-destroy after particles finish (max lifetime is 1.2s)
-        Object.Destroy(go, 1.5f);
+    public static void ClearPool()
+    {
+        s_pool.Clear();
+    }
+
+    private static PooledBrickParticles Create(Transform parent)
+    {
+        var go = new GameObject("BrickParticles");
+        go.transform.SetParent(parent, false);
+        go.SetActive(false);
+        var particles = go.AddComponent<ParticleSystem>();
+        var renderer = go.GetComponent<ParticleSystemRenderer>();
+        renderer.sharedMaterial = VfxMaterials.Additive;
+        renderer.sortingLayerName = "Default";
+        renderer.sortingOrder = 10;
+        renderer.trailMaterial = VfxMaterials.Additive;
+        var pooled = go.AddComponent<PooledBrickParticles>();
+        pooled.Initialize(particles, () => s_pool.Release(pooled));
+        return pooled;
+    }
+}
+
+internal sealed class PooledBrickParticles : MonoBehaviour
+{
+    private System.Action _release;
+    public ParticleSystem Particles { get; private set; }
+
+    public void Initialize(ParticleSystem particles, System.Action release)
+    {
+        Particles = particles;
+        _release = release;
+    }
+
+    private void OnParticleSystemStopped()
+    {
+        Release();
+    }
+
+    private void Release()
+    {
+        if (Particles != null)
+            Particles.Stop(true, ParticleSystemStopBehavior.StopEmittingAndClear);
+        _release?.Invoke();
     }
 }

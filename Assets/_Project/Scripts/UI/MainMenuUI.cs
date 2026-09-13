@@ -16,6 +16,7 @@ public class MainMenuUI : MonoBehaviour
     private GameObject _panel;
     private GameObject _creditsButton;
     private Button _playBtn;
+    private Text _nineLivesLabel;
 
     private LevelEditorBrowserUI _levelEditorBrowser;
 
@@ -29,6 +30,8 @@ public class MainMenuUI : MonoBehaviour
 
     private void Update()
     {
+        if (_nineLivesLabel != null) _nineLivesLabel.text = NineLivesTreeUI.EntryLabel();
+        if (NineLivesService.Instance != null && NineLivesService.Instance.IsTreeOpen) return;
         if (Input.GetKeyDown(KeyCode.F1) && gameObject.activeSelf)
             ShowLevelEditor();
     }
@@ -67,11 +70,12 @@ public class MainMenuUI : MonoBehaviour
             scaler = gameObject.AddComponent<CanvasScaler>();
         scaler.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
         scaler.referenceResolution = new Vector2(1920, 1080);
+        scaler.screenMatchMode = CanvasScaler.ScreenMatchMode.Expand;
 
         if (GetComponent<GraphicRaycaster>() == null)
             gameObject.AddComponent<GraphicRaycaster>();
 
-        // Semi-transparent backdrop offset left (avoids powerup HUD column)
+        // Full-screen panel centered with the playfield.
         _panel = new GameObject("Panel");
         _panel.transform.SetParent(transform, false);
 
@@ -82,16 +86,15 @@ public class MainMenuUI : MonoBehaviour
         panelRt.anchorMin = Vector2.zero;
         panelRt.anchorMax = Vector2.one;
         panelRt.sizeDelta = Vector2.zero;
-        //panelRt.anchoredPosition = new Vector2(0f, 0f);
-        panelRt.offsetMin = new Vector2(-320f, panelRt.offsetMin.y);
-        panelRt.offsetMax = new Vector2(0f, panelRt.offsetMax.y);
+        panelRt.offsetMin = Vector2.zero;
+        panelRt.offsetMax = Vector2.zero;
 
         CreateTitle();
 
         // BUTTONS!
         float startY = 60f;           // was 65f, now moved up by 60
-        float buttonSpacing = 75f;   // vertical spacing between standard buttons
-        Vector2 buttonSize = new Vector2(300f, 69f);
+        float buttonSpacing = 65f;   // vertical spacing between standard buttons
+        Vector2 buttonSize = new Vector2(330f, 59f);
 
         bool creditsUnlocked = PlayerPrefs.GetInt(PREF_GAME_COMPLETED, 0) == 1;
 
@@ -108,26 +111,31 @@ public class MainMenuUI : MonoBehaviour
             ShowLevelSelect,
             UIStyle.AccentGreen);
 
+        var nineLives = UIStyle.CreateButton(_panel.transform, "Nine Lives",
+            new Vector2(0f, startY - buttonSpacing * 2), buttonSize,
+            () => NineLivesService.Instance?.ShowTree(), UIStyle.AccentGold);
+        _nineLivesLabel = nineLives.GetComponentInChildren<Text>();
+
         UIStyle.CreateButton(_panel.transform, "Community Levels",
-            new Vector2(0f, startY - (buttonSpacing * 2)),
+            new Vector2(0f, startY - (buttonSpacing * 3)),
             buttonSize,
             ShowCommunityBrowser,
             UIStyle.AccentGold);
 
         UIStyle.CreateButton(_panel.transform, "High Scores",
-            new Vector2(0f, startY - (buttonSpacing * 3)),
+            new Vector2(0f, startY - (buttonSpacing * 4)),
             buttonSize,
             () => GameManager.Instance?.ShowHighScores(),
             UIStyle.AccentBlue);
 
         UIStyle.CreateButton(_panel.transform, "Settings",
-            new Vector2(0f, startY - (buttonSpacing * 4)),
+            new Vector2(0f, startY - (buttonSpacing * 5)),
             buttonSize,
             () => GameManager.Instance?.ShowSettings(fromPause: false),
             UIStyle.AccentBlue);
 
         UIStyle.CreateButton(_panel.transform, "Quit",
-            new Vector2(0f, startY - (buttonSpacing * 5)),
+            new Vector2(0f, startY - (buttonSpacing * 6)),
             buttonSize,
             QuitGame,
             UIStyle.AccentRed);
@@ -136,7 +144,7 @@ public class MainMenuUI : MonoBehaviour
         if (creditsUnlocked)
         {
             var creditsBtn = UIStyle.CreateButton(_panel.transform, "Credits",
-                new Vector2(0f, startY - (buttonSpacing * 6)),
+                new Vector2(0f, startY - (buttonSpacing * 7)),
                 buttonSize,
                 ShowCredits,
                 UIStyle.AccentBlue);
@@ -145,7 +153,7 @@ public class MainMenuUI : MonoBehaviour
             _creditsButton.SetActive(true);
 
             UIStyle.CreateButton(_panel.transform, "Level Editor [F1]",
-                new Vector2(0f, startY - (buttonSpacing * 7)),
+                new Vector2(0f, startY - (buttonSpacing * 8)),
                 buttonSize,
                 ShowLevelEditor,
                 UIStyle.AccentGold);
@@ -155,7 +163,7 @@ public class MainMenuUI : MonoBehaviour
             _creditsButton = null;
 
             UIStyle.CreateButton(_panel.transform, "Level Editor [F1]",
-                new Vector2(0f, startY - (buttonSpacing * 6)),
+                new Vector2(0f, startY - (buttonSpacing * 7)),
                 buttonSize,
                 ShowLevelEditor,
                 UIStyle.AccentGold);

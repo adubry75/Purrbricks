@@ -26,6 +26,7 @@ public class SfxPlayer : MonoBehaviour
 
     private AudioSource _src;
     private bool _isMuted;
+    private AudioClip _edgeHunterTone;
 
     private void Awake()
     {
@@ -53,6 +54,34 @@ public class SfxPlayer : MonoBehaviour
     public void PlayFuryStrike() => PlayOne(_furyStrike != null ? _furyStrike : _powerupPickup);
     public void PlayBumperDing() => PlayOne(_bumperDing != null ? _bumperDing : _wallHit);
     public void PlayStarEarned() => PlayOne(_starEarned != null ? _starEarned : _win);
+
+    /// <summary>A short, springy cue, distinct from an ordinary paddle hit.</summary>
+    public void PlayEdgeHunter()
+    {
+        if (_src == null || _isMuted || _volume <= 0f) return;
+        if (_edgeHunterTone == null)
+        {
+            const int sampleRate = 22050;
+            var samples = new float[3308]; // 150 ms, with a soft attack and decay.
+            float phase = 0f;
+            for (int i = 0; i < samples.Length; i++)
+            {
+                float t = i / (float)sampleRate;
+                float frequency = 520f + 680f * Mathf.Exp(-t * 35f);
+                phase += 2f * Mathf.PI * frequency / sampleRate;
+                float envelope = Mathf.Min(1f, t / .004f) * Mathf.Exp(-t * 28f) * (1f - i / (float)samples.Length);
+                samples[i] = .45f * envelope * (Mathf.Sin(phase) + .2f * Mathf.Sin(phase * 2f));
+            }
+            _edgeHunterTone = AudioClip.Create("Edge Hunter bloink", samples.Length, 1, sampleRate, false);
+            _edgeHunterTone.SetData(samples, 0);
+        }
+        PlayOne(_edgeHunterTone);
+    }
+
+    private void OnDestroy()
+    {
+        if (_edgeHunterTone != null) Destroy(_edgeHunterTone);
+    }
 
     public void MuteAll(bool mute) { _isMuted = mute; }
 

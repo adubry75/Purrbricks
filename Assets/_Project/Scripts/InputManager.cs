@@ -1,7 +1,10 @@
 using System;
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.InputSystem.LowLevel;
+using UnityEngine.InputSystem.Controls;
+using UnityEngine.EventSystems;
 
 public enum InputScheme { MouseKeyboard, Gamepad }
 
@@ -59,6 +62,7 @@ public class InputManager : MonoBehaviour
     {
         if (!eventPtr.IsA<StateEvent>() && !eventPtr.IsA<DeltaStateEvent>()) return;
 
+        if (!HasMeaningfulActivity(eventPtr, device)) return;
         var newScheme = (device is Gamepad) ? InputScheme.Gamepad : InputScheme.MouseKeyboard;
         if (newScheme == CurrentScheme) return;
 
@@ -74,6 +78,47 @@ public class InputManager : MonoBehaviour
     /// Call from GameManager.SetState() — enable for Ready/Playing/Paused,
     /// disable for MainMenu/Cleared/Victory/GameOver.
     /// </summary>
+    private static bool HasMeaningfulActivity(InputEventPtr eventPtr, InputDevice device)
+    {
+        if (!(device is Mouse) && !(device is Keyboard) && !(device is Gamepad)) return false;
+        if (device is Mouse mouse)
+        {
+            if (mouse.delta.ReadValueFromEvent(eventPtr, out Vector2 delta) && delta.sqrMagnitude >= 4f) return true;
+            if (mouse.scroll.ReadValueFromEvent(eventPtr, out Vector2 scroll) && scroll.sqrMagnitude > 0.01f) return true;
+        }
+        if (device is Gamepad gamepad)
+        {
+            float threshold = Mathf.Max(0.2f, SettingsManager.Instance != null ? SettingsManager.Instance.GamepadDeadzone : 0.15f);
+            if (StickMoved(gamepad.leftStick, eventPtr, threshold) || StickMoved(gamepad.rightStick, eventPtr, threshold)) return true;
+        }
+        foreach (var control in eventPtr.EnumerateChangedControls(device))
+        {
+            if (control.synthetic || !(control is ButtonControl button)) continue;
+            if (button.ReadValueFromEvent(eventPtr, out float value) && value > 0.5f) return true;
+        }
+        return false;
+    }
+
+    private static bool StickMoved(StickControl stick, InputEventPtr eventPtr, float threshold)
+    {
+        if (!stick.ReadUnprocessedValueFromEvent(eventPtr, out Vector2 value)) return false;
+        var previous = stick.ReadUnprocessedValue();
+        return value.sqrMagnitude > threshold * threshold
+            && (previous.sqrMagnitude <= threshold * threshold || (value - previous).sqrMagnitude > 0.0025f);
+    }
+
+    private static readonly List<RaycastResult> PointerHits = new List<RaycastResult>();
+
+    /// <summary>Raycast now, including callbacks before EventSystem's frame update.</summary>
+    public static bool IsPointerOverUI()
+    {
+        if (EventSystem.current == null || Mouse.current == null) return false;
+        PointerHits.Clear();
+        EventSystem.current.RaycastAll(new PointerEventData(EventSystem.current)
+            { position = Mouse.current.position.ReadValue() }, PointerHits);
+        return PointerHits.Count > 0;
+    }
+
     public static void EnableGameplay(bool enable)
     {
         if (Actions == null) return;

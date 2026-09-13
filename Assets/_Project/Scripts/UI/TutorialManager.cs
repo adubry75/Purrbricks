@@ -23,6 +23,7 @@ public class TutorialManager : MonoBehaviour
     public static class ID
     {
         public const string LaunchBall    = "tut_launch_ball";
+        public const string BottomControls = "tut_bottom_controls";
         public const string FuryStrike    = "tut_fury_strike";
         public const string Inventory     = "tut_inventory";
         public const string MultiBallFury = "tut_multiball_fury";
@@ -147,9 +148,10 @@ public class TutorialManager : MonoBehaviour
         _panelRoot.SetActive(false);
         _currentId  = null;
         _isShowing  = false;
-        Time.timeScale   = _savedTimeScale;
-        Cursor.visible   = _savedCursorVisible;
-        Cursor.lockState = _savedLockState;
+        GameManager.Instance?.RestoreGameplayTimeScale();
+        bool gameplay = GameManager.Instance != null && GameManager.Instance.IsPlayingOrReady();
+        Cursor.visible = gameplay ? _savedCursorVisible : true;
+        Cursor.lockState = gameplay ? _savedLockState : CursorLockMode.None;
         ShowNext(); // chain to next queued tutorial
     }
 
@@ -166,6 +168,7 @@ public class TutorialManager : MonoBehaviour
     public void ResetAllTutorials()
     {
         PlayerPrefs.DeleteKey(ID.LaunchBall);
+        PlayerPrefs.DeleteKey(ID.BottomControls);
         PlayerPrefs.DeleteKey(ID.FuryStrike);
         PlayerPrefs.DeleteKey(ID.Inventory);
         PlayerPrefs.DeleteKey(ID.MultiBallFury);
@@ -293,7 +296,7 @@ public class TutorialManager : MonoBehaviour
         _cardRt.anchorMax        = new Vector2(0.5f, 0.5f);
         _cardRt.pivot            = new Vector2(0.5f, 0.5f);
         _cardRt.sizeDelta        = new Vector2(680f, 440f);  // initial size; ResizeCard() overrides height
-        _cardRt.anchoredPosition = new Vector2(-160f, 0f);
+        _cardRt.anchoredPosition = Vector2.zero;
 
         // ── Accent bar at top edge ─────────────────────────────────────────────
         var barGO = new GameObject("AccentBar");

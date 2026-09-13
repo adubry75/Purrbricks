@@ -28,6 +28,10 @@ public class PaddleController : MonoBehaviour
 
     private float _velocityX;
     private bool _laserFiredThisFrame;
+    private bool _laserFromMouse;
+    private bool _hasFocus = true;
+    private bool _relativeCaptured;
+    private float _relativeTarget;
     private bool _isDemoMode;
     private bool _isFrozen;
     private float _frozenX;
@@ -40,6 +44,7 @@ public class PaddleController : MonoBehaviour
     private bool _isDrunk;
     private float _drunkTimer;
     private float _laserCooldown;
+    private float EffectiveLaserCooldown => _laserFireRate * ((NineLivesService.Instance?.Has("A2") ?? false) ? 0.75f : 1f);
 
     private Vector3 _normalScale;
     private BoxCollider2D _col;
@@ -54,12 +59,17 @@ public class PaddleController : MonoBehaviour
 
     private void OnDisable()
     {
+        ReleaseRelativeMouse();
+        _laserFiredThisFrame = false;
         if (InputManager.Actions != null)
             InputManager.Actions.Gameplay.FireLaser.performed -= OnFireLaserPerformed;
     }
 
     private void OnFireLaserPerformed(InputAction.CallbackContext ctx)
     {
+        if (!_hasFocus || GameManager.Instance == null || GameManager.Instance.IsGameplaySuspended) return;
+        _laserFromMouse = ctx.control.device is Mouse;
+        if (_laserFromMouse && InputManager.IsPointerOverUI()) return;
         _laserFiredThisFrame = true;
     }
 
@@ -72,12 +82,42 @@ public class PaddleController : MonoBehaviour
 
     private void Update()
     {
-        if (_camera == null) return;
-        if (_leftWall == null || _rightWall == null) return;
+        if (_camera == null || _leftWall == null || _rightWall == null) return;
+        var manager = GameManager.Instance;
+        bool suspended = !_hasFocus || (manager != null && manager.IsGameplaySuspended);
+        if (!_isDemoMode && suspended)
+        {
+            ReleaseRelativeMouse();
+            _velocityX = 0f;
+            _laserFiredThisFrame = false;
+            return;
+        }
+        var settings = SettingsManager.Instance;
+        bool relative = !_isDemoMode && settings != null && settings.MouseRelative
+            && InputManager.CurrentScheme == InputScheme.MouseKeyboard
+            && manager != null && manager.IsPlayingOrReady();
+        bool justCaptured = false;
+        if (relative && !_relativeCaptured)
+        {
+            _relativeCaptured = true;
+            _relativeTarget = transform.position.x;
+            _velocityX = 0f;
+            Cursor.lockState = CursorLockMode.Locked;
+            Cursor.visible = false;
+            justCaptured = true;
+            _laserFiredThisFrame = false;
+        }
+        else if (!relative) ReleaseRelativeMouse();
+
+        float halfWidth = GetHalfWidthWorld();
+        float leftLimit = _leftWall.bounds.max.x + halfWidth + _wallPadding;
+        float rightLimit = _rightWall.bounds.min.x - halfWidth - _wallPadding;
 
         if (_isFrozen)
         {
             transform.position = new Vector3(_frozenX, _yLocked, transform.position.z);
+            _relativeTarget = _frozenX;
+            _laserFiredThisFrame = false;
             return;
         }
 
@@ -90,12 +130,22 @@ public class PaddleController : MonoBehaviour
         }
         else if (InputManager.CurrentScheme == InputScheme.Gamepad)
         {
-            float stickX = InputManager.Actions?.Gameplay.MovePaddle.ReadValue<float>() ?? 0f;
+            // Read the raw axis so the user's deadzone is applied exactly once.
+            float stickX = ApplyDeadzone(Gamepad.current?.leftStick.x.ReadUnprocessedValue() ?? 0f,
+                settings != null ? settings.GamepadDeadzone : 0.15f);
             if (_isFlipped) stickX = -stickX;
             // Piecewise: 0–50% tilt → 0–1× speed (fine control), 50–100% → 1–4× speed (fast zone)
             float absStick = Mathf.Abs(stickX);
             float factor = absStick <= 0.5f ? absStick * 2f : 1f + (absStick - 0.5f) * 6f;
-            targetX = transform.position.x + Mathf.Sign(stickX) * factor * _gamepadPaddleSpeed * Time.deltaTime;
+            targetX = transform.position.x + Mathf.Sign(stickX) * factor * _gamepadPaddleSpeed * (settings != null ? settings.GamepadSensitivity : 1f) * Time.deltaTime;
+        }
+        else if (relative)
+        {
+            float delta = justCaptured ? 0f : (Mouse.current?.delta.x.ReadValue() ?? 0f);
+            float unitsPerPixel = _camera.orthographic ? 2f * _camera.orthographicSize / Mathf.Max(1, _camera.pixelHeight) : 0.02f;
+            _relativeTarget += delta * unitsPerPixel * settings.MouseSensitivity * (_isFlipped ? -1f : 1f);
+            _relativeTarget = Mathf.Clamp(_relativeTarget, leftLimit, rightLimit);
+            targetX = _relativeTarget;
         }
         else
         {
@@ -103,7 +153,7 @@ public class PaddleController : MonoBehaviour
             var mousePos = Mouse.current?.position.ReadValue()
                            ?? (Vector2)UnityEngine.Input.mousePosition;
             float mouseX = _camera.ScreenToWorldPoint(new Vector3(mousePos.x, mousePos.y, _camera.nearClipPlane)).x;
-            targetX = _isFlipped ? -mouseX : mouseX;
+            targetX = MapAbsoluteMouse(mouseX, leftLimit, rightLimit, _isFlipped, 1f);
         }
 
         // DrunkenPaddle: sinusoidal sway (±2.5 units at ~0.4 Hz cycle)
@@ -112,10 +162,6 @@ public class PaddleController : MonoBehaviour
             _drunkTimer += Time.deltaTime;
             targetX += Mathf.Sin(_drunkTimer * 2.5f) * 2.5f;
         }
-
-        float halfWidth = GetHalfWidthWorld();
-        float leftLimit  = _leftWall.bounds.max.x  + halfWidth + _wallPadding;
-        float rightLimit = _rightWall.bounds.min.x - halfWidth - _wallPadding;
 
         targetX = Mathf.Clamp(targetX, leftLimit, rightLimit);
 
@@ -126,14 +172,15 @@ public class PaddleController : MonoBehaviour
 
         // Laser: only fire during active gameplay (prevents UI clicks like "Next Level"
         // from spawning lasers on the next level).
-        bool canShoot = GameManager.Instance != null && GameManager.Instance.State == GameState.Playing;
+        bool canShoot = manager != null && manager.State == GameState.Playing && !manager.IsGameplaySuspended
+            && (!_laserFromMouse || !InputManager.IsPointerOverUI());
         if (_isLaser && !_isDemoMode && canShoot)
         {
             _laserCooldown -= Time.deltaTime;
             if (_laserCooldown <= 0f && _laserFiredThisFrame)
             {
                 FireLasers();
-                _laserCooldown = _laserFireRate;
+                _laserCooldown = EffectiveLaserCooldown;
             }
         }
         _laserFiredThisFrame = false;
@@ -143,7 +190,7 @@ public class PaddleController : MonoBehaviour
 
     private void ApplyPaddleScale()
     {
-        float xScale = _normalScale.x;
+        float xScale = _normalScale.x * ((NineLivesService.Instance?.Has("C1") ?? false) ? 1.12f : 1f);
         if (_isWide)   xScale *= _widthMultiplier;
         if (_isShrunk) xScale *= 0.5f;
         transform.localScale = new Vector3(xScale, _normalScale.y, _normalScale.z);
@@ -193,8 +240,11 @@ public class PaddleController : MonoBehaviour
         _isDemoMode = isDemoMode;
     }
 
+    public void RefreshBuildModifiers() => ApplyPaddleScale();
+
     public void ResetPosition()
     {
+        ApplyPaddleScale();
         transform.position = new Vector3(0f, _yLocked, transform.position.z);
     }
 
@@ -227,6 +277,38 @@ public class PaddleController : MonoBehaviour
     }
 
     // ── Helpers ───────────────────────────────────────────────────────────────
+
+    private void OnApplicationFocus(bool focus)
+    {
+        _hasFocus = focus;
+        ReleaseRelativeMouse();
+        _laserFiredThisFrame = false;
+        _velocityX = 0f;
+    }
+
+    private void ReleaseRelativeMouse()
+    {
+        if (!_relativeCaptured) return;
+        _relativeCaptured = false;
+        var manager = GameManager.Instance;
+        bool playing = _hasFocus && manager != null && manager.IsPlayingOrReady() && !manager.IsGameplaySuspended;
+        Cursor.lockState = playing ? CursorLockMode.Confined : CursorLockMode.None;
+        Cursor.visible = !playing;
+    }
+
+    private static float MapAbsoluteMouse(float worldX, float left, float right, bool flipped, float sensitivity)
+    {
+        float midpoint = (left + right) * 0.5f;
+        float offset = (worldX - midpoint) * sensitivity;
+        return Mathf.Clamp(midpoint + (flipped ? -offset : offset), left, right);
+    }
+
+    private static float ApplyDeadzone(float value, float deadzone)
+    {
+        float magnitude = Mathf.Abs(value);
+        if (magnitude <= deadzone) return 0f;
+        return Mathf.Sign(value) * Mathf.Clamp01((magnitude - deadzone) / (1f - deadzone));
+    }
 
     private float GetHalfWidthWorld()
     {

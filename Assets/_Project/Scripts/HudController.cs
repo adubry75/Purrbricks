@@ -73,7 +73,7 @@ public class HudController : MonoBehaviour
         var scaler = gameObject.AddComponent<CanvasScaler>();
         scaler.uiScaleMode         = CanvasScaler.ScaleMode.ScaleWithScreenSize;
         scaler.referenceResolution = new Vector2(1920, 1080);
-        scaler.matchWidthOrHeight  = 0f; // match width
+        scaler.screenMatchMode = CanvasScaler.ScreenMatchMode.Expand;
 
         gameObject.AddComponent<GraphicRaycaster>();
 
@@ -90,7 +90,7 @@ public class HudController : MonoBehaviour
         // Set offsets directly — avoids the sizeDelta+anchoredPosition conflict that caused Left=161, Right=161.
         // Inspector will show: Left=0, Right=322, Height=75.
         topBarRt.offsetMin = new Vector2(0f, -75f);   // left=0, bar is 75px tall
-        topBarRt.offsetMax = new Vector2(-322f, 0f);  // right edge stops at sidebar left
+        topBarRt.offsetMax = Vector2.zero;  // right edge stops at sidebar left
 
         _topBar = topBar;
         _topBar.SetActive(false); // hidden by default; GameManager calls SetVisible(true)
@@ -247,7 +247,7 @@ public class HudController : MonoBehaviour
     private void BuildRightZone(Transform parent)
     {
         // Slim right zone — just the PB balance badge
-        var zone = MakeZone(parent, "RightZone", 120f);
+        var zone = MakeZone(parent, "RightZone", 260f);
 
         var hlg = zone.AddComponent<HorizontalLayoutGroup>();
         hlg.spacing               = 0f;
@@ -257,6 +257,17 @@ public class HudController : MonoBehaviour
         hlg.childControlWidth      = true;
         hlg.childControlHeight     = true;
         hlg.padding = new RectOffset(0, 4, 6, 6);
+
+        var menu = new GameObject("Pause");
+        menu.transform.SetParent(zone.transform, false);
+        var menuImage = menu.AddComponent<Image>();
+        menuImage.color = ColorNavyBg;
+        var menuButton = menu.AddComponent<Button>();
+        menuButton.onClick.AddListener(() => { var gm = GameManager.Instance; if (gm != null && gm.IsPlayingOrReady()) gm.SetState(GameState.Paused); });
+        menu.AddComponent<LayoutElement>().preferredWidth = 110f;
+        var menuText = MakeTMP(menu.transform, "PAUSE", 18, ColorWhite, TextAlignmentOptions.Center);
+        menuText.raycastTarget = false;
+        FillRT(menuText.rectTransform);
 
         // PB balance badge (click to open Store)
         var pbGO = new GameObject("PBBalance");
@@ -321,6 +332,7 @@ public class HudController : MonoBehaviour
 
         var t = go.AddComponent<TextMeshProUGUI>();
         t.font = font;
+        t.raycastTarget = false;
         t.text = text;
         t.fontSize = fontSize;
         t.color = color;

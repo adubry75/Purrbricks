@@ -14,6 +14,15 @@ public class LevelLoader : MonoBehaviour
     [SerializeField] private PowerupPickup _powerupPickupPrefab;
 
     private List<GameObject> _spawnedBricks = new List<GameObject>();
+    public IEnumerable<Brick> CurrentBricks
+    {
+        get
+        {
+            foreach (var root in _spawnedBricks)
+                if (root != null)
+                    foreach (var brick in root.GetComponentsInChildren<Brick>(true)) yield return brick;
+        }
+    }
     private List<GameObject> _spawnedGates = new List<GameObject>();
 
     private void Awake()

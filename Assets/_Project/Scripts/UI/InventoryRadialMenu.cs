@@ -19,6 +19,10 @@ public class InventoryRadialMenu : MonoBehaviour
 
     // State
     private bool _isOpen;
+    private bool _buttonMode;
+    private int _favoriteSlot = -1;
+    private int _runGeneration;
+    private int _openedFrame;
     private int  _hoveredIndex = -1;
 
     // Slot info (rebuilt each open)
@@ -55,56 +59,20 @@ public class InventoryRadialMenu : MonoBehaviour
 
     // ── Colour / label tables ─────────────────────────────────────────────────
 
-    private static readonly Color[] TypeColors =
-    {
-        new Color(0.00f, 0.85f, 1.00f), // 0  WidePaddle
-        new Color(1.00f, 0.55f, 0.00f), // 1  MultiBall
-        new Color(0.20f, 1.00f, 0.40f), // 2  StickyBall
-        new Color(1.00f, 0.80f, 0.00f), // 3  SpeedBall
-        new Color(1.00f, 0.20f, 0.20f), // 4  ExtraLife
-        new Color(0.30f, 0.70f, 1.00f), // 5  Laser
-        new Color(1.00f, 0.40f, 0.10f), // 6  Fireball
-        new Color(1.00f, 0.65f, 0.10f), // 7  BombBrick
-        new Color(0.10f, 0.90f, 0.90f), // 8  ShieldWall
-        new Color(0.55f, 0.30f, 1.00f), // 9  BigBall
-        new Color(1.00f, 0.85f, 0.00f), // 10 ScoreFrenzy
-        new Color(0.90f, 0.20f, 0.20f), // 11 ShrinkPaddle
-        new Color(0.80f, 0.10f, 0.80f), // 12 ZipBall
-        new Color(0.70f, 0.00f, 1.00f), // 13 FlipControls
-        new Color(0.50f, 0.00f, 0.90f), // 14 CursedBall
-        new Color(0.80f, 0.30f, 0.30f), // 15 TinyBall
-        new Color(0.40f, 0.40f, 0.40f), // 16 InvisiBall
-        new Color(0.30f, 0.70f, 0.30f), // 17 DrunkenPaddle
-        new Color(0.60f, 0.40f, 1.00f), // 18 PermanentStickyBall
-        new Color(0.20f, 0.60f, 1.00f), // 19 DrunkVision
-        new Color(0.10f, 0.80f, 0.50f), // 20 GremlinBounces
-        new Color(0.80f, 0.10f, 0.10f), // 21 FlipScreen
-    };
-
-    private static readonly string[] TypeLabels =
-    {
-        "WIDE PADDLE",  // 0
-        "MULTI-BALL",   // 1
-        "STICKY BALL",  // 2
-        "SPEED BALL",   // 3
-        "EXTRA LIFE",   // 4
-        "LASER",        // 5
-        "FIREBALL",     // 6
-        "BOMB BRICK",   // 7
-        "SHIELD",       // 8
-        "BIG BALL",     // 9
-        "FRENZY",       // 10
-        "⚠ SHRINK",     // 11
-        "⚠ ZIP BALL",   // 12
-        "⚠ FLIP CTRL",  // 13
-        "⚠ CURSED",     // 14
-        "⚠ TINY BALL",  // 15
-        "⚠ INVISI",     // 16
-        "⚠ DRUNK PAD",  // 17
-        "STICKY ∞",     // 18
-        "⚠ DRUNK VIS",  // 19
-        "⚠ GREMLIN",    // 20
-        "⚠ FLIP SCR",   // 21
+    private static Color[] TypeColors => PowerupHUD.TypeColors;
+    private static string[] TypeLabels => PowerupHUD.TypeLabels;
+    private Text _details;
+    private static readonly string[] Descriptions = {
+        "A wider paddle for easier catches.", "Adds balls to the current rally.",
+        "Catch the ball on the paddle, then aim your release.", "Boosts ball speed.",
+        "Adds one life.", "Fire lasers from the paddle.", "Burn through bricks.",
+        "Hits create an explosion.", "A shield protects the bottom of the arena.",
+        "Makes the ball larger.", "Earn more points while active.",
+        "Shrinks the paddle.", "Makes the ball much faster.", "Reverses paddle controls.",
+        "The ball changes direction unexpectedly.", "Makes the ball smaller.",
+        "The ball becomes harder to see.", "Adds sway to the paddle.",
+        "Sticky catches last for this life.", "Distorts the view.",
+        "Unpredictable bounces.", "Turns the arena upside down."
     };
 
     // ── Lifecycle ─────────────────────────────────────────────────────────────
@@ -126,6 +94,7 @@ public class InventoryRadialMenu : MonoBehaviour
         var scaler = gameObject.AddComponent<CanvasScaler>();
         scaler.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
         scaler.referenceResolution = new Vector2(1920, 1080);
+        scaler.screenMatchMode = CanvasScaler.ScreenMatchMode.Expand;
 
         gameObject.AddComponent<GraphicRaycaster>();
     }
@@ -139,7 +108,19 @@ public class InventoryRadialMenu : MonoBehaviour
         if (gm.State != GameState.Playing && gm.State != GameState.Ready) return;
 
         if (_isOpen)
+        {
             UpdateHover();
+            if (_hoveredIndex >= 0 && Time.frameCount > _openedFrame)
+            {
+                var keyboard = Keyboard.current;
+                var pad = Gamepad.current;
+                int slot = keyboard?.digit1Key.wasPressedThisFrame == true || pad?.dpad.left.wasPressedThisFrame == true ? 0
+                    : keyboard?.digit2Key.wasPressedThisFrame == true || pad?.dpad.up.wasPressedThisFrame == true ? 1
+                    : keyboard?.digit3Key.wasPressedThisFrame == true || pad?.dpad.right.wasPressedThisFrame == true ? 2 : -1;
+                if (slot >= 0) { _favoriteSlot = slot; CloseRadial(true); }
+            }
+            if (_buttonMode && Time.frameCount > _openedFrame && (Mouse.current?.leftButton.wasPressedThisFrame == true || Gamepad.current?.buttonSouth.wasPressedThisFrame == true)) CloseRadial(true);
+        }
     }
 
     private void OnEnable()
@@ -153,6 +134,7 @@ public class InventoryRadialMenu : MonoBehaviour
 
     private void OnDisable()
     {
+        CancelImmediately();
         if (InputManager.Actions == null) return;
         InputManager.Actions.Gameplay.OpenRadialMenu.started   -= OnOpenStarted;
         InputManager.Actions.Gameplay.OpenRadialMenu.canceled  -= OnOpenCanceled;
@@ -165,12 +147,12 @@ public class InventoryRadialMenu : MonoBehaviour
         var gm = GameManager.Instance;
         if (gm == null) return;
         if (gm.State != GameState.Playing && gm.State != GameState.Ready) return;
-        if (!_isOpen) OpenRadial();
+        if (!_isOpen && !gm.IsGameplaySuspended) { _buttonMode=false; _favoriteSlot=-1; OpenRadial(); }
     }
 
     private void OnOpenCanceled(InputAction.CallbackContext ctx)
     {
-        if (!_isOpen) return;
+        if (!_isOpen || _buttonMode) return;
         var gm = GameManager.Instance;
         if (gm != null && gm.State != GameState.Playing && gm.State != GameState.Ready) return;
         CloseRadial(activate: true);
@@ -189,10 +171,34 @@ public class InventoryRadialMenu : MonoBehaviour
 
     // ── Open ──────────────────────────────────────────────────────────────────
 
+    public void OpenFromButton()
+    {
+        var gm=GameManager.Instance;
+        if(gm==null || gm.IsInventoryUseBlocked || (gm.State!=GameState.Ready && gm.State!=GameState.Playing)) return;
+        _buttonMode=true; _favoriteSlot=-1; OpenRadial();
+    }
+
+    public void OpenForFavorite(int slot)
+    {
+        OpenFromButton();
+        if(_isOpen) _favoriteSlot=slot;
+    }
+
+    public void CancelImmediately()
+    {
+        if(_animRoutine!=null) StopCoroutine(_animRoutine);
+        _animRoutine=null; _isOpen=false; _favoriteSlot=-1;
+        UINavController.RadialMenuOpen=false;
+        if(_radialRoot!=null) Destroy(_radialRoot);
+        _radialRoot=null; _radialGroup=null;
+        _slotGOs.Clear(); _slotRTs.Clear(); _slotBgs.Clear(); _allSlots.Clear();
+        GameManager.Instance?.RestoreGameplayTimeScale();
+    }
+
     private void OpenRadial()
     {
         var inv = PurrBucksManager.Instance?.GetAllInventory();
-        if (inv == null || inv.Count == 0) return;
+        if (inv == null || inv.Count == 0) { PowerupHUD.Instance?.ShowFeedback("Inventory is empty. Collect or buy power-ups to pin them."); return; }
 
         var outerList = new List<(PowerupType type, int qty)>();
         var innerList = new List<(PowerupType type, int qty)>();
@@ -219,9 +225,12 @@ public class InventoryRadialMenu : MonoBehaviour
         foreach (var s in outerList) _allSlots.Add(new SlotInfo { type = s.type, qty = s.qty, isInner = false });
         foreach (var s in innerList) _allSlots.Add(new SlotInfo { type = s.type, qty = s.qty, isInner = true  });
 
+        _openedFrame=Time.frameCount;
+        _runGeneration=GameManager.Instance.RunGeneration;
         _isOpen = true;
         Time.timeScale = 0f;
-        Cursor.visible = true;
+        Cursor.lockState = CursorLockMode.None;
+        Cursor.visible = InputManager.CurrentScheme != InputScheme.Gamepad;
         UINavController.RadialMenuOpen = true;
 
         BuildSlots(outerList.Count, innerList.Count);
@@ -245,7 +254,7 @@ public class InventoryRadialMenu : MonoBehaviour
         var rootRt = _radialRoot.AddComponent<RectTransform>();
         rootRt.anchorMin = rootRt.anchorMax = rootRt.pivot = new Vector2(0.5f, 0.5f);
         rootRt.sizeDelta        = Vector2.zero;
-        rootRt.anchoredPosition = new Vector2(-160f, 0f);
+        rootRt.anchoredPosition = Vector2.zero;
 
         _radialGroup = _radialRoot.AddComponent<CanvasGroup>();
         _radialGroup.alpha = 0f;
@@ -425,40 +434,14 @@ public class InventoryRadialMenu : MonoBehaviour
         rt.anchoredPosition = Vector2.zero;
     }
 
-    private static void MakeCenterLabel(Transform parent, bool hasInnerRing)
+    private void MakeCenterLabel(Transform parent, bool hasInnerRing)
     {
-        var go = new GameObject("CenterLabel");
-        go.transform.SetParent(parent, false);
-        var txt = go.AddComponent<Text>();
-        txt.text         = hasInnerRing ? "POWER-UPS" : "INVENTORY";
-        txt.font         = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
-        txt.fontSize     = 11;
-        txt.fontStyle    = FontStyle.Bold;
-        txt.alignment    = TextAnchor.MiddleCenter;
-        txt.color        = new Color(1f, 1f, 1f, 0.28f);
-        txt.raycastTarget = false;
-        var rt = go.GetComponent<RectTransform>();
-        rt.anchorMin = rt.anchorMax = rt.pivot = new Vector2(0.5f, 0.5f);
-        rt.sizeDelta        = new Vector2(110f, 28f);
-        rt.anchoredPosition = hasInnerRing ? new Vector2(0f, 22f) : Vector2.zero;
-
-        if (!hasInnerRing) return;
-
-        // Second label "⚠ CURSED" below center for inner ring
-        var go2 = new GameObject("CursedLabel");
-        go2.transform.SetParent(parent, false);
-        var txt2 = go2.AddComponent<Text>();
-        txt2.text         = "⚠ CURSED";
-        txt2.font         = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
-        txt2.fontSize     = 10;
-        txt2.fontStyle    = FontStyle.Bold;
-        txt2.alignment    = TextAnchor.MiddleCenter;
-        txt2.color        = new Color(1f, 0.45f, 0.25f, 0.40f);
-        txt2.raycastTarget = false;
-        var rt2 = go2.GetComponent<RectTransform>();
-        rt2.anchorMin = rt2.anchorMax = rt2.pivot = new Vector2(0.5f, 0.5f);
-        rt2.sizeDelta        = new Vector2(90f, 24f);
-        rt2.anchoredPosition = new Vector2(0f, -18f);
+        var go=new GameObject("SelectionDetails"); go.transform.SetParent(parent,false);
+        _details=go.AddComponent<Text>(); _details.font=Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
+        _details.fontSize=20; _details.alignment=TextAnchor.MiddleCenter; _details.color=Color.white; _details.raycastTarget=false;
+        var rt=go.GetComponent<RectTransform>(); rt.anchorMin=rt.anchorMax=rt.pivot=new Vector2(.5f,.5f);
+        rt.sizeDelta=new Vector2(290,210); rt.anchoredPosition=Vector2.zero;
+        _details.text="INVENTORY PAUSED\n\nChoose a power-up\nEsc / B to cancel";
     }
 
     // ── Hover — unified cursor-based for both mouse and gamepad ──────────────
@@ -494,6 +477,13 @@ public class InventoryRadialMenu : MonoBehaviour
 
     private void RefreshHighlights()
     {
+        if(_details!=null && _hoveredIndex>=0)
+        {
+            var type=_allSlots[_hoveredIndex].type;
+            string status=_favoriteSlot>=0 ? "Pin to slot "+(_favoriteSlot+1) : "Release / confirm to use\nPin: 1/2/3 or D-pad left/up/right";
+            if(_favoriteSlot<0 && PowerupManager.Instance!=null && !PowerupManager.Instance.CanApplyFromInventory(type,out var reason)) status=reason;
+            _details.text=TypeLabels[(int)type]+"\n\n"+Descriptions[(int)type]+"\n\n"+status;
+        }
         for (int i = 0; i < _slotBgs.Count; i++)
         {
             int   typeIdx  = (int)_allSlots[i].type;
@@ -562,9 +552,10 @@ public class InventoryRadialMenu : MonoBehaviour
             }
         }
 
-        Time.timeScale = 1f;
-        Cursor.visible = false;
         UINavController.RadialMenuOpen = false;
+        GameManager.Instance?.RestoreGameplayTimeScale();
+        Cursor.visible = InputManager.CurrentScheme != InputScheme.Gamepad &&
+            ((PowerupHUD.Instance != null && PowerupHUD.Instance.IsControlMode) || GameManager.Instance?.IsGameplaySuspended == true);
 
         if (_radialRoot != null) { Destroy(_radialRoot); _radialRoot = null; _radialGroup = null; }
         _slotGOs.Clear();
@@ -573,17 +564,14 @@ public class InventoryRadialMenu : MonoBehaviour
         _allSlots.Clear();
         _hoveredIndex = -1;
 
-        if (typeToActivate.HasValue)
-            PurrBucksManager.Instance?.TryUseFromInventory(typeToActivate.Value);
-
-        // First-time hint
-        if (PurrBucksManager.Instance != null &&
-            !PurrBucksManager.Instance.HasSeenTutorial("tut_radial_opened"))
+        if (typeToActivate.HasValue && GameManager.Instance != null && GameManager.Instance.RunGeneration == _runGeneration)
         {
-            PurrBucksManager.Instance.MarkTutorialSeen("tut_radial_opened");
-            if (_hintRoutine != null) { StopCoroutine(_hintRoutine); _hintLabel = null; _hintRoutine = null; }
-            _hintRoutine = StartCoroutine(ShowHint(InputHintService.Get(HintKey.Radial)));
+            if(_favoriteSlot>=0) PowerupHUD.Instance?.Pin(_favoriteSlot,typeToActivate.Value);
+            else if(PowerupManager.Instance!=null && PowerupManager.Instance.CanApplyFromInventory(typeToActivate.Value,out var reason))
+                PurrBucksManager.Instance?.TryUseFromInventory(typeToActivate.Value);
+            else PowerupHUD.Instance?.ShowFeedback("This power-up cannot be used right now.");
         }
+        _favoriteSlot=-1;
 
         _animRoutine = null;
     }
@@ -687,6 +675,7 @@ public class InventoryRadialMenu : MonoBehaviour
 
     private void OnDestroy()
     {
+        CancelImmediately();
         if (Instance == this) Instance = null;
     }
 }

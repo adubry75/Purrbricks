@@ -11,6 +11,10 @@ public class GameOverUI : MonoBehaviour
     private Text   _titleText;
     private Text   _scoreText;
     private Button _mainMenuBtn;
+    private Button _nineLivesBtn;
+    private Text _nineLivesSummary;
+    private RectTransform _nineLivesXpFill;
+    private bool _community;
 
     [Header("Button Sprites")]
     [SerializeField] private Sprite _leaderboardSprite;
@@ -31,6 +35,7 @@ public class GameOverUI : MonoBehaviour
         var scaler = gameObject.AddComponent<CanvasScaler>();
         scaler.uiScaleMode         = CanvasScaler.ScaleMode.ScaleWithScreenSize;
         scaler.referenceResolution = new Vector2(1920, 1080);
+        scaler.screenMatchMode = CanvasScaler.ScreenMatchMode.Expand;
 
         gameObject.AddComponent<GraphicRaycaster>();
 
@@ -44,7 +49,7 @@ public class GameOverUI : MonoBehaviour
         panelRt.anchorMin        = Vector2.zero;
         panelRt.anchorMax        = Vector2.one;
         panelRt.sizeDelta        = Vector2.zero;
-        panelRt.anchoredPosition = new Vector2(-200f, 0f);
+        panelRt.anchoredPosition = Vector2.zero;
 
         // Title
         var titleGO = new GameObject("Title");
@@ -92,12 +97,21 @@ public class GameOverUI : MonoBehaviour
         _mainMenuBtn = UIStyle.CreateButton(panel.transform, "Main Menu",
             new Vector2(200f, -60f), new Vector2(280f, 70f),
             OnMainMenu, UIStyle.AccentGold);
+        _nineLivesBtn = UIStyle.CreateButton(panel.transform, "Nine Lives", new Vector2(0,-170), new Vector2(400,66),
+            () => NineLivesService.Instance?.ShowTree(), UIStyle.AccentGold);
+        _nineLivesXpFill=NineLivesTreeUI.CreateProgressBar(panel.transform,new Vector2(0,-345),new Vector2(600,12));
+        var progress = new GameObject("NineLivesProgress"); progress.transform.SetParent(panel.transform,false);
+        _nineLivesSummary=progress.AddComponent<Text>(); _nineLivesSummary.font=Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
+        _nineLivesSummary.fontSize=26; _nineLivesSummary.alignment=TextAnchor.MiddleCenter; _nineLivesSummary.color=new Color(.72f,.82f,.94f); _nineLivesSummary.raycastTarget=false;
+        var progressRt=_nineLivesSummary.rectTransform; progressRt.anchorMin=progressRt.anchorMax=new Vector2(.5f,.5f);
+        progressRt.sizeDelta=new Vector2(850,120); progressRt.anchoredPosition=new Vector2(0,-272);
     }
 
     // ── Public API ────────────────────────────────────────────────────────────
 
     public void ShowGameOver(int finalScore)
     {
+        _community=false;
         gameObject.SetActive(true);
         UINavController.SetDefault(_mainMenuBtn?.gameObject);
 
@@ -123,6 +137,7 @@ public class GameOverUI : MonoBehaviour
 
     public void ShowGameComplete(int finalScore)
     {
+        _community=false;
         gameObject.SetActive(true);
 
         if (_titleText != null)
@@ -149,6 +164,7 @@ public class GameOverUI : MonoBehaviour
     /// </summary>
     public void ShowCommunityGameOver(int finalScore)
     {
+        _community=true;
         gameObject.SetActive(true);
 
         if (_titleText != null)
@@ -222,6 +238,19 @@ public class GameOverUI : MonoBehaviour
         }
     }
 
+    private void Update()
+    {
+        if (_nineLivesBtn == null) return;
+        _nineLivesBtn.gameObject.SetActive(!_community);
+        _nineLivesSummary.gameObject.SetActive(!_community);
+        _nineLivesXpFill.parent.gameObject.SetActive(!_community);
+        if (!_community)
+        {
+            _nineLivesBtn.GetComponentInChildren<Text>().text=NineLivesTreeUI.EntryLabel();
+            _nineLivesSummary.text=NineLivesTreeUI.ProgressSummary(true);
+            NineLivesTreeUI.RefreshProgressBar(_nineLivesXpFill);
+        }
+    }
     public void Show() { gameObject.SetActive(true); }
     public void Hide() { gameObject.SetActive(false); }
 }

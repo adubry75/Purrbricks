@@ -46,13 +46,20 @@ public class CameraShake : MonoBehaviour
         if (_cam != null) _originalOrthoSize = _cam.orthographicSize;
     }
 
+    public void SetLayoutPose(Vector3 position, float orthographicSize)
+    {
+        _originalPos = transform.parent != null ? transform.parent.InverseTransformPoint(position) : position;
+        _originalOrthoSize = orthographicSize;
+        if (_isZooming) _zoomTargetSize = orthographicSize;
+    }
+
     private void Update()
     {
         _shakeOffset = Vector3.zero;
         _drunkOffset = Vector3.zero;
         _drunkRotZ   = 0f;
 
-        if (_shakeTimer > 0f)
+        if (_shakeTimer > 0f && !(SettingsManager.Instance?.ReducedEffects ?? false))
         {
             _shakeTimer -= Time.deltaTime;
 

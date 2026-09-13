@@ -123,7 +123,7 @@ public class HighScoresUI : MonoBehaviour
         var panelRt = panel.GetComponent<RectTransform>();
         panelRt.anchorMin = Vector2.zero;
         panelRt.anchorMax = Vector2.one;
-        panelRt.offsetMin = new Vector2(-320f, 0f);
+        panelRt.offsetMin = Vector2.zero;
         panelRt.offsetMax = Vector2.zero;
 
         // ── Title ─────────────────────────────────────────────────────────────

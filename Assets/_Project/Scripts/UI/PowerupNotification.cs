@@ -40,6 +40,7 @@ public class PowerupNotification : MonoBehaviour
         new Color(0.60f, 0.00f, 1.00f),   // 18 PermanentStickyBall purple
         new Color(0.20f, 0.25f, 0.65f),   // 19 DrunkVision
         new Color(0.12f, 0.60f, 0.65f),   // 20 GremlinBounces
+        new Color(0.80f, 0.10f, 0.10f),   // 21 FlipScreen
     };
 
     private static readonly string[] TypeLabels = new string[]
@@ -65,6 +66,7 @@ public class PowerupNotification : MonoBehaviour
         "STICKY ∞",       // 18
         "⚠ DRUNK VISION", // 19
         "⚠ GREMLIN",      // 20
+        "⚠ FLIP SCREEN",  // 21
     };
 
     // Anchor position reset every coroutine run
@@ -86,13 +88,15 @@ public class PowerupNotification : MonoBehaviour
         var scaler = gameObject.AddComponent<CanvasScaler>();
         scaler.uiScaleMode         = CanvasScaler.ScaleMode.ScaleWithScreenSize;
         scaler.referenceResolution = new Vector2(1920, 1080);
+        scaler.screenMatchMode = CanvasScaler.ScreenMatchMode.Expand;
 
         var go = new GameObject("NotifText");
         go.transform.SetParent(transform, false);
 
         _txt             = go.AddComponent<Text>();
         _txt.font        = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
-        _txt.fontSize    = 72;
+        _txt.fontSize    = 26;
+        _txt.raycastTarget = false;
         _txt.fontStyle   = FontStyle.Bold;
         _txt.alignment   = TextAnchor.MiddleCenter;
         _txt.color       = new Color(1f, 1f, 1f, 0f);
@@ -106,11 +110,11 @@ public class PowerupNotification : MonoBehaviour
         sh.effectDistance = new Vector2(3f, -3f);
 
         _rt               = _txt.GetComponent<RectTransform>();
-        _rt.anchorMin     = new Vector2(0.5f, 0.5f);
-        _rt.anchorMax     = new Vector2(0.5f, 0.5f);
-        _rt.sizeDelta     = new Vector2(1100f, 130f);
+        _rt.anchorMin     = new Vector2(0.5f, 1f);
+        _rt.anchorMax     = new Vector2(0.5f, 1f);
+        _rt.sizeDelta     = new Vector2(1100f, 45f);
         // Centered on playfield — offset left to account for powerup HUD on right
-        _basePos          = new Vector2(-160f, 160f);
+        _basePos          = new Vector2(0f, -174f);
         _rt.anchoredPosition = _basePos;
     }
 
@@ -142,7 +146,7 @@ public class PowerupNotification : MonoBehaviour
     private IEnumerator ShowRoutine(string text, Color color, bool isSpecial)
     {
         _txt.text     = text;
-        _txt.fontSize = isSpecial ? 96 : 72;
+        _txt.fontSize = isSpecial ? 32 : 26;
 
         float overshoot  = isSpecial ? 1.55f : 1.20f;
         float settle     = isSpecial ? 1.30f : 1.00f;

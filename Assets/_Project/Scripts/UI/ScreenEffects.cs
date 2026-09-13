@@ -72,15 +72,19 @@ public class ScreenEffects : MonoBehaviour
 
     // ── Public API ────────────────────────────────────────────────────────────
 
+    private static bool Reduced => SettingsManager.Instance != null && SettingsManager.Instance.ReducedEffects;
+
     public void FlashWhite(float peakAlpha = 0.55f, float duration = 0.30f)
     {
         if (_flashRoutine != null) StopCoroutine(_flashRoutine);
+        if (Reduced) { _flashImg.color = Color.clear; return; }
         _flashRoutine = StartCoroutine(FlashRoutine(Color.white, peakAlpha, duration));
     }
 
     public void FlashRed(float peakAlpha = 0.45f, float duration = 0.65f)
     {
         if (_flashRoutine != null) StopCoroutine(_flashRoutine);
+        if (Reduced) { _flashImg.color = Color.clear; return; }
         _flashRoutine = StartCoroutine(FlashRoutine(new Color(0.9f, 0.04f, 0.04f), peakAlpha, duration));
     }
 
@@ -105,7 +109,7 @@ public class ScreenEffects : MonoBehaviour
         if (!_isBadActive || _vignetteImg == null) return;
 
         // Pulse red edge while bad powerup is active
-        float alpha = 0.13f + 0.07f * Mathf.Sin(Time.unscaledTime * 2.8f);
+        float alpha = Reduced ? 0.04f : 0.13f + 0.07f * Mathf.Sin(Time.unscaledTime * 2.8f);
         _vignetteImg.color = new Color(0.75f, 0f, 0f, alpha);
     }
 
@@ -127,6 +131,7 @@ public class ScreenEffects : MonoBehaviour
         float elapsed = 0f;
         while (elapsed < duration)
         {
+            if (Reduced) break;
             elapsed += Time.unscaledDeltaTime;
             float a = Mathf.Lerp(peakAlpha, 0f, elapsed / duration);
             _flashImg.color = new Color(color.r, color.g, color.b, a);

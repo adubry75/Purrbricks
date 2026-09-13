@@ -65,7 +65,7 @@ public class PauseMenuUI : MonoBehaviour
         cardRt.anchorMin        = new Vector2(0.5f, 0.5f);
         cardRt.anchorMax        = new Vector2(0.5f, 0.5f);
         cardRt.sizeDelta        = new Vector2(480f, 720f);
-        cardRt.anchoredPosition = new Vector2(-160f, 0f);
+        cardRt.anchoredPosition = Vector2.zero;
 
         // Title
         var titleGO = new GameObject("Title");

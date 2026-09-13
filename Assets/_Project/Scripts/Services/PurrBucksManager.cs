@@ -126,13 +126,13 @@ public class PurrBucksManager : MonoBehaviour
     {
         int current = GetInventoryCount(type);
         if (current <= 0) return false;
+        if (PowerupManager.Instance == null || !PowerupManager.Instance.TryApplyFromInventory(type)) return false;
 
         _inventory[type] = current - 1;
         if (_inventory[type] == 0) _inventory.Remove(type);
         SaveInventory(type);
         OnInventoryChanged?.Invoke();
 
-        PowerupManager.Instance?.Apply(type);
         return true;
     }
 

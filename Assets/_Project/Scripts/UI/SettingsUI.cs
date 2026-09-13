@@ -22,6 +22,14 @@ public class SettingsUI : MonoBehaviour
     private float _pendingMusic;
     private float _pendingSfx;
 
+    private bool _pendingRelative, _pendingReduced;
+    private float _pendingMouseSensitivity, _pendingGamepadSensitivity, _pendingDeadzone;
+    private Slider _mouseSensitivitySlider, _gamepadSensitivitySlider, _deadzoneSlider;
+    private Text _mouseValue, _gamepadValue, _deadzoneValue;
+    private Image _absoluteBg, _relativeBg, _effectsFullBg, _effectsReducedBg;
+    private readonly List<GameObject> _pages = new List<GameObject>();
+    private readonly List<Image> _tabBgs = new List<Image>();
+
     // Resolution selector buttons
     private readonly List<Button> _resButtons  = new List<Button>();
     private readonly List<Image>  _resBgs      = new List<Image>();
@@ -52,104 +60,121 @@ public class SettingsUI : MonoBehaviour
     private void BuildUI()
     {
         _canvas = gameObject.AddComponent<Canvas>();
-        _canvas.renderMode   = RenderMode.ScreenSpaceOverlay;
-        _canvas.sortingOrder = 600;   // above everything
-
+        _canvas.renderMode = RenderMode.ScreenSpaceOverlay;
+        _canvas.sortingOrder = 600;
         var scaler = gameObject.AddComponent<CanvasScaler>();
-        scaler.uiScaleMode         = CanvasScaler.ScaleMode.ScaleWithScreenSize;
+        scaler.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
         scaler.referenceResolution = new Vector2(1920, 1080);
-
+        scaler.screenMatchMode = CanvasScaler.ScreenMatchMode.Expand;
         gameObject.AddComponent<GraphicRaycaster>();
-
-        // Full-screen dark backdrop
-        var bg = new GameObject("Bg");
-        bg.transform.SetParent(transform, false);
-        var bgImg = bg.AddComponent<Image>();
-        bgImg.color = new Color(0f, 0.02f, 0.08f, 0.96f);
-        StretchFull(bgImg.GetComponent<RectTransform>());
-
-        var panel = new GameObject("Panel");
-        panel.transform.SetParent(transform, false);
+        var bg = new GameObject("Bg"); bg.transform.SetParent(transform, false);
+        bg.AddComponent<Image>().color = new Color(0f, 0.02f, 0.08f, 0.96f);
+        StretchFull(bg.GetComponent<RectTransform>());
+        var panel = new GameObject("Panel"); panel.transform.SetParent(transform, false);
         var panelRt = panel.AddComponent<RectTransform>();
-        panelRt.anchorMin        = new Vector2(0.5f, 0.5f);
-        panelRt.anchorMax        = new Vector2(0.5f, 0.5f);
-        panelRt.sizeDelta        = new Vector2(960f, 860f);
-        panelRt.anchoredPosition = Vector2.zero;
-        var panelImg = panel.AddComponent<Image>();
-        panelImg.color = new Color(0.05f, 0.07f, 0.14f, 0.98f);
-        var panelOl = panel.AddComponent<Outline>();
-        panelOl.effectColor    = new Color(0.25f, 0.50f, 1f, 0.45f);
-        panelOl.effectDistance = new Vector2(2f, -2f);
-
-        float y = 370f;
-
-        // ── Title ─────────────────────────────────────────────────────────────
-        AddLabel(panel, "SETTINGS", new Vector2(0f, y), 72, UIStyle.AccentGold, bold: true);
-        y -= 90f;
-
-        // ── Resolution ────────────────────────────────────────────────────────
-        AddLabel(panel, "RESOLUTION", new Vector2(0f, y), 28, LabelColor, bold: true);
-        y -= 50f;
-
-        var resRow = MakeRow(panel, new Vector2(0f, y), 900f, 52f);
+        panelRt.anchorMin = panelRt.anchorMax = new Vector2(0.5f, 0.5f);
+        panelRt.sizeDelta = new Vector2(1100f, 980f);
+        panel.AddComponent<Image>().color = new Color(0.05f, 0.07f, 0.14f, 0.98f);
+        var title = AddLabel(panel, "SETTINGS", new Vector2(0, 405), 64, UIStyle.AccentGold, true);
+        title.alignment = TextAnchor.MiddleCenter;
+        var tabs = MakeRow(panel, new Vector2(0, 310), 920, 62);
+        string[] names = { "Display", "Audio", "Controls" };
+        for (int i = 0; i < names.Length; i++)
+        {
+            int tab = i;
+            var (_, tabBg) = MakeOptionButton(tabs.transform, names[i], () => ShowTab(tab));
+            _tabBgs.Add(tabBg);
+            var page = new GameObject(names[i] + "Page"); page.transform.SetParent(panel.transform, false);
+            var rt = page.AddComponent<RectTransform>();
+            rt.anchorMin = rt.anchorMax = new Vector2(0.5f, 0.5f);
+            rt.sizeDelta = new Vector2(980, 580); rt.anchoredPosition = new Vector2(0, -25);
+            _pages.Add(page);
+        }
+        var display = _pages[0];
+        AddLabel(display, "RESOLUTION", new Vector2(0, 180), 30, LabelColor, true);
+        var resRow = MakeRow(display, new Vector2(0, 115), 920, 62);
         for (int i = 0; i < SettingsManager.Resolutions.Length; i++)
         {
             int idx = i;
-            var (_, _, label) = SettingsManager.Resolutions[i];
-            var (btn, bgImg2) = MakeOptionButton(resRow.transform, label, () => OnResolutionSelected(idx));
-            _resButtons.Add(btn);
-            _resBgs.Add(bgImg2);
+            var (btn, optionBg) = MakeOptionButton(resRow.transform, SettingsManager.Resolutions[i].label, () => OnResolutionSelected(idx));
+            _resButtons.Add(btn); _resBgs.Add(optionBg);
         }
-        y -= 78f;
-
-        // ── Display Mode ──────────────────────────────────────────────────────
-        AddLabel(panel, "DISPLAY MODE", new Vector2(0f, y), 28, LabelColor, bold: true);
-        y -= 50f;
-
-        var dispRow = MakeRow(panel, new Vector2(0f, y), 680f, 52f);
+        AddLabel(display, "DISPLAY MODE", new Vector2(0, 5), 30, LabelColor, true);
+        var modeRow = MakeRow(display, new Vector2(0, -60), 920, 62);
         for (int i = 0; i < SettingsManager.DisplayModes.Length; i++)
         {
             int idx = i;
-            var (_, label) = SettingsManager.DisplayModes[i];
-            var (btn, bgImg2) = MakeOptionButton(dispRow.transform, label, () => OnDisplayModeSelected(idx));
-            _dispButtons.Add(btn);
-            _dispBgs.Add(bgImg2);
+            var (btn, optionBg) = MakeOptionButton(modeRow.transform, SettingsManager.DisplayModes[i].label, () => OnDisplayModeSelected(idx));
+            _dispButtons.Add(btn); _dispBgs.Add(optionBg);
         }
-        y -= 90f;
-
-        // ── Music Volume ──────────────────────────────────────────────────────
-        AddLabel(panel, "MUSIC VOLUME", new Vector2(0f, y), 28, LabelColor, bold: true);
-        _musicPct = AddLabel(panel, "50%", new Vector2(380f, y), 28, Color.white, bold: false);
-        y -= 46f;
-        _musicSlider = MakeSlider(panel, new Vector2(0f, y), 820f, UIStyle.AccentBlue, v =>
+        AddLabel(display, "Display changes are applied when you choose Done.", new Vector2(0, -185), 26, LabelColor, false);
+        var audio = _pages[1];
+        AddLabel(audio, "MUSIC VOLUME", new Vector2(0, 160), 30, LabelColor, true);
+        _musicPct = AddValue(audio, new Vector2(0, 160));
+        _musicSlider = MakeSlider(audio, new Vector2(0, 90), 820, UIStyle.AccentBlue, v =>
         {
-            _pendingMusic = v;
-            if (_musicPct != null) _musicPct.text = $"{Mathf.RoundToInt(v * 100f)}%";
-            // Live preview
+            _pendingMusic = v; _musicPct.text = $"{Mathf.RoundToInt(v * 100)}%";
             MusicPlayer.Instance?.SetVolume(v);
         });
-        y -= 80f;
-
-        // ── SFX Volume ────────────────────────────────────────────────────────
-        AddLabel(panel, "SFX VOLUME", new Vector2(0f, y), 28, LabelColor, bold: true);
-        _sfxPct = AddLabel(panel, "70%", new Vector2(380f, y), 28, Color.white, bold: false);
-        y -= 46f;
-        _sfxSlider = MakeSlider(panel, new Vector2(0f, y), 820f, UIStyle.AccentGreen, v =>
+        AddLabel(audio, "SFX VOLUME", new Vector2(0, -40), 30, LabelColor, true);
+        _sfxPct = AddValue(audio, new Vector2(0, -40));
+        _sfxSlider = MakeSlider(audio, new Vector2(0, -110), 820, UIStyle.AccentGreen, v =>
         {
-            _pendingSfx = v;
-            if (_sfxPct != null) _sfxPct.text = $"{Mathf.RoundToInt(v * 100f)}%";
+            _pendingSfx = v; _sfxPct.text = $"{Mathf.RoundToInt(v * 100)}%";
             SfxPlayer.Instance?.SetVolume(v);
         });
-        y -= 190f;
-
-        // ── Buttons ───────────────────────────────────────────────────────────
-        _doneBtn = UIStyle.CreateButton(panel.transform, "Done",
-            new Vector2(0f, y), new Vector2(260f, 68f),
-            OnDone, UIStyle.AccentGreen);
-        
+        var controls = _pages[2];
+        AddLabel(controls, "MOUSE MOVEMENT", new Vector2(0, 240), 28, LabelColor, true);
+        var mouseRow = MakeRow(controls, new Vector2(0, 184), 820, 52);
+        (_, _absoluteBg) = MakeOptionButton(mouseRow.transform, "Absolute position", () => { _pendingRelative = false; RefreshComfort(); });
+        (_, _relativeBg) = MakeOptionButton(mouseRow.transform, "Relative movement", () => { _pendingRelative = true; RefreshComfort(); });
+        _mouseSensitivitySlider = ComfortSlider(controls, "RELATIVE MOUSE SENSITIVITY", 120, 0.25f, 3f,
+            v => { _pendingMouseSensitivity = v; _mouseValue.text = $"{v:0.00}x"; }, out _mouseValue);
+        _gamepadSensitivitySlider = ComfortSlider(controls, "CONTROLLER SENSITIVITY", 20, 0.25f, 2f,
+            v => { _pendingGamepadSensitivity = v; _gamepadValue.text = $"{v:0.00}x"; }, out _gamepadValue);
+        _deadzoneSlider = ComfortSlider(controls, "CONTROLLER DEADZONE", -80, 0.05f, 0.4f,
+            v => { _pendingDeadzone = v; _deadzoneValue.text = $"{Mathf.RoundToInt(v * 100)}%"; }, out _deadzoneValue);
+        AddLabel(controls, "SHAKE & FLASH", new Vector2(0, -180), 28, LabelColor, true);
+        var effectsRow = MakeRow(controls, new Vector2(0, -236), 820, 52);
+        (_, _effectsFullBg) = MakeOptionButton(effectsRow.transform, "Full effects", () => { _pendingReduced = false; RefreshComfort(); });
+        (_, _effectsReducedBg) = MakeOptionButton(effectsRow.transform, "Reduced effects", () => { _pendingReduced = true; RefreshComfort(); });
+        _doneBtn = UIStyle.CreateButton(panel.transform, "Done", new Vector2(0, -416), new Vector2(280, 72), OnDone, UIStyle.AccentGreen);
+        ShowTab(0);
     }
 
-    // ── Public API ────────────────────────────────────────────────────────────
+    private Text AddValue(GameObject parent, Vector2 position)
+    {
+        var label = AddLabel(parent, "", position, 28, Color.white, false);
+        label.alignment = TextAnchor.MiddleRight;
+        return label;
+    }
+
+    private Slider ComfortSlider(GameObject parent, string label, float y, float min, float max,
+        UnityEngine.Events.UnityAction<float> changed, out Text value)
+    {
+        AddLabel(parent, label, new Vector2(0, y), 28, LabelColor, true);
+        value = AddValue(parent, new Vector2(0, y));
+        var slider = MakeSlider(parent, new Vector2(0, y - 44), 820, UIStyle.AccentBlue, changed);
+        slider.minValue = min; slider.maxValue = max;
+        return slider;
+    }
+
+    private void ShowTab(int index)
+    {
+        for (int i = 0; i < _pages.Count; i++)
+        {
+            _pages[i].SetActive(i == index);
+            _tabBgs[i].color = i == index ? BtnSelected : BtnNormal;
+        }
+    }
+
+    private void RefreshComfort()
+    {
+        _absoluteBg.color = _pendingRelative ? BtnNormal : BtnSelected;
+        _relativeBg.color = _pendingRelative ? BtnSelected : BtnNormal;
+        _effectsFullBg.color = _pendingReduced ? BtnNormal : BtnSelected;
+        _effectsReducedBg.color = _pendingReduced ? BtnSelected : BtnNormal;
+    }
 
     public void Show(bool fromPause)
     {
@@ -164,6 +189,16 @@ public class SettingsUI : MonoBehaviour
         _pendingDispIdx = mgr.DisplayModeIndex;
         _pendingMusic   = mgr.MusicVolume;
         _pendingSfx     = mgr.SfxVolume;
+        _pendingRelative = mgr.MouseRelative; _pendingReduced = mgr.ReducedEffects;
+        _pendingMouseSensitivity = mgr.MouseSensitivity;
+        _pendingGamepadSensitivity = mgr.GamepadSensitivity; _pendingDeadzone = mgr.GamepadDeadzone;
+        _mouseSensitivitySlider.SetValueWithoutNotify(_pendingMouseSensitivity);
+        _gamepadSensitivitySlider.SetValueWithoutNotify(_pendingGamepadSensitivity);
+        _deadzoneSlider.SetValueWithoutNotify(_pendingDeadzone);
+        _mouseValue.text = $"{_pendingMouseSensitivity:0.00}x";
+        _gamepadValue.text = $"{_pendingGamepadSensitivity:0.00}x";
+        _deadzoneValue.text = $"{Mathf.RoundToInt(_pendingDeadzone * 100)}%";
+        RefreshComfort();
 
         RefreshSelectors();
 
@@ -198,6 +233,9 @@ public class SettingsUI : MonoBehaviour
             mgr.SetDisplayModeIndex(_pendingDispIdx);
             mgr.SetMusicVolume(_pendingMusic);
             mgr.SetSfxVolume(_pendingSfx);
+            mgr.SetMouseRelative(_pendingRelative); mgr.SetReducedEffects(_pendingReduced);
+            mgr.SetMouseSensitivity(_pendingMouseSensitivity);
+            mgr.SetGamepadSensitivity(_pendingGamepadSensitivity); mgr.SetGamepadDeadzone(_pendingDeadzone);
             mgr.ApplySettings();
         }
 
@@ -308,7 +346,7 @@ public class SettingsUI : MonoBehaviour
         var txt = txtGO.AddComponent<Text>();
         txt.text          = label;
         txt.font          = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
-        txt.fontSize      = 22;
+        txt.fontSize      = 28;
         txt.fontStyle     = FontStyle.Bold;
         txt.alignment     = TextAnchor.MiddleCenter;
         txt.color         = Color.white;
@@ -328,7 +366,7 @@ public class SettingsUI : MonoBehaviour
         go.transform.SetParent(parent.transform, false);
         var rt = go.AddComponent<RectTransform>();
         rt.anchorMin = rt.anchorMax = new Vector2(0.5f, 0.5f);
-        rt.sizeDelta        = new Vector2(width, 36f);
+        rt.sizeDelta        = new Vector2(width, 44f);
         rt.anchoredPosition = pos;
 
         var slider      = go.AddComponent<Slider>();
@@ -340,7 +378,7 @@ public class SettingsUI : MonoBehaviour
         bgGO.transform.SetParent(go.transform, false);
         var bgImg = bgGO.AddComponent<Image>();
         bgImg.color         = new Color(0.10f, 0.12f, 0.22f, 1f);
-        bgImg.raycastTarget = false;
+        bgImg.raycastTarget = true;
         var bgRt  = bgGO.GetComponent<RectTransform>();
         bgRt.anchorMin = new Vector2(0f, 0.25f);
         bgRt.anchorMax = new Vector2(1f, 0.75f);
@@ -386,6 +424,7 @@ public class SettingsUI : MonoBehaviour
         slider.handleRect    = handleRt;
         slider.targetGraphic = handleImg;
 
+        slider.SetValueWithoutNotify(1f);
         slider.onValueChanged.AddListener(onChanged);
 
         return slider;
